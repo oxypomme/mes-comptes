@@ -47,7 +47,52 @@ export default {
     // https://go.nuxtjs.dev/pwa
     '@nuxtjs/pwa',
     '@nuxtjs/firebase',
+    '@nuxtjs/toast',
   ],
+
+  toast: {
+    position: 'top-center',
+    iconPack: 'mdi',
+    className: 'vueToast',
+    register: [
+      // Register custom toasts
+      {
+        name: 'show',
+        message: (message) => message,
+        options: {
+          type: 'default',
+          duration: 2000,
+        },
+      },
+      {
+        name: 'success',
+        message: (message) => message,
+        options: {
+          type: 'success',
+          icon: 'check',
+          duration: 2000,
+        },
+      },
+      {
+        name: 'info',
+        message: (message) => message,
+        options: {
+          type: 'info',
+          icon: 'information-outline',
+          duration: 2000,
+        },
+      },
+      {
+        name: 'error',
+        message: (message) => message,
+        options: {
+          type: 'error',
+          icon: 'alert-circle-outline',
+          duration: 2000,
+        },
+      },
+    ],
+  },
 
   firebase: {
     config: fireconfig,

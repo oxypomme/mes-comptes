@@ -92,3 +92,8 @@ export default {
   },
 }
 </script>
+<style lang="scss">
+.vueToast {
+  font-family: 'Roboto', sans-serif;
+}
+</style>

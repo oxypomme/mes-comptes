@@ -68,8 +68,10 @@ export default Vue.extend({
             password: this.password,
           })
           this.$router.push('/dashboard')
+          this.$toast.global.success('Connecté')
         } catch (e) {
           this.loading = false
+          this.$toast.global.error((e as Error).message)
         }
       }
     },

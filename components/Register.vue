@@ -165,10 +165,12 @@ export default Vue.extend({
             balance: this.balance,
           })
           this.$router.push('/dashboard')
+          this.$toast.success('Compte créé')
         }
       } catch (e) {
         this.loading = false
         this.dialog = false
+        this.$toast.global.error((e as Error).message)
       }
     },
   },
