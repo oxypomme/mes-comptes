@@ -12,12 +12,14 @@
     "lint": "yarn lint:js && yarn lint:style"
   },
   "dependencies": {
+    "@nuxtjs/firebase": "^8.0.0",
     "@nuxtjs/pwa": "^3.3.5",
     "core-js": "^3.15.1",
     "firebase": "^9.4.1",
     "nuxt": "^2.15.7",
     "vuetify": "^2.5.5",
-    "vuexfire": "^3.2.5"
+    "vuexfire": "^3.2.5",
+    "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.14.7",
@@ -27,6 +29,7 @@
     "@nuxtjs/eslint-module": "^3.0.2",
     "@nuxtjs/stylelint-module": "^4.0.0",
     "@nuxtjs/vuetify": "^1.12.1",
+    "@types/zxcvbn": "^4.4.1",
     "eslint": "^7.29.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-nuxt": "^2.0.0",
