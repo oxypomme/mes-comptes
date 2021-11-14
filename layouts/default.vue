@@ -43,6 +43,9 @@ export default {
     }
   },
   computed: {
+    overlay() {
+      return this.$store.getters.getLoading
+    },
     items() {
       const isLoggedIn = !!this.$store.getters['auth/getUser']
       if (isLoggedIn) {
