@@ -91,3 +91,7 @@ sw.*
 
 # Firebase
 firebase.json
+
+# Capacitor
+android/
+ios/

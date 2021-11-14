@@ -12,6 +12,9 @@
     "lint": "yarn lint:js && yarn lint:style"
   },
   "dependencies": {
+    "@capacitor/android": "^3.3.1",
+    "@capacitor/cli": "^3.3.1",
+    "@capacitor/core": "^3.3.1",
     "@nuxtjs/firebase": "^8.0.0",
     "@nuxtjs/pwa": "^3.3.5",
     "@nuxtjs/toast": "^3.3.1",
