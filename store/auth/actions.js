@@ -9,7 +9,12 @@ export default {
     }
   },
   async createUser({ dispatch }, { email, password, balance }) {
-    await this.$fire.auth.createUserWithEmailAndPassword(email, password)
+    const { user } = await this.$fire.auth.createUserWithEmailAndPassword(
+      email,
+      password
+    )
+    const ref = this.$fire.firestore.collection('users').doc(user.uid)
+    await ref.set({})
     return dispatch(
       'account/createAccount',
       {
