@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-dialog v-model="dialog" width="500">
+    <v-dialog v-model="dialog" persistent width="500">
       <v-card>
         <v-card-title>Initialisation</v-card-title>
 
@@ -116,7 +116,7 @@ export default Vue.extend({
       (v: string) =>
         passStrength(v).score >= 2 || "Le mot de passe n'est pas assez fort",
     ],
-    balance: 0,
+    balance: '0',
   }),
   computed: {
     score() {

@@ -1,3 +1,5 @@
 <template>
-  <div>TODO</div>
+  <v-container>
+    <AccountList />
+  </v-container>
 </template>
