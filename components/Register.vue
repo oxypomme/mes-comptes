@@ -13,8 +13,7 @@
                     v-model="balance"
                     label="Solde du compte"
                     type="number"
-                    suffix="€"
-                    outlined
+                    prefix="€"
                     required
                   >
                   </v-text-field>
@@ -55,19 +54,25 @@
           <v-row>
             <v-text-field
               v-model="password"
-              :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
               :rules="passwordRules"
               label="Mot de passe"
               :type="showPassword ? 'text' : 'password'"
               :loading="password.length > 0"
               required
-              @click:append="showPassword = !showPassword"
             >
+              <template #append>
+                <v-icon
+                  v-if="password.length > 0"
+                  @click="showPassword = !showPassword"
+                  >{{ showPassword ? 'mdi-eye' : 'mdi-eye-off' }}</v-icon
+                >
+              </template>
               <template #progress>
                 <v-progress-linear
                   v-if="password.length > 0"
                   :color="score.color"
                   :value="score.value"
+                  height="2"
                   absolute
                 ></v-progress-linear>
               </template>
@@ -76,6 +81,7 @@
           <v-row>
             <v-btn
               color="green"
+              class="mt-1"
               block
               :loading="loading || dialog"
               :disabled="!firstvalid"

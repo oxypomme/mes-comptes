@@ -13,17 +13,24 @@
         <v-row>
           <v-text-field
             v-model="password"
-            :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
             :rules="passwordRules"
             label="Mot de passe"
             :type="showPassword ? 'text' : 'password'"
             required
-            @click:append="showPassword = !showPassword"
-          ></v-text-field>
+          >
+            <template #append>
+              <v-icon
+                v-if="password.length > 0"
+                @click="showPassword = !showPassword"
+                >{{ showPassword ? 'mdi-eye' : 'mdi-eye-off' }}</v-icon
+              >
+            </template>
+          </v-text-field>
         </v-row>
         <v-row>
           <v-btn
             color="green"
+            class="mt-1"
             block
             :loading="loading"
             :disabled="!valid"
