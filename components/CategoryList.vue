@@ -3,7 +3,7 @@
     <v-dialog v-model="dialog" width="500">
       <v-card>
         <v-card-title>
-          {{ account.id ? 'Editer' : 'Créer' }} un compte
+          {{ category.id ? 'Editer' : 'Créer' }} une catégorie
         </v-card-title>
 
         <v-card-text>
@@ -12,8 +12,8 @@
               <v-row>
                 <v-col>
                   <v-text-field
-                    v-model="account.name"
-                    label="Nom du compte"
+                    v-model="category.name"
+                    label="Nom de la catégorie"
                     required
                   >
                   </v-text-field>
@@ -22,8 +22,19 @@
               <v-row>
                 <v-col>
                   <v-text-field
-                    v-model="account.balance"
-                    label="Solde du compte"
+                    v-model="category.budget"
+                    label="Budget par semaine de la catégorie"
+                    type="number"
+                    prefix="€"
+                  >
+                  </v-text-field>
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col>
+                  <v-text-field
+                    v-model="category.balance"
+                    label="Solde de la catégorie"
                     type="number"
                     prefix="€"
                   >
@@ -44,7 +55,7 @@
             :loading="loading"
             :disabled="!valid"
             text
-            @click="createAccount"
+            @click="createCategory"
           >
             Valider
           </v-btn>
@@ -53,42 +64,34 @@
     </v-dialog>
     <v-card>
       <v-card-title>
-        Comptes
-        <span class="last-item">
-          <v-chip
-            :color="
-              totalBalance > 100 ? 'green' : totalBalance > 0 ? 'orange' : 'red'
-            "
-          >
-            {{ totalBalance }} €
-          </v-chip>
-          <v-btn icon color="green" @click="showNew">
-            <v-icon>mdi-plus</v-icon>
-          </v-btn>
-        </span>
+        Catégories
+        <v-btn class="last-item" icon color="green" @click="showNew">
+          <v-icon>mdi-plus</v-icon>
+        </v-btn>
       </v-card-title>
       <v-list>
-        <v-list-item-group v-model="selectedItem" mandatory>
-          <v-list-item v-for="(acc, i) in accounts" :key="i">
+        <v-list-item-group>
+          <v-list-item v-for="(categ, i) in categories" :key="i">
             <v-list-item-content>
-              <v-list-item-title v-text="acc.name"></v-list-item-title>
+              <v-list-item-title v-text="categ.name"></v-list-item-title>
             </v-list-item-content>
             <v-list-item-icon>
               <v-chip
+                v-if="categ.budget > 0"
                 :color="
-                  acc.balance > 100
+                  getCategRatio(categ) < 0.5
                     ? 'green'
-                    : acc.balance > 0
+                    : getCategRatio(categ) <= 0.75
                     ? 'orange'
                     : 'red'
                 "
               >
-                {{ acc.balance }} €
+                {{ categ.balance }} / {{ categ.budget * weeksCount }} €
               </v-chip>
               <v-btn icon color="blue" @click="showEdit(i)">
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
-              <v-btn icon color="red" @click="deleteAccount(i)">
+              <v-btn icon color="red" @click="deleteCategory(i)">
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
             </v-list-item-icon>
@@ -105,59 +108,71 @@ import { mapGetters } from 'vuex'
 
 export default Vue.extend({
   data: () => ({
-    selectedItem: undefined,
-    initAccount: {
+    initCategory: {
       id: null,
       name: '',
       balance: '0',
+      budget: '0',
     },
-    account: {},
+    category: {},
     valid: true,
     dialog: false,
     loading: false,
   }),
   computed: {
-    ...mapGetters({ accounts: 'account/getAccounts' }),
-    totalBalance() {
-      let total = 0
-      for (const acc of this.accounts) {
-        total += acc.balance
+    ...mapGetters({ categories: 'categories/getCategories' }),
+    weeksCount() {
+      const d = new Date()
+      const firstOfMonth = new Date(d.getFullYear(), d.getMonth() - 1, 1)
+      let day = firstOfMonth.getDay() || 6
+      day = day === 1 ? 0 : day
+      if (day) {
+        day--
       }
-      return total
-    },
-  },
-  watch: {
-    selectedItem() {
-      this.$store.dispatch('account/selectAccount', this.selectedItem)
+      let diff = 7 - day
+      const lastOfMonth = new Date(d.getFullYear(), d.getMonth(), 0)
+      const lastDate = lastOfMonth.getDate()
+      if (lastOfMonth.getDay() === 1) {
+        diff--
+      }
+      const result = Math.ceil((lastDate - diff) / 7)
+
+      return result + 1
     },
   },
   methods: {
-    async createAccount() {
+    async createCategory() {
       if (this.valid) {
         this.loading = true
-        if ((this.account as any).id) {
-          await this.$store.dispatch('account/editAccount', this.account)
+        if ((this.category as any).id) {
+          await this.$store.dispatch('categories/editCategory', this.category)
         } else {
-          await this.$store.dispatch('account/createAccount', this.account)
+          await this.$store.dispatch('categories/createCategory', this.category)
         }
         this.dialog = false
         this.loading = false
       }
     },
-    async deleteAccount(i: number) {
-      await this.$store.dispatch('account/deleteAccount', this.accounts[i].id)
+    async deleteCategory(i: number) {
+      await this.$store.dispatch(
+        'categories/deleteCategory',
+        this.categories[i].id
+      )
     },
     showNew() {
       // this.valid = false
-      this.account = { ...this.initAccount }
+      this.category = { ...this.initCategory }
       this.dialog = true
     },
     showEdit(i: number) {
       this.valid = true
-      const acc = this.accounts[i]
-      this.account = { ...acc }
-      ;(this.account as any).id = acc.id
+      const categ = this.categories[i]
+      this.category = { ...categ }
+      ;(this.category as any).id = categ.id
       this.dialog = true
+    },
+    getCategRatio(categ: any) {
+      return categ.balance / (categ.budget * this.weeksCount)
     },
   },
 })

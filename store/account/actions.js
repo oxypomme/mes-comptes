@@ -37,22 +37,6 @@ export default {
     return ref.delete()
   },
 
-  createCategory({ rootGetters }, { aid, name, max }) {
-    const { uid } = rootGetters['auth/getUser']
-    const ref = this.$fire.firestore
-      .collection('users')
-      .doc(uid)
-      .collection('accounts')
-      .doc(aid)
-      .collection('categories')
-    return ref.add({
-      name,
-      max,
-      balance: 0,
-      createdAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
-    })
-  },
-
   bindAccounts: firestoreAction(async function ({ bindFirestoreRef }, { uid }) {
     const ref = this.$fire.firestore
       .collection('users')
@@ -81,9 +65,6 @@ export default {
       .collection('accounts')
       .doc(aid)
     await bindFirestoreRef('current', ref, { wait: true })
-    await bindFirestoreRef('current.categories', ref.collection('categories'), {
-      wait: true,
-    })
     dispatch(
       'operations/getOperations',
       {
@@ -91,5 +72,6 @@ export default {
       },
       { root: true }
     )
+    dispatch('categories/getCategories', null, { root: true })
   }),
 }

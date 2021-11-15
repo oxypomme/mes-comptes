@@ -26,6 +26,17 @@
                   </v-text-field>
                 </v-col>
               </v-row>
+              <v-row>
+                <v-col>
+                  <v-select
+                    v-model="operation.category"
+                    :items="categories"
+                    item-text="name"
+                    item-value="id"
+                    label="Catégorie"
+                  ></v-select>
+                </v-col>
+              </v-row>
             </v-container>
           </v-form>
         </v-card-text>
@@ -62,7 +73,12 @@
         </v-btn>
       </template>
       <template #item.createdAt="{ item }">
-        {{ item.createdAt.toDate().toLocaleDateString() }}
+        {{
+          (item.createdAt
+            ? item.createdAt.toDate()
+            : new Date()
+          ).toLocaleDateString()
+        }}
       </template>
       <template #item.type="{ item }">
         <v-chip :color="item.amount > 0 ? 'green' : 'red'">
@@ -71,6 +87,9 @@
       </template>
       <template #item.amount="{ item }">
         {{ Math.abs(item.amount) }} €
+      </template>
+      <template #item.category="{ item }">
+        {{ item.category ? item.category.name : '' }}
       </template>
       <template #item.actions="{ item }">
         <v-btn icon color="blue" @click="showEdit(item)">
@@ -117,20 +136,22 @@ export default Vue.extend({
     },
     operation: {},
     oldAmount: 0,
+    oldCategory: '',
     dialog: false,
     valid: true,
   }),
   computed: {
     ...mapGetters({
       account: 'account/getCurrent',
-      pagination: 'operations/getOperations',
+      categories: 'categories/getCategories',
+      ops: 'operations/getOperations',
     }),
 
     pageCount() {
       return Math.ceil((this.account?.operationCount ?? 0) / this.items)
     },
     operations() {
-      return [...this.pagination.data]
+      return [...this.ops.data]
     },
   },
   watch: {
@@ -150,6 +171,7 @@ export default Vue.extend({
           await this.$store.dispatch('operations/editOperation', {
             ...this.operation,
             oldAmount: this.oldAmount,
+            oldCategory: this.oldCategory,
           })
         } else {
           await this.$store.dispatch(
@@ -161,9 +183,13 @@ export default Vue.extend({
         this.loading = false
       }
     },
-    async deleteOperation({ id, amount }: any) {
+    async deleteOperation({ id, amount, category }: any) {
       this.loading = true
-      await this.$store.dispatch('operations/deleteOperation', { id, amount })
+      await this.$store.dispatch('operations/deleteOperation', {
+        id,
+        amount,
+        category,
+      })
       this.loading = false
     },
     showNew() {
@@ -176,6 +202,7 @@ export default Vue.extend({
       this.operation = { ...item }
       ;(this.operation as any).id = item.id
       this.oldAmount = item.amount
+      this.oldCategory = item.category
       this.dialog = true
     },
   },

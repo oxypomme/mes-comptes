@@ -1,3 +1,3 @@
 export default {
-  getOperations: (state) => state.operations,
+  getOperations: (state) => state,
 }
