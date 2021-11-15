@@ -13,8 +13,15 @@ export default {
       email,
       password
     )
+
+    const date = new Date()
+
     const ref = this.$fire.firestore.collection('users').doc(user.uid)
-    await ref.set({})
+    await ref.set({
+      resetDate: this.$fireModule.firestore.Timestamp.fromDate(
+        new Date(date.getFullYear(), date.getMonth(), 1)
+      ),
+    })
     return dispatch(
       'account/createAccount',
       {
