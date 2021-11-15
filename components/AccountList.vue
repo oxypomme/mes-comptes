@@ -55,9 +55,9 @@
       <v-card-title>
         Comptes
         <span class="last-item">
-          <v-btn icon color="green" @click="showNew"
-            ><v-icon>mdi-plus</v-icon></v-btn
-          >
+          <v-btn icon color="green" @click="showNew">
+            <v-icon>mdi-plus</v-icon>
+          </v-btn>
           <v-chip
             :color="
               totalBalance > 100 ? 'green' : totalBalance > 0 ? 'orange' : 'red'
@@ -105,7 +105,7 @@ import { mapGetters } from 'vuex'
 
 export default Vue.extend({
   data: () => ({
-    selectedItem: 0,
+    selectedItem: undefined,
     initAccount: {
       id: null,
       name: '',
@@ -149,7 +149,7 @@ export default Vue.extend({
     },
     showNew() {
       // this.valid = false
-      this.account = this.initAccount
+      this.account = { ...this.initAccount }
       this.dialog = true
     },
     showEdit(i: number) {

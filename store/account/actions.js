@@ -10,6 +10,7 @@ export default {
     return ref.add({
       name,
       balance: parseFloat(balance),
+      operationCount: 0,
       createdAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
     })
   },
@@ -66,7 +67,7 @@ export default {
     commit('RESET_STATE')
   }),
   selectAccount: firestoreAction(async function (
-    { rootGetters, getters, bindFirestoreRef },
+    { rootGetters, getters, dispatch, bindFirestoreRef },
     index
   ) {
     const { uid } = rootGetters['auth/getUser']
@@ -80,11 +81,15 @@ export default {
       .collection('accounts')
       .doc(aid)
     await bindFirestoreRef('current', ref, { wait: true })
-    await bindFirestoreRef('current.operations', ref.collection('operations'), {
-      wait: true,
-    })
     await bindFirestoreRef('current.categories', ref.collection('categories'), {
       wait: true,
     })
+    dispatch(
+      'operations/getOperations',
+      {
+        limit: 100,
+      },
+      { root: true }
+    )
   }),
 }
