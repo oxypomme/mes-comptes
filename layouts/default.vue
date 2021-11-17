@@ -1,25 +1,15 @@
 <template>
   <v-app dark>
-    <v-navigation-drawer v-model="drawer" :mini-variant="miniVariant" fixed app>
-      <v-list>
-        <v-list-item
-          v-for="(item, i) in items"
-          :key="i"
-          :to="item.to"
-          router
-          exact
-        >
-          <v-list-item-action>
-            <v-icon>{{ item.icon }}</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title v-text="item.title" />
-          </v-list-item-content>
-        </v-list-item>
-      </v-list>
+    <v-navigation-drawer
+      v-model="showDrawer"
+      :mini-variant="this.isMdOrLess() ? this.drawer : false"
+      fixed
+      app
+    >
+      <NavList />
     </v-navigation-drawer>
     <v-app-bar fixed app>
-      <v-app-bar-nav-icon @click="openDrawer" />
+      <v-app-bar-nav-icon @click="drawer = !drawer" />
       <v-toolbar-title v-text="title" />
     </v-app-bar>
     <v-main>
@@ -37,56 +27,30 @@
 export default {
   data() {
     return {
-      drawer: true,
-      miniVariant: true,
+      drawer: this.isMdOrLess(),
       title: 'Mes Comptes',
     }
   },
   computed: {
-    overlay() {
-      return this.$store.getters.getLoading
-    },
-    items() {
-      const isLoggedIn = !!this.$store.getters['auth/getUser']
-      if (isLoggedIn) {
-        // Logged in routes
-        return [
-          {
-            icon: 'mdi-view-dashboard',
-            title: 'Tableau de bord',
-            to: '/dashboard',
-          },
-          {
-            icon: 'mdi-logout',
-            title: 'Déconnexion',
-            to: '/logout',
-          },
-        ]
-      }
-      // Default routes
-      return [
-        {
-          icon: 'mdi-login',
-          title: 'Connexion',
-          to: '/login',
-        },
-      ]
+    showDrawer: {
+      get: function () {
+        return this.isMdOrLess() ? true : this.drawer
+      },
+      set: function (newVal) {
+        this.drawer = newVal
+      },
     },
   },
   methods: {
-    openDrawer() {
+    isMdOrLess() {
       switch (this.$vuetify.breakpoint.name) {
         case 'xs':
         case 'sm':
         case 'md':
-          this.drawer = !this.drawer
-          this.miniVariant = false
-          break
+          return false
         case 'lg':
         case 'xl':
-          this.drawer = true
-          this.miniVariant = !this.miniVariant
-          break
+          return true
       }
     },
   },
