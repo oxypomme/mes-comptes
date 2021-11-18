@@ -142,15 +142,11 @@ export default Vue.extend({
       },
       {
         name: 'Catégorisez vos dépenses',
-        desc: `Un budget max par catégorie, catégories par sous-compte.`,
+        desc: `Un budget max par catégorie, par semaine ou par mois, catégories par sous-compte.`,
       },
       {
-        name: 'Lorem ipsum',
-        desc: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus
-              sit amet leo efficitur, maximus arcu et, pellentesque ante.
-              Suspendisse vel massa id dolor varius laoreet. Curabitur aliquam
-              lacus ex, in lacinia risus hendrerit a. Interdum et malesuada
-              fames ac ante ipsum primis in faucibus.`,
+        name: 'Prévoyez vos budgets',
+        desc: `Renseigner vos charges, budgets calculés automatiquement.`,
       },
     ],
     pricing: [
@@ -179,9 +175,3 @@ export default Vue.extend({
   },
 })
 </script>
-
-<style lang="scss" scoped>
-.price-hover .surprise {
-  color: red;
-}
-</style>
