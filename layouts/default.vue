@@ -2,7 +2,7 @@
   <v-app dark>
     <v-navigation-drawer
       v-model="showDrawer"
-      :mini-variant="this.isMdOrLess() ? this.drawer : false"
+      :mini-variant="isMdOrLess() ? drawer : false"
       fixed
       app
     >
@@ -17,7 +17,7 @@
         <Nuxt />
       </v-container>
     </v-main>
-    <v-footer absolute app>
+    <v-footer fixed app>
       <span>&copy; {{ new Date().getFullYear() }}</span>
     </v-footer>
   </v-app>
@@ -33,10 +33,10 @@ export default {
   },
   computed: {
     showDrawer: {
-      get: function () {
+      get() {
         return this.isMdOrLess() ? true : this.drawer
       },
-      set: function (newVal) {
+      set(newVal) {
         this.drawer = newVal
       },
     },
@@ -44,14 +44,11 @@ export default {
   methods: {
     isMdOrLess() {
       switch (this.$vuetify.breakpoint.name) {
-        case 'xs':
-        case 'sm':
-        case 'md':
-          return false
         case 'lg':
         case 'xl':
           return true
       }
+      return false
     },
   },
 }

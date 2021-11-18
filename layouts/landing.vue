@@ -32,16 +32,15 @@ export default {
     miniVariant() {
       this.$toast.global.info(this.$vuetify.breakpoint.name)
       switch (this.$vuetify.breakpoint.name) {
-        case 'xs':
-        case 'sm':
-        case 'md':
-          this.drawer = false
-          return false
         case 'lg':
         case 'xl':
+          // eslint-disable-next-line vue/no-side-effects-in-computed-properties
           this.drawer = true
           return true
       }
+      // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+      this.drawer = false
+      return false
     },
   },
 }
