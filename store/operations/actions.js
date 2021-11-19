@@ -1,7 +1,8 @@
 import { firestoreAction } from 'vuexfire'
 
 export default {
-  async createOperation({ rootGetters }, { name, amount, category }) {
+  async createOperation({ rootGetters }, { name, amount, category, modifier }) {
+    const amnt = parseFloat(amount) * modifier
     const { uid } = rootGetters['auth/getUser']
     const aid = rootGetters['account/getCurrent'].id
     const ref = this.$fire.firestore
@@ -9,26 +10,18 @@ export default {
       .doc(uid)
       .collection('accounts')
       .doc(aid)
-    const cref = ref.collection('categories').doc(category)
+    let cref = null
+    if (category) cref = ref.collection('categories').doc(category)
     await ref.collection('operations').add({
       name,
-      amount: parseFloat(amount),
+      amount: amnt,
       category: cref,
       createdAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
     })
-    await cref.update({
-      balance: this.$fireModule.firestore.FieldValue.increment(-amount),
-    })
-    return ref.update({
-      balance: this.$fireModule.firestore.FieldValue.increment(amount),
-      operationCount: this.$fireModule.firestore.FieldValue.increment(1),
-    })
   },
-  async editOperation(
-    { rootGetters },
-    { id, name, amount, category, oldAmount, oldCategory }
-  ) {
-    if (typeof category !== 'string') {
+  async editOperation({ rootGetters }, { id, name, amount, category }) {
+    const amnt = parseFloat(amount)
+    if (category && typeof category !== 'string') {
       category = category.id
     }
     const { uid } = rootGetters['auth/getUser']
@@ -44,23 +37,13 @@ export default {
       .doc(id)
       .update({
         name,
-        amount: parseFloat(amount),
-        category: cref.doc(category),
+        amount: amnt,
+        category: category ? cref.doc(category) : null,
         updatedAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
       })
-    await cref.doc(oldCategory.id).update({
-      balance: this.$fireModule.firestore.FieldValue.increment(oldAmount),
-    })
-    await cref.doc(category).update({
-      balance: this.$fireModule.firestore.FieldValue.increment(-amount),
-    })
-    return ref.update({
-      balance: this.$fireModule.firestore.FieldValue.increment(
-        -(oldAmount - amount)
-      ),
-    })
   },
-  async deleteOperation({ rootGetters }, { id, amount, category }) {
+  deleteOperation({ rootGetters }, { id }) {
+    // const amnt = parseFloat(amount)
     const { uid } = rootGetters['auth/getUser']
     const aid = rootGetters['account/getCurrent'].id
     const ref = this.$fire.firestore
@@ -69,17 +52,7 @@ export default {
       .collection('accounts')
       .doc(aid)
 
-    await ref.collection('operations').doc(id).delete()
-    await ref
-      .collection('categories')
-      .doc(category.id)
-      .update({
-        balance: this.$fireModule.firestore.FieldValue.increment(amount),
-      })
-    return ref.update({
-      balance: this.$fireModule.firestore.FieldValue.increment(-amount),
-      operationCount: this.$fireModule.firestore.FieldValue.increment(-1),
-    })
+    return ref.collection('operations').doc(id).delete()
   },
   getOperations: firestoreAction(async function (
     { rootGetters, bindFirestoreRef },

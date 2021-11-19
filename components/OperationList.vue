@@ -16,6 +16,19 @@
                 </v-col>
               </v-row>
               <v-row>
+                <v-col v-if="!operation.id">
+                  <v-select
+                    v-model="operation.modifier"
+                    :items="[
+                      { name: 'Crédit +', modifier: 1 },
+                      { name: 'Débit -', modifier: -1 },
+                    ]"
+                    item-text="name"
+                    item-value="modifier"
+                    required
+                    label="Type"
+                  ></v-select>
+                </v-col>
                 <v-col>
                   <v-text-field
                     v-model="operation.amount"
@@ -135,8 +148,6 @@ export default Vue.extend({
       category: '',
     },
     operation: {},
-    oldAmount: 0,
-    oldCategory: '',
     dialog: false,
     valid: true,
   }),
@@ -170,8 +181,6 @@ export default Vue.extend({
         if ((this.operation as any).id) {
           await this.$store.dispatch('operations/editOperation', {
             ...this.operation,
-            oldAmount: this.oldAmount,
-            oldCategory: this.oldCategory,
           })
         } else {
           await this.$store.dispatch(
@@ -201,8 +210,6 @@ export default Vue.extend({
       this.valid = true
       this.operation = { ...item }
       ;(this.operation as any).id = item.id
-      this.oldAmount = item.amount
-      this.oldCategory = item.category
       this.dialog = true
     },
   },
