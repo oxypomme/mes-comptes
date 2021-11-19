@@ -30,7 +30,6 @@ export default {
   }),
   computed: {
     miniVariant() {
-      this.$toast.global.info(this.$vuetify.breakpoint.name)
       switch (this.$vuetify.breakpoint.name) {
         case 'lg':
         case 'xl':
