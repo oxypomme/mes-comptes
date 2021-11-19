@@ -104,6 +104,7 @@ export default {
     config: fireconfig,
     services: {
       auth: {
+        persistence: 'session',
         initialize: {
           onAuthStateChangedAction: 'auth/onAuth',
         },
@@ -115,7 +116,7 @@ export default {
   // PWA module configuration: https://go.nuxtjs.dev/pwa
   pwa: {
     manifest: {
-      lang: 'en',
+      lang: 'fr',
     },
   },
 

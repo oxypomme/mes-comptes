@@ -80,7 +80,7 @@ export default Vue.extend({
       }
     },
     saveResetDate(date: string) {
-      this.$refs.menu?.save(date)
+      ;(this.$refs.menu as any).save(date)
     },
   },
 })
