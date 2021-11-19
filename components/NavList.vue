@@ -45,6 +45,18 @@ export default {
             to: '/dashboard',
           },
           {
+            icon: 'mdi-calendar',
+            title: 'Planificateur',
+            to: '/agenda',
+            disabled: true,
+          },
+          {
+            icon: 'mdi-chart-box-outline',
+            title: 'Statistiques',
+            to: '/stats',
+            disabled: true,
+          },
+          {
             icon: 'mdi-cog',
             title: 'Paramètres',
             to: '/settings',
