@@ -27,7 +27,7 @@ export const actions = {
     const ref = this.$fire.firestore.collection('users').doc(uid)
     return bindFirestoreRef('settings', ref, { wait: true })
   }),
-  unbindSettings: firestoreAction(function ({ unbindFirestoreRef }) {
+  unbindSettings: firestoreAction(function ({ commit, unbindFirestoreRef }) {
     unbindFirestoreRef('settings', false)
     return commit('RESET_SETTINGS_STATE')
   }),

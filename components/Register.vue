@@ -162,9 +162,9 @@ export default Vue.extend({
         if (this.valid) {
           this.loading = true
           await this.$store.dispatch('auth/createUser', {
-            email: this.email,
-            password: this.password,
-            balance: this.balance,
+            email: this.email.trim(),
+            password: this.password.trim(),
+            balance: this.balance.trim(),
           })
           this.$router.push('/dashboard')
           this.$toast.success('Compte créé')
