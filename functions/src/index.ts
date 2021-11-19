@@ -75,7 +75,7 @@ const onOperationWrite = async (
     const ref = before.data()
       ?.category as firestore.DocumentReference<firestore.DocumentData>
     if (ref) {
-      ref.set(
+      await ref.set(
         {
           balance: firestore.FieldValue.increment(amount.old),
         },
@@ -88,7 +88,7 @@ const onOperationWrite = async (
     const ref = after.data()
       ?.category as firestore.DocumentReference<firestore.DocumentData>
     if (ref) {
-      ref.set(
+      await ref.set(
         {
           balance: firestore.FieldValue.increment(-amount.new),
         },
@@ -99,7 +99,7 @@ const onOperationWrite = async (
   // Update counts
   if (before.exists && !after.exists) {
     // Deletion
-    aref.set(
+    await aref.set(
       {
         operationCount: firestore.FieldValue.increment(-1),
       },
@@ -107,7 +107,7 @@ const onOperationWrite = async (
     )
   } else if (!before.exists && after.exists) {
     // Creation
-    aref.set(
+    await aref.set(
       {
         operationCount: firestore.FieldValue.increment(1),
       },

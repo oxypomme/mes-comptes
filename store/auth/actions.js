@@ -1,11 +1,13 @@
 export default {
-  onAuth({ commit, dispatch }, { authUser }) {
+  async onAuth({ commit, dispatch }, { authUser }) {
     if (authUser) {
       commit('SET_AUTH_USER', authUser)
-      return dispatch('account/bindAccounts', authUser, { root: true })
+      await dispatch('account/bindAccounts', authUser, { root: true })
+      await dispatch('bindSettings', {}, { root: true })
     } else {
       commit('RESET_STATE')
-      return dispatch('account/unbindAccounts', null, { root: true })
+      await dispatch('account/unbindAccounts', null, { root: true })
+      await dispatch('unbindSettings', {}, { root: true })
     }
   },
   async createUser({ dispatch }, { email, password, balance }) {

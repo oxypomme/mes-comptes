@@ -129,22 +129,16 @@ export default Vue.extend({
   computed: {
     ...mapGetters({ categories: 'categories/getCategories' }),
     weeksCount() {
-      const d = new Date()
-      const firstOfMonth = new Date(d.getFullYear(), d.getMonth() - 1, 1)
-      let day = firstOfMonth.getDay() || 6
-      day = day === 1 ? 0 : day
-      if (day) {
-        day--
-      }
-      let diff = 7 - day
-      const lastOfMonth = new Date(d.getFullYear(), d.getMonth(), 0)
-      const lastDate = lastOfMonth.getDate()
-      if (lastOfMonth.getDay() === 1) {
-        diff--
-      }
-      const result = Math.ceil((lastDate - diff) / 7)
+      const resetDate = this.$store.getters.getSettings.resetDate.toDate()
+      const prevResetDate = new Date(resetDate)
+      prevResetDate.setMonth(prevResetDate.getMonth() - 1)
 
-      return result + 1
+      const count = Math.round(
+        // W * D * m * s * ms
+        (resetDate - (prevResetDate as any)) / (7 * 24 * 60 * 60 * 1000)
+      )
+
+      return count
     },
   },
   watch: {

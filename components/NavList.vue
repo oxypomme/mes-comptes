@@ -25,6 +25,11 @@ export default {
             to: '/dashboard',
           },
           {
+            icon: 'mdi-cog',
+            title: 'Paramètres',
+            to: '/settings',
+          },
+          {
             icon: 'mdi-logout',
             title: 'Déconnexion',
             to: '/logout',

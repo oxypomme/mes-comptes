@@ -37,18 +37,17 @@ export default {
     return ref.delete()
   },
 
-  bindAccounts: firestoreAction(async function ({ bindFirestoreRef }, { uid }) {
+  bindAccounts: firestoreAction(function ({ bindFirestoreRef }, { uid }) {
     const ref = this.$fire.firestore
       .collection('users')
       .doc(uid)
       .collection('accounts')
       .orderBy('createdAt')
-    await bindFirestoreRef('accounts', ref, { wait: true })
+    return bindFirestoreRef('accounts', ref, { wait: true })
   }),
   unbindAccounts: firestoreAction(function ({ commit, unbindFirestoreRef }) {
     unbindFirestoreRef('accounts', false)
-    unbindFirestoreRef('current', false)
-    commit('RESET_STATE')
+    return commit('RESET_STATE')
   }),
   selectAccount: firestoreAction(async function (
     { rootGetters, getters, dispatch, bindFirestoreRef },
@@ -72,6 +71,6 @@ export default {
       },
       { root: true }
     )
-    dispatch('categories/getCategories', null, { root: true })
+    return dispatch('categories/getCategories', null, { root: true })
   }),
 }

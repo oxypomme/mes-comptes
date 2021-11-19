@@ -40,7 +40,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <v-form v-model="firstvalid">
+    <v-form v-model="firstvalid" @submit="openInit">
       <v-container>
         <v-col>
           <v-row>
@@ -85,7 +85,7 @@
               block
               :loading="loading || dialog"
               :disabled="!firstvalid"
-              @click="openInit"
+              type="submit"
               >S'inscrire</v-btn
             >
           </v-row>
@@ -150,7 +150,8 @@ export default Vue.extend({
     },
   },
   methods: {
-    openInit() {
+    openInit(e: Event) {
+      e.preventDefault()
       if (this.firstvalid) {
         this.dialog = true
       }
