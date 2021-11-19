@@ -82,6 +82,9 @@
                       <v-list-item>
                         <v-list-item-icon>
                           <span v-if="feat.max">{{ feat.max }}</span>
+                          <v-icon v-else-if="feat.status === false" color="red"
+                            >mdi-close-thick</v-icon
+                          >
                           <v-icon v-else color="green">mdi-check-bold</v-icon>
                         </v-list-item-icon>
                         <v-list-item-content>
@@ -142,7 +145,7 @@ export default Vue.extend({
       },
       {
         name: 'Catégorisez vos dépenses',
-        desc: `Un budget max par catégorie, par semaine ou par mois, catégories par sous-compte.`,
+        desc: `Un budget max par catégorie, par semaine, catégories par sous-compte.`,
       },
       {
         name: 'Prévoyez vos budgets',
@@ -163,6 +166,7 @@ export default Vue.extend({
           },
           {
             name: 'Planning',
+            status: false,
           },
         ],
       },

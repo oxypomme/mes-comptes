@@ -54,6 +54,8 @@ export default {
     '@nuxtjs/toast',
   ],
 
+  ignore: ['functions/*', 'firebase/*'],
+
   toast: {
     position: 'top-center',
     iconPack: 'mdi',

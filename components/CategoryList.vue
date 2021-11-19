@@ -76,18 +76,23 @@
               <v-list-item-title v-text="categ.name"></v-list-item-title>
             </v-list-item-content>
             <v-list-item-icon>
-              <v-chip
-                v-if="categ.budget > 0"
-                :color="
-                  getCategRatio(categ) < 0.5
-                    ? 'green'
-                    : getCategRatio(categ) <= 0.75
-                    ? 'orange'
-                    : 'red'
-                "
-              >
-                {{ categ.balance }} / {{ categ.budget * weeksCount }} €
-              </v-chip>
+              <v-tooltip v-if="categ.budget > 0" top>
+                <template #activator="{ on, attrs }">
+                  <v-chip
+                    :color="getCategRatioColor(categ)[0]"
+                    v-bind="attrs"
+                    v-on="on"
+                  >
+                    {{ Math.abs(categ.balance - categ.budget * weeksCount) }} €
+                  </v-chip>
+                </template>
+                <span>
+                  {{ categ.balance }} / {{ categ.budget * weeksCount }} € ({{
+                    getCategRatioColor(categ)[1] * 100
+                  }}%)
+                </span>
+              </v-tooltip>
+
               <v-btn icon color="blue" @click="showEdit(i)">
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
@@ -171,8 +176,9 @@ export default Vue.extend({
       ;(this.category as any).id = categ.id
       this.dialog = true
     },
-    getCategRatio(categ: any) {
-      return categ.balance / (categ.budget * this.weeksCount)
+    getCategRatioColor(categ: any) {
+      const ratio = categ.balance / (categ.budget * this.weeksCount)
+      return [ratio < 0.5 ? 'green' : ratio <= 0.75 ? 'orange' : 'red', ratio]
     },
   },
 })
