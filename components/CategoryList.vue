@@ -7,7 +7,7 @@
         </v-card-title>
 
         <v-card-text>
-          <v-form v-model="valid">
+          <v-form v-model="valid" @submit="createCategory">
             <v-container>
               <v-row>
                 <v-col>
@@ -55,7 +55,7 @@
             :loading="loading"
             :disabled="!valid"
             text
-            @click="createCategory"
+            type="submit"
           >
             Valider
           </v-btn>
@@ -155,7 +155,8 @@ export default Vue.extend({
     },
   },
   methods: {
-    async createCategory() {
+    async createCategory(e: Event) {
+      e.preventDefault()
       if (this.valid) {
         this.loading = true
         if ((this.category as any).id) {

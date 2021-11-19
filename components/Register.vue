@@ -5,7 +5,7 @@
         <v-card-title>Initialisation</v-card-title>
 
         <v-card-text>
-          <v-form v-model="valid">
+          <v-form v-model="valid" @submit="register">
             <v-container>
               <v-row>
                 <v-col>
@@ -33,7 +33,7 @@
             :loading="loading"
             :disabled="!valid"
             text
-            @click="register"
+            type="submit"
           >
             Valider
           </v-btn>
@@ -155,7 +155,8 @@ export default Vue.extend({
         this.dialog = true
       }
     },
-    async register() {
+    async register(e: Event) {
+      e.preventDefault()
       try {
         if (this.valid) {
           this.loading = true

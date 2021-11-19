@@ -7,7 +7,7 @@
         </v-card-title>
 
         <v-card-text>
-          <v-form v-model="valid">
+          <v-form v-model="valid" @submit="createOperation">
             <v-container>
               <v-row>
                 <v-col>
@@ -64,7 +64,7 @@
             :loading="loading"
             :disabled="!valid"
             text
-            @click="createOperation"
+            type="submit"
           >
             Valider
           </v-btn>
@@ -146,6 +146,7 @@ export default Vue.extend({
       name: '',
       amount: '',
       category: '',
+      modifier: -1,
     },
     operation: {},
     dialog: false,
@@ -175,7 +176,8 @@ export default Vue.extend({
     },
   },
   methods: {
-    async createOperation() {
+    async createOperation(e: Event) {
+      e.preventDefault()
       if (this.valid) {
         this.loading = true
         if ((this.operation as any).id) {

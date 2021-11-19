@@ -7,7 +7,7 @@
         </v-card-title>
 
         <v-card-text>
-          <v-form v-model="valid">
+          <v-form v-model="valid" @submit="createAccount">
             <v-container>
               <v-row>
                 <v-col>
@@ -44,7 +44,7 @@
             :loading="loading"
             :disabled="!valid"
             text
-            @click="createAccount"
+            type="submit"
           >
             Valider
           </v-btn>
@@ -132,7 +132,8 @@ export default Vue.extend({
     },
   },
   methods: {
-    async createAccount() {
+    async createAccount(e: Event) {
+      e.preventDefault()
       if (this.valid) {
         this.loading = true
         if ((this.account as any).id) {

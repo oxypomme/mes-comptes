@@ -1,15 +1,19 @@
 <template>
   <v-container>
-    <v-row>
-      <v-col>
-        <v-card>
-          <Login />
-        </v-card>
-      </v-col>
-      <v-col>
-        <v-card>
-          <Register />
-        </v-card>
+    <v-row justify="center">
+      <v-col lg="9">
+        <v-row>
+          <v-col>
+            <v-card>
+              <Login />
+            </v-card>
+          </v-col>
+          <v-col>
+            <v-card>
+              <Register />
+            </v-card>
+          </v-col>
+        </v-row>
       </v-col>
     </v-row>
   </v-container>

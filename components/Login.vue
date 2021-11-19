@@ -1,5 +1,5 @@
 <template>
-  <v-form v-model="valid">
+  <v-form v-model="valid" @submit="login">
     <v-container>
       <v-col>
         <v-row>
@@ -31,10 +31,10 @@
           <v-btn
             color="green"
             class="mt-1"
+            type="submit"
             block
             :loading="loading"
             :disabled="!valid"
-            @click="login"
             >Se connecter</v-btn
           >
         </v-row>
@@ -59,7 +59,8 @@ export default Vue.extend({
     passwordRules: [(v: string) => !!v || 'Un mot de passe est requis'],
   }),
   methods: {
-    async login() {
+    async login(e: Event) {
+      e.preventDefault()
       if (this.valid) {
         this.loading = true
         try {
