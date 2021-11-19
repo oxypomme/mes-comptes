@@ -27,6 +27,8 @@
               v-model="settings.resetDate"
               :min="new Date().toISOString().substr(0, 10)"
               color="primary"
+              locale="fr-FR"
+              :first-day-of-week="1"
               @change="saveResetDate"
             ></v-date-picker>
           </v-menu>
