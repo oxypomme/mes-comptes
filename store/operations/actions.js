@@ -56,19 +56,26 @@ export default {
   },
   getOperations: firestoreAction(async function (
     { rootGetters, bindFirestoreRef },
-    { limit }
+    { limit, category }
   ) {
     const { uid } = rootGetters['auth/getUser']
     const aid = rootGetters['account/getCurrent'].id
-    const ref = this.$fire.firestore
+    let ref = this.$fire.firestore
       .collection('users')
       .doc(uid)
       .collection('accounts')
       .doc(aid)
-      .collection('operations')
-      .orderBy('createdAt', 'desc')
-    // .limit(limit)
+    const cref = ref.collection('categories')
 
+    ref = ref.collection('operations')
+
+    if (category !== undefined) {
+      const categories = rootGetters['categories/getCategories']
+      ref = ref.where('category', '==', cref.doc(categories[category].id))
+    }
+
+    ref = ref.orderBy('createdAt', 'desc')
+    // .limit(limit)
     await bindFirestoreRef('data', ref)
   }),
 }

@@ -70,7 +70,7 @@
         </v-btn>
       </v-card-title>
       <v-list>
-        <v-list-item-group>
+        <v-list-item-group v-model="selectedItem">
           <v-list-item v-for="(categ, i) in categories" :key="i">
             <v-list-item-content>
               <v-list-item-title v-text="categ.name"></v-list-item-title>
@@ -88,10 +88,11 @@
                 </template>
                 <span>
                   {{ categ.balance }} / {{ categ.budget * weeksCount }} € ({{
-                    getCategRatioColor(categ)[1] * 100
+                    (getCategRatioColor(categ)[1] * 100).toFixed(2)
                   }}%)
                 </span>
               </v-tooltip>
+              <v-chip v-else color="primary"> {{ categ.balance }} € </v-chip>
 
               <v-btn icon color="blue" @click="showEdit(i)">
                 <v-icon>mdi-pencil</v-icon>
@@ -120,6 +121,7 @@ export default Vue.extend({
       budget: '0',
     },
     category: {},
+    selectedItem: undefined,
     valid: true,
     dialog: false,
     loading: false,
@@ -143,6 +145,13 @@ export default Vue.extend({
       const result = Math.ceil((lastDate - diff) / 7)
 
       return result + 1
+    },
+  },
+  watch: {
+    selectedItem() {
+      this.$store.dispatch('operations/getOperations', {
+        category: this.selectedItem,
+      })
     },
   },
   methods: {
