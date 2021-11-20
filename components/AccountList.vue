@@ -66,7 +66,7 @@
               totalBalance > 100 ? 'green' : totalBalance > 0 ? 'orange' : 'red'
             "
           >
-            {{ totalBalance }} €
+            {{ totalBalance.toFixed(2) }} €
           </v-chip>
           <v-btn icon color="green" @click="showNew">
             <v-icon>mdi-plus</v-icon>
@@ -89,7 +89,7 @@
                     : 'red'
                 "
               >
-                {{ acc.balance }} €
+                {{ acc.balance.toFixed(2) }} €
               </v-chip>
               <v-btn icon color="blue" @click="showEdit(i)">
                 <v-icon>mdi-pencil</v-icon>

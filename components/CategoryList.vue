@@ -89,16 +89,24 @@
                     v-bind="attrs"
                     v-on="on"
                   >
-                    {{ Math.abs(categ.balance - categ.budget * weeksCount) }} €
+                    {{
+                      Math.abs(
+                        categ.balance - categ.budget * weeksCount
+                      ).toFixed(2)
+                    }}
+                    €
                   </v-chip>
                 </template>
                 <span>
-                  {{ categ.balance }} / {{ categ.budget * weeksCount }} € ({{
+                  {{ categ.balance.toFixed(2) }} /
+                  {{ (categ.budget * weeksCount).toFixed(2) }} € ({{
                     (getCategRatioColor(categ)[1] * 100).toFixed(2)
                   }}%)
                 </span>
               </v-tooltip>
-              <v-chip v-else color="primary"> {{ categ.balance }} € </v-chip>
+              <v-chip v-else color="primary">
+                {{ categ.balance.toFixed(2) }} €
+              </v-chip>
 
               <v-btn icon color="blue" @click="showEdit(i)">
                 <v-icon>mdi-pencil</v-icon>

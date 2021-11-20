@@ -105,7 +105,7 @@
         </v-chip>
       </template>
       <template #item.amount="{ item }">
-        {{ Math.abs(item.amount) }} €
+        {{ Math.abs(item.amount).toFixed(2) }} €
       </template>
       <template #item.category="{ item }">
         {{ item.category ? item.category.name : '' }}
