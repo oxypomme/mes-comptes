@@ -2,12 +2,12 @@
   <div>
     <v-dialog v-model="dialog" width="500">
       <v-card>
-        <v-card-title>
-          {{ category.id ? 'Editer' : 'Créer' }} une catégorie
-        </v-card-title>
+        <v-form v-model="valid" @submit="createCategory">
+          <v-card-title>
+            {{ category.id ? 'Editer' : 'Créer' }} une catégorie
+          </v-card-title>
 
-        <v-card-text>
-          <v-form v-model="valid" @submit="createCategory">
+          <v-card-text>
             <v-container>
               <v-row>
                 <v-col>
@@ -42,24 +42,24 @@
                 </v-col>
               </v-row>
             </v-container>
-          </v-form>
-        </v-card-text>
+          </v-card-text>
 
-        <v-divider></v-divider>
+          <v-divider></v-divider>
 
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="error" text @click="dialog = false"> Annuler </v-btn>
-          <v-btn
-            color="green"
-            :loading="loading"
-            :disabled="!valid"
-            text
-            type="submit"
-          >
-            Valider
-          </v-btn>
-        </v-card-actions>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="error" text @click="dialog = false"> Annuler </v-btn>
+            <v-btn
+              color="green"
+              :loading="loading"
+              :disabled="!valid"
+              text
+              type="submit"
+            >
+              Valider
+            </v-btn>
+          </v-card-actions>
+        </v-form>
       </v-card>
     </v-dialog>
     <v-card>
