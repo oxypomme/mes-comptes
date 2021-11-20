@@ -33,6 +33,22 @@ export default {
       { root: true }
     )
   },
+  async deleteUser({ getters, dispatch }) {
+    const { uid } = getters.getUser
+    await dispatch('onAuth', { authUser: null })
+    const ref = this.$fire.firestore.collection('users').doc(uid)
+    await ref.delete()
+    await this.$fire.auth.currentUser.delete()
+  },
+  async updateUser(ctx, { email, password }) {
+    if (email) {
+      await this.$fire.auth.currentUser.updateEmail(email)
+      // await this.$fire.auth.currentUser.verifyBeforeUpdateEmail(email)
+    }
+    if (password) {
+      await this.$fire.auth.currentUser.updatePassword(password)
+    }
+  },
   loginUser(ctx, { email, password }) {
     return this.$fire.auth.signInWithEmailAndPassword(email, password)
   },

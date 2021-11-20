@@ -1,8 +1,11 @@
 <template>
   <v-form v-model="valid" @submit="updateSettings">
     <v-container>
-      <v-row>
-        <v-col>
+      <v-col>
+        <v-row>
+          <h2 class="font-weight-light">Paramètres généraux</h2>
+        </v-row>
+        <v-row>
           <v-menu
             ref="menu"
             v-model="menu"
@@ -32,19 +35,20 @@
               @change="saveResetDate"
             ></v-date-picker>
           </v-menu>
-        </v-col>
-      </v-row>
-      <v-row>
-        <v-btn
-          color="green"
-          :loading="loading"
-          :disabled="!valid"
-          block
-          type="submit"
-        >
-          Valider
-        </v-btn>
-      </v-row>
+        </v-row>
+        <v-row>
+          <v-btn
+            color="green"
+            class="mt-4"
+            :loading="loading"
+            :disabled="!valid"
+            block
+            type="submit"
+          >
+            Valider
+          </v-btn>
+        </v-row>
+      </v-col>
     </v-container>
   </v-form>
 </template>
