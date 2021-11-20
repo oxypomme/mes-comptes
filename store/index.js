@@ -2,12 +2,16 @@ import { firestoreAction, vuexfireMutations } from 'vuexfire'
 
 export const state = () => ({
   settings: {},
+  title: 'Mes Comptes',
 })
 
 export const mutations = {
   ...vuexfireMutations,
   RESET_SETTINGS_STATE: (state) => {
     state.settings = []
+  },
+  SET_TITLE: (state, title) => {
+    state.title = title
   },
 }
 
@@ -35,4 +39,5 @@ export const actions = {
 
 export const getters = {
   getSettings: (state) => state.settings,
+  getTitle: (state) => state.title,
 }

@@ -28,7 +28,6 @@ export default {
   data() {
     return {
       drawer: this.isMdOrLess(),
-      title: 'Mes Comptes',
     }
   },
   computed: {
@@ -39,6 +38,9 @@ export default {
       set(newVal) {
         this.drawer = newVal
       },
+    },
+    title() {
+      return this.$store.getters.getTitle
     },
   },
   created() {

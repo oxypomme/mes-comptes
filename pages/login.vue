@@ -25,5 +25,8 @@ export default Vue.extend({
   head: {
     title: 'Connexion - ',
   },
+  mounted() {
+    this.$store.commit('SET_TITLE', 'Connexion')
+  },
 })
 </script>
