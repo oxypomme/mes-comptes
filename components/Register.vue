@@ -167,7 +167,7 @@ export default Vue.extend({
             balance: this.balance.trim(),
           })
           this.$router.push('/dashboard')
-          this.$toast.success('Compte créé')
+          this.$toast.global.success('Compte créé')
         }
       } catch (e) {
         this.loading = false
