@@ -3,7 +3,13 @@
     <v-dialog v-model="dialog" persistent width="500">
       <v-card>
         <v-form v-model="valid" @submit="register">
-          <v-card-title>Initialisation</v-card-title>
+          <v-toolbar elevation="0" dense>
+            <v-toolbar-title>Initialisation</v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-btn icon color="grey" small plain @click="dialog = false">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </v-toolbar>
 
           <v-card-text>
             <v-container>
@@ -64,8 +70,9 @@
                 <v-icon
                   v-if="password.length > 0"
                   @click="showPassword = !showPassword"
-                  >{{ showPassword ? 'mdi-eye' : 'mdi-eye-off' }}</v-icon
                 >
+                  {{ showPassword ? 'mdi-eye' : 'mdi-eye-off' }}
+                </v-icon>
               </template>
               <template #progress>
                 <v-progress-linear
@@ -155,6 +162,22 @@ export default Vue.extend({
       if (this.firstvalid) {
         this.dialog = true
       }
+    },
+    debug() {
+      return this.$dialog.confirm({
+        text: 'Voulez vous supprimer le compte ?',
+        title: 'Attention',
+        actions: {
+          false: {
+            text: 'Annuler',
+            color: 'red',
+          },
+          true: {
+            text: 'Confirmer',
+            color: 'green',
+          },
+        },
+      })
     },
     async register(e: Event) {
       e.preventDefault()

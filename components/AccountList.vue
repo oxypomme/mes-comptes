@@ -3,9 +3,15 @@
     <v-dialog v-model="dialog" width="500">
       <v-card>
         <v-form v-model="valid" @submit="createAccount">
-          <v-card-title>
-            {{ account.id ? 'Editer' : 'Créer' }} un compte
-          </v-card-title>
+          <v-toolbar elevation="0" dense>
+            <v-toolbar-title>
+              {{ account.id ? 'Editer' : 'Créer' }} un compte
+            </v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-btn icon color="grey" small plain @click="dialog = false">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </v-toolbar>
 
           <v-card-text>
             <v-container>

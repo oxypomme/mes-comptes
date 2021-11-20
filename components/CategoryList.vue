@@ -3,9 +3,15 @@
     <v-dialog v-model="dialog" width="500">
       <v-card>
         <v-form v-model="valid" @submit="createCategory">
-          <v-card-title>
-            {{ category.id ? 'Editer' : 'Créer' }} une catégorie
-          </v-card-title>
+          <v-toolbar elevation="0" dense>
+            <v-toolbar-title>
+              {{ category.id ? 'Editer' : 'Créer' }} une catégorie
+            </v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-btn icon color="grey" small plain @click="dialog = false">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </v-toolbar>
 
           <v-card-text>
             <v-container>
@@ -129,7 +135,7 @@ export default Vue.extend({
   computed: {
     ...mapGetters({ categories: 'categories/getCategories' }),
     weeksCount() {
-      const resetDate = this.$store.getters.getSettings.resetDate.toDate()
+      const resetDate = this.$store.getters.getSettings.resetDate?.toDate()
       const prevResetDate = new Date(resetDate)
       prevResetDate.setMonth(prevResetDate.getMonth() - 1)
 

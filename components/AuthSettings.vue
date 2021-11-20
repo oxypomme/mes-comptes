@@ -26,8 +26,9 @@
               <v-icon
                 v-if="password.length > 0"
                 @click="showPassword = !showPassword"
-                >{{ showPassword ? 'mdi-eye' : 'mdi-eye-off' }}</v-icon
               >
+                {{ showPassword ? 'mdi-eye' : 'mdi-eye-off' }}
+              </v-icon>
             </template>
             <template #progress>
               <v-progress-linear

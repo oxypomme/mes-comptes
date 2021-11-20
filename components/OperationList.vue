@@ -3,9 +3,15 @@
     <v-dialog v-model="dialog" width="500">
       <v-card>
         <v-form v-model="valid" @submit="createOperation">
-          <v-card-title>
-            {{ operation.id ? 'Editer' : 'Créer' }} une opération
-          </v-card-title>
+          <v-toolbar elevation="0" dense>
+            <v-toolbar-title>
+              {{ operation.id ? 'Editer' : 'Créer' }} une opération
+            </v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-btn icon color="grey" small plain @click="dialog = false">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </v-toolbar>
 
           <v-card-text>
             <v-container>
