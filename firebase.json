@@ -1,0 +1,25 @@
+{
+  "apiKey": "AIzaSyA-RstfPAuWKku9uBzzvYo2jVmYMAzvCCQ",
+  "authDomain": "comptes-oxy.firebaseapp.com",
+  "projectId": "comptes-oxy",
+  "storageBucket": "comptes-oxy.appspot.com",
+  "messagingSenderId": "834585711486",
+  "appId": "1:834585711486:web:30e3c42251d9575160592f",
+  "functions": {
+    "source": "functions"
+  },
+  "hosting": {
+    "public": "dist",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

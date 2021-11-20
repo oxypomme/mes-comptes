@@ -111,6 +111,8 @@ export default {
         },
       },
       firestore: true,
+      performance: true,
+      analytics: true,
     },
   },
 

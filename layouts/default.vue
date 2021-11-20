@@ -51,6 +51,10 @@ export default {
       return false
     },
   },
+  created() {
+    // init appCheck
+    // this.$fire.check.activate('6LeEbEgdAAAAAKAcmOeVYPdQ1uV91lzHfQtYXzpI')
+  },
 }
 </script>
 <style lang="scss">
