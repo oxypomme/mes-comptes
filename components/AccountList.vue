@@ -136,17 +136,49 @@ export default Vue.extend({
       e.preventDefault()
       if (this.valid) {
         this.loading = true
-        if ((this.account as any).id) {
-          await this.$store.dispatch('account/editAccount', this.account)
-        } else {
-          await this.$store.dispatch('account/createAccount', this.account)
+        try {
+          if ((this.account as any).id) {
+            await this.$store.dispatch('account/editAccount', this.account)
+            this.$toast.global.success('Compte edité')
+          } else {
+            await this.$store.dispatch('account/createAccount', this.account)
+            this.$toast.global.success('Compte créé')
+          }
+        } catch (e) {
+          this.$toast.global.error((e as Error).message)
         }
         this.dialog = false
         this.loading = false
       }
     },
     async deleteAccount(i: number) {
-      await this.$store.dispatch('account/deleteAccount', this.accounts[i].id)
+      const res = await this.$dialog.confirm({
+        text: 'Voulez vous supprimer le compte ?',
+        title: 'Attention',
+        actions: {
+          false: {
+            text: 'Annuler',
+            color: 'red',
+          },
+          true: {
+            text: 'Confirmer',
+            color: 'green',
+          },
+        },
+      })
+      if (res) {
+        this.loading = true
+        try {
+          await this.$store.dispatch(
+            'account/deleteAccount',
+            this.accounts[i].id
+          )
+          this.$toast.global.success('Compte supprimé')
+        } catch (e) {
+          this.$toast.global.error((e as Error).message)
+        }
+        this.loading = false
+      }
     },
     showNew() {
       // this.valid = false

@@ -153,20 +153,52 @@ export default Vue.extend({
       e.preventDefault()
       if (this.valid) {
         this.loading = true
-        if ((this.category as any).id) {
-          await this.$store.dispatch('categories/editCategory', this.category)
-        } else {
-          await this.$store.dispatch('categories/createCategory', this.category)
+        try {
+          if ((this.category as any).id) {
+            await this.$store.dispatch('categories/editCategory', this.category)
+            this.$toast.global.success('Catégorie éditée')
+          } else {
+            await this.$store.dispatch(
+              'categories/createCategory',
+              this.category
+            )
+            this.$toast.global.success('Catégorie créé')
+          }
+        } catch (e) {
+          this.$toast.global.error((e as Error).message)
         }
         this.dialog = false
         this.loading = false
       }
     },
     async deleteCategory(i: number) {
-      await this.$store.dispatch(
-        'categories/deleteCategory',
-        this.categories[i].id
-      )
+      const res = await this.$dialog.confirm({
+        text: 'Voulez vous supprimer la catégorie (cela ne supprimera pas les opérations liées) ?',
+        title: 'Attention',
+        actions: {
+          false: {
+            text: 'Annuler',
+            color: 'red',
+          },
+          true: {
+            text: 'Confirmer',
+            color: 'green',
+          },
+        },
+      })
+      if (res) {
+        this.loading = true
+        try {
+          await this.$store.dispatch(
+            'categories/deleteCategory',
+            this.categories[i].id
+          )
+          this.$toast.global.success('Catégorie supprimée')
+        } catch (e) {
+          this.$toast.global.error((e as Error).message)
+        }
+        this.loading = false
+      }
     },
     showNew() {
       // this.valid = false

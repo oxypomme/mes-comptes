@@ -152,12 +152,27 @@ export default Vue.extend({
     async deleteAuth() {
       if (this.valid) {
         this.loading = true
-        try {
-          await this.$store.dispatch('auth/deleteUser')
-          this.$router.push('/login')
-          this.$toast.global.success('Compte supprimé')
-        } catch (e) {
-          this.$toast.global.error((e as Error).message)
+        const res = await this.$dialog.error({
+          text: 'Voulez vous supprimer votre compte ? Cette action est irréversible.',
+          title: 'Attention',
+          actions: {
+            false: {
+              text: 'Annuler',
+            },
+            true: {
+              text: 'Confirmer',
+              color: 'red',
+            },
+          },
+        })
+        if (res) {
+          try {
+            await this.$store.dispatch('auth/deleteUser')
+            this.$router.push('/login')
+            this.$toast.global.success('Compte supprimé')
+          } catch (e) {
+            this.$toast.global.error((e as Error).message)
+          }
         }
         this.loading = false
       }

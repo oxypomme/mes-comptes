@@ -52,6 +52,7 @@ export default {
     '@nuxtjs/pwa',
     '@nuxtjs/firebase',
     '@nuxtjs/toast',
+    'vuetify-dialog/nuxt',
   ],
 
   ignore: ['functions/*', 'firebase/*'],

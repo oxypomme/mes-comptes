@@ -78,10 +78,15 @@ export default Vue.extend({
       e.preventDefault()
       if (this.valid) {
         this.loading = true
-        await this.$store.dispatch('updateSettings', {
-          ...this.settings,
-          resetDate: new Date(this.settings.resetDate),
-        })
+        try {
+          await this.$store.dispatch('updateSettings', {
+            ...this.settings,
+            resetDate: new Date(this.settings.resetDate),
+          })
+          this.$toast.global.success('Paramètres mis à jour')
+        } catch (e) {
+          this.$toast.global.error((e as Error).message)
+        }
         this.loading = false
       }
     },

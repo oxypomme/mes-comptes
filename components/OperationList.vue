@@ -180,15 +180,21 @@ export default Vue.extend({
       e.preventDefault()
       if (this.valid) {
         this.loading = true
-        if ((this.operation as any).id) {
-          await this.$store.dispatch('operations/editOperation', {
-            ...this.operation,
-          })
-        } else {
-          await this.$store.dispatch(
-            'operations/createOperation',
-            this.operation
-          )
+        try {
+          if ((this.operation as any).id) {
+            await this.$store.dispatch('operations/editOperation', {
+              ...this.operation,
+            })
+            this.$toast.global.success('Opération editée')
+          } else {
+            await this.$store.dispatch(
+              'operations/createOperation',
+              this.operation
+            )
+            // this.$toast.global.success('Opération créée')
+          }
+        } catch (e) {
+          this.$toast.global.error((e as Error).message)
         }
         this.dialog = false
         this.loading = false
@@ -196,11 +202,15 @@ export default Vue.extend({
     },
     async deleteOperation({ id, amount, category }: any) {
       this.loading = true
-      await this.$store.dispatch('operations/deleteOperation', {
-        id,
-        amount,
-        category,
-      })
+      try {
+        await this.$store.dispatch('operations/deleteOperation', {
+          id,
+          amount,
+          category,
+        })
+      } catch (e) {
+        this.$toast.global.error((e as Error).message)
+      }
       this.loading = false
     },
     showNew() {

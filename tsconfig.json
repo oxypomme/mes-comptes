@@ -15,7 +15,13 @@
       "~/*": ["./*"],
       "@/*": ["./*"]
     },
-    "types": ["@nuxt/types", "@types/node", "@nuxtjs/firebase", "@nuxtjs/toast"]
+    "types": [
+      "@nuxt/types",
+      "@types/node",
+      "@nuxtjs/firebase",
+      "@nuxtjs/toast",
+      "vuetify-dialog/types"
+    ]
   },
   "exclude": ["node_modules", ".nuxt", "dist"]
 }
