@@ -12,7 +12,7 @@
       :title="item.title"
     >
       <v-list-item-action>
-        <v-icon>{{ item.icon }}</v-icon>
+        <v-icon :disabled="item.disabled">{{ item.icon }}</v-icon>
       </v-list-item-action>
       <v-list-item-content>
         <v-list-item-title v-text="item.title" />
