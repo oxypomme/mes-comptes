@@ -21,6 +21,7 @@
                     v-model="category.name"
                     label="Nom de la catégorie"
                     required
+                    :dense="$device.isMobile"
                   >
                   </v-text-field>
                 </v-col>
@@ -32,6 +33,7 @@
                     label="Budget par semaine de la catégorie"
                     type="number"
                     prefix="€"
+                    :dense="$device.isMobile"
                   >
                   </v-text-field>
                 </v-col>
@@ -43,6 +45,7 @@
                     label="Solde de la catégorie"
                     type="number"
                     prefix="€"
+                    :dense="$device.isMobile"
                   >
                   </v-text-field>
                 </v-col>
@@ -70,12 +73,13 @@
     </v-dialog>
     <v-card>
       <v-card-title>
-        Catégories
+        <span class="font-weight-light">Catégories</span>
         <v-btn class="last-item" icon color="green" @click="showNew">
           <v-icon>mdi-plus</v-icon>
         </v-btn>
       </v-card-title>
-      <v-list>
+      <v-divider />
+      <v-list :dense="$device.isMobile">
         <v-list-item-group v-model="selectedItem">
           <v-list-item v-for="(categ, i) in categories" :key="i">
             <v-list-item-content>
@@ -87,6 +91,7 @@
                   <v-chip
                     :color="getCategRatioColor(categ)[0]"
                     v-bind="attrs"
+                    :small="$device.isMobile"
                     v-on="on"
                   >
                     {{
@@ -104,14 +109,25 @@
                   }}%)
                 </span>
               </v-tooltip>
-              <v-chip v-else color="primary">
+              <v-chip v-else color="primary" :small="$device.isMobile">
                 {{ categ.balance.toFixed(2) }} €
               </v-chip>
 
-              <v-btn icon color="blue" @click="showEdit(i)">
+              <v-btn
+                icon
+                color="blue"
+                :class="[$device.isMobile && 'mx-2']"
+                :x-small="$device.isMobile"
+                @click="showEdit(i)"
+              >
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
-              <v-btn icon color="red" @click="deleteCategory(i)">
+              <v-btn
+                icon
+                color="red"
+                :x-small="$device.isMobile"
+                @click="deleteCategory(i)"
+              >
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
             </v-list-item-icon>

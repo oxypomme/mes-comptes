@@ -41,6 +41,10 @@ export default {
       },
     },
   },
+  created() {
+    // init appCheck
+    // this.$fire.check.activate('6LeEbEgdAAAAAKAcmOeVYPdQ1uV91lzHfQtYXzpI')
+  },
   methods: {
     isMdOrLess() {
       switch (this.$vuetify.breakpoint.name) {
@@ -50,10 +54,6 @@ export default {
       }
       return false
     },
-  },
-  created() {
-    // init appCheck
-    // this.$fire.check.activate('6LeEbEgdAAAAAKAcmOeVYPdQ1uV91lzHfQtYXzpI')
   },
 }
 </script>
