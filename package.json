@@ -15,7 +15,7 @@
     "@capacitor/android": "^3.3.1",
     "@capacitor/cli": "^3.3.1",
     "@capacitor/core": "^3.3.1",
-    "@nuxtjs/firebase": "^8.0.0",
+    "@nuxtjs/firebase": "^7.6.1",
     "@nuxtjs/pwa": "^3.3.5",
     "@nuxtjs/toast": "^3.3.1",
     "core-js": "^3.15.1",
@@ -23,6 +23,7 @@
     "vuetify": "^2.5.5",
     "vuetify-dialog": "^2.0.17",
     "vuexfire": "^3.2.5",
+    "firebase": "^8.1.1",
     "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
