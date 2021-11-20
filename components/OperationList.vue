@@ -86,10 +86,14 @@
       class="elevation-1"
       hide-default-footer
     >
-      <template #header.actions="">
-        <v-btn icon color="green" @click="showNew">
-          <v-icon>mdi-plus</v-icon>
-        </v-btn>
+      <template #top>
+        <v-toolbar flat rounded>
+          <v-toolbar-title>Opérations</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-btn icon color="green" @click="showNew">
+            <v-icon>mdi-plus</v-icon>
+          </v-btn>
+        </v-toolbar>
       </template>
       <template #item.createdAt="{ item }">
         {{
