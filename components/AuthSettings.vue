@@ -58,6 +58,7 @@
             class="mt-4"
             block
             :loading="loading"
+            :disabled="!valid"
             @click="deleteAuth"
           >
             Supprimer le compte
@@ -149,15 +150,17 @@ export default Vue.extend({
       }
     },
     async deleteAuth() {
-      this.loading = true
-      try {
-        await this.$store.dispatch('auth/deleteUser')
-        this.$router.push('/login')
-        this.$toast.global.success('Compte supprimé')
-      } catch (e) {
-        this.$toast.global.error((e as Error).message)
+      if (this.valid) {
+        this.loading = true
+        try {
+          await this.$store.dispatch('auth/deleteUser')
+          this.$router.push('/login')
+          this.$toast.global.success('Compte supprimé')
+        } catch (e) {
+          this.$toast.global.error((e as Error).message)
+        }
+        this.loading = false
       }
-      this.loading = false
     },
   },
 })
