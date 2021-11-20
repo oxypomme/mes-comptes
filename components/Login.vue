@@ -22,8 +22,9 @@
               <v-icon
                 v-if="password.length > 0"
                 @click="showPassword = !showPassword"
-                >{{ showPassword ? 'mdi-eye' : 'mdi-eye-off' }}</v-icon
               >
+                {{ showPassword ? 'mdi-eye' : 'mdi-eye-off' }}
+              </v-icon>
             </template>
           </v-text-field>
         </v-row>
@@ -38,8 +39,9 @@
             block
             :loading="loading"
             :disabled="!valid"
-            >Se connecter</v-btn
           >
+            Se connecter
+          </v-btn>
         </v-row>
       </v-col>
     </v-container>
