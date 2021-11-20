@@ -1,14 +1,32 @@
 <template>
-  <v-list class="d-flex flex-column">
+  <v-list class="fill-height d-flex flex-column">
     <v-list-item
-      v-for="(item, i) in items"
+      v-for="(item, i) in items.filter((l) => !l.bottom)"
       :key="i"
       :to="item.to"
       router
       exact
-      :class="[item.bottom && 'end-nav', item.order && `order-${item.order}`]"
+      style="flex: 0"
+      :class="item.order && `order-${item.order}`"
       :disabled="item.disabled"
-      :style="{ bottom: item.bottom && `${(items.length - 1 - i) * 48}px` }"
+      :title="item.title"
+    >
+      <v-list-item-action>
+        <v-icon :disabled="item.disabled">{{ item.icon }}</v-icon>
+      </v-list-item-action>
+      <v-list-item-content>
+        <v-list-item-title v-text="item.title" />
+      </v-list-item-content>
+    </v-list-item>
+    <v-list-item
+      v-for="(item, i) in items.filter((l) => l.bottom)"
+      :key="100 + i"
+      :to="item.to"
+      router
+      exact
+      style="flex: 0"
+      :class="[item.order && `order-${item.order}`, i === 0 && 'mt-auto']"
+      :disabled="item.disabled"
       :title="item.title"
     >
       <v-list-item-action>
@@ -86,10 +104,3 @@ export default {
   },
 }
 </script>
-<style scoped>
-.end-nav {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-}
-</style>
