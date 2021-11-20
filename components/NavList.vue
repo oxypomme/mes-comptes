@@ -97,7 +97,6 @@ export default {
           icon: 'mdi-login',
           title: 'Connexion',
           to: '/login',
-          order: 1,
         },
       ]
     },
