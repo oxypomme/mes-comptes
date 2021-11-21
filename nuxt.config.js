@@ -120,7 +120,7 @@ export default {
   pwa: {
     manifest: {
       name: 'Mes Comptes',
-      start_url: './login',
+      start_url: '/login',
       lang: 'fr',
       background_color: '#1E1E1E',
     },
