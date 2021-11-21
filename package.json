@@ -1,5 +1,10 @@
 {
   "name": "mes-comptes",
+  "author": {
+    "email": "oxytom8@gmail.com",
+    "name": "oxypomme",
+    "url": "https://oxypomme.github.io"
+  },
   "version": "1.0.0",
   "private": true,
   "scripts": {

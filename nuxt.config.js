@@ -125,6 +125,18 @@ export default {
       lang: 'fr',
       background_color: '#1E1E1E',
     },
+    meta: {
+      description: 'Surveillez vos économies de façon simple et efficace',
+      theme_color: '#1E1E1E',
+      lang: 'fr',
+      ogTitle: 'Mes Comptes',
+      ogHost: 'comptes-oxy.web.app',
+      ogImage: 'https://picsum.photos/id/160/1700/950',
+      ogUrl: 'https://comptes-oxy.web.app/',
+      twitterCard: 'app',
+      twitterSite: 'https://comptes-oxy.web.app/',
+      tiwtterCreator: '@OxyT0m8',
+    },
   },
 
   // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
