@@ -28,7 +28,6 @@ export default {
   data() {
     return {
       drawer: this.isMdOrLess(),
-      title: 'Mes Comptes',
     }
   },
   computed: {
@@ -40,6 +39,13 @@ export default {
         this.drawer = newVal
       },
     },
+    title() {
+      return this.$store.getters.getTitle
+    },
+  },
+  created() {
+    // init appCheck
+    // this.$fire.check.activate('6LeEbEgdAAAAAKAcmOeVYPdQ1uV91lzHfQtYXzpI')
   },
   methods: {
     isMdOrLess() {
@@ -50,10 +56,6 @@ export default {
       }
       return false
     },
-  },
-  created() {
-    // init appCheck
-    // this.$fire.check.activate('6LeEbEgdAAAAAKAcmOeVYPdQ1uV91lzHfQtYXzpI')
   },
 }
 </script>

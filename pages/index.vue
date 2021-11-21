@@ -29,8 +29,12 @@
                 </v-img>
               </v-col>
               <v-col order="3" class="d-sm-none pb-5">
-                <h4 class="font-weight-light">Build your application today!</h4>
-                <v-btn rounded color="primary mt-4"> S'inscrire </v-btn>
+                <h4 class="font-weight-light">
+                  Surveillez vos économies de façon simple et efficace
+                </h4>
+                <v-btn to="login" large rounded color="primary mt-4">
+                  S'inscrire
+                </v-btn>
               </v-col>
             </v-row>
           </v-col>
@@ -42,14 +46,14 @@
       <v-row justify="center" class="my-4">
         <v-col cols="12" lg="9" xl="7">
           <v-row v-for="(item, i) in features" :key="i" align="center">
-            <v-col :order="i % 2 === 0 ? 1 : 2">
+            <v-col :order-sm="i % 2 === 0 ? 1 : 2">
               <v-img
                 :src="item.image || 'https://picsum.photos/600/300?random=' + i"
                 width="600"
                 height="300"
               ></v-img>
             </v-col>
-            <v-col :order="i % 2 === 0 ? 2 : 1">
+            <v-col :order-sm="i % 2 === 0 ? 2 : 1">
               <h3>{{ item.name }}</h3>
               {{ item.desc }}
             </v-col>

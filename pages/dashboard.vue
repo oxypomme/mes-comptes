@@ -13,5 +13,9 @@
 </template>
 <script lang="ts">
 import Vue from 'vue'
-export default Vue.extend({})
+export default Vue.extend({
+  mounted() {
+    this.$store.commit('SET_TITLE', 'Tableau de bord')
+  },
+})
 </script>

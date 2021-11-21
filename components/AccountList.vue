@@ -21,6 +21,7 @@
                     v-model="account.name"
                     label="Nom du compte"
                     required
+                    :dense="$device.isMobile"
                   >
                   </v-text-field>
                 </v-col>
@@ -32,6 +33,7 @@
                     label="Solde du compte"
                     type="number"
                     prefix="€"
+                    :dense="$device.isMobile"
                   >
                   </v-text-field>
                 </v-col>
@@ -50,6 +52,7 @@
               :disabled="!valid"
               text
               type="submit"
+              :dense="$device.isMobile"
             >
               Valider
             </v-btn>
@@ -59,21 +62,23 @@
     </v-dialog>
     <v-card>
       <v-card-title>
-        Comptes
+        <span class="font-weight-light">Comptes</span>
         <span class="last-item">
           <v-chip
+            :small="$device.isMobile"
             :color="
               totalBalance > 100 ? 'green' : totalBalance > 0 ? 'orange' : 'red'
             "
           >
-            {{ totalBalance }} €
+            {{ totalBalance.toFixed(2) }} €
           </v-chip>
-          <v-btn icon color="green" @click="showNew">
+          <v-btn icon color="green" :small="$device.isMobile" @click="showNew">
             <v-icon>mdi-plus</v-icon>
           </v-btn>
         </span>
       </v-card-title>
-      <v-list>
+      <v-divider />
+      <v-list :dense="$device.isMobile">
         <v-list-item-group v-model="selectedItem" mandatory>
           <v-list-item v-for="(acc, i) in accounts" :key="i">
             <v-list-item-content>
@@ -81,6 +86,7 @@
             </v-list-item-content>
             <v-list-item-icon>
               <v-chip
+                :small="$device.isMobile"
                 :color="
                   acc.balance > 100
                     ? 'green'
@@ -89,12 +95,23 @@
                     : 'red'
                 "
               >
-                {{ acc.balance }} €
+                {{ acc.balance.toFixed(2) }} €
               </v-chip>
-              <v-btn icon color="blue" @click="showEdit(i)">
+              <v-btn
+                icon
+                color="blue"
+                :class="[$device.isMobile && 'mx-2']"
+                :x-small="$device.isMobile"
+                @click="showEdit(i)"
+              >
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
-              <v-btn icon color="red" @click="deleteAccount(i)">
+              <v-btn
+                icon
+                color="red"
+                :x-small="$device.isMobile"
+                @click="deleteAccount(i)"
+              >
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
             </v-list-item-icon>

@@ -15,11 +15,6 @@ export default {
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      {
-        hid: 'description',
-        name: 'description',
-        content: 'Surveillez vos économies de façon simple et efficace',
-      },
       { name: 'format-detection', content: 'telephone=no' },
     ],
     link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
@@ -44,6 +39,7 @@ export default {
     '@nuxtjs/stylelint-module',
     // https://go.nuxtjs.dev/vuetify
     '@nuxtjs/vuetify',
+    '@nuxtjs/device',
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
@@ -110,7 +106,11 @@ export default {
           onAuthStateChangedAction: 'auth/onAuth',
         },
       },
-      firestore: true,
+      firestore: {
+        enablePersistence: {
+          synchronizeTabs: true,
+        },
+      },
       performance: true,
       analytics: true,
     },
@@ -119,13 +119,39 @@ export default {
   // PWA module configuration: https://go.nuxtjs.dev/pwa
   pwa: {
     manifest: {
+      name: 'Mes Comptes',
+      short_name: 'Mes Comptes',
+      start_url: '/login',
       lang: 'fr',
+      background_color: '#121212',
+    },
+    meta: {
+      description: 'Surveillez vos économies de façon simple et efficace',
+      theme_color: '#1E1E1E',
+      lang: 'fr',
+      ogSiteName: 'comptes-oxy.web.app',
+      ogTitle: 'Mes Comptes',
+      ogHost: 'comptes-oxy.web.app',
+      ogImage: 'https://picsum.photos/id/160/1700/950',
+      ogUrl: 'https://comptes-oxy.web.app/',
+      twitterCard: 'app',
+      twitterSite: 'https://comptes-oxy.web.app/',
+      tiwtterCreator: '@OxyT0m8',
+    },
+    workbox: {
+      runtimeCaching: [
+        {
+          urlPattern: 'https://fonts.gstatic.com/*',
+          handler: 'staleWhileRevalidate',
+        },
+      ],
     },
   },
 
   // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
   vuetify: {
     customVariables: ['~/assets/variables.scss'],
+    treeShake: true,
     theme: {
       dark: true,
       themes: {

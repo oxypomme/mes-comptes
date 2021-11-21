@@ -17,6 +17,7 @@
     },
     "types": [
       "@nuxt/types",
+      "@nuxtjs/device",
       "@types/node",
       "@nuxtjs/firebase",
       "@nuxtjs/toast",

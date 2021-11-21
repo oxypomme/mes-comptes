@@ -25,5 +25,8 @@ export default Vue.extend({
   head: {
     title: 'Paramètres - ',
   },
+  mounted() {
+    this.$store.commit('SET_TITLE', 'Paramètres')
+  },
 })
 </script>

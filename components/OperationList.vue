@@ -17,7 +17,12 @@
             <v-container>
               <v-row>
                 <v-col>
-                  <v-text-field v-model="operation.name" label="Nom" required>
+                  <v-text-field
+                    v-model="operation.name"
+                    label="Nom"
+                    required
+                    :dense="$device.isMobile"
+                  >
                   </v-text-field>
                 </v-col>
               </v-row>
@@ -32,6 +37,7 @@
                     item-text="name"
                     item-value="modifier"
                     required
+                    :dense="$device.isMobile"
                     label="Type"
                   ></v-select>
                 </v-col>
@@ -41,6 +47,7 @@
                     label="Montant"
                     type="number"
                     prefix="€"
+                    :dense="$device.isMobile"
                   >
                   </v-text-field>
                 </v-col>
@@ -53,6 +60,7 @@
                     item-text="name"
                     item-value="id"
                     label="Catégorie"
+                    :dense="$device.isMobile"
                   ></v-select>
                 </v-col>
               </v-row>
@@ -85,11 +93,21 @@
       :loading="loading"
       class="elevation-1"
       hide-default-footer
+      :dense="$device.isMobile"
     >
-      <template #header.actions="">
-        <v-btn icon color="green" @click="showNew">
-          <v-icon>mdi-plus</v-icon>
-        </v-btn>
+      <template #top>
+        <div>
+          <v-toolbar color="#1E1E1E" flat rounded :dense="$device.isMobile">
+            <v-toolbar-title class="font-weight-light">
+              Opérations
+            </v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-btn icon color="green" @click="showNew">
+              <v-icon>mdi-plus</v-icon>
+            </v-btn>
+          </v-toolbar>
+          <v-divider class="d-block d-sm-none" />
+        </div>
       </template>
       <template #item.createdAt="{ item }">
         {{
@@ -100,12 +118,15 @@
         }}
       </template>
       <template #item.type="{ item }">
-        <v-chip :color="item.amount > 0 ? 'green' : 'red'">
+        <v-chip
+          :small="$device.isMobile"
+          :color="item.amount > 0 ? 'green' : 'red'"
+        >
           {{ item.amount > 0 ? 'Crédit (+)' : 'Débit (-)' }}
         </v-chip>
       </template>
       <template #item.amount="{ item }">
-        {{ Math.abs(item.amount) }} €
+        {{ Math.abs(item.amount).toFixed(2) }} €
       </template>
       <template #item.category="{ item }">
         {{ item.category ? item.category.name : '' }}
@@ -123,6 +144,7 @@
       v-if="pageCount > 1"
       v-model="page"
       :length="pageCount"
+      :dense="$device.isMobile"
     ></v-pagination>
   </div>
 </template>
