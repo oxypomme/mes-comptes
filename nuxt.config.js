@@ -120,7 +120,10 @@ export default {
   // PWA module configuration: https://go.nuxtjs.dev/pwa
   pwa: {
     manifest: {
+      name: 'Mes Comptes',
+      start_url: './login',
       lang: 'fr',
+      background_color: '#1E1E1E',
     },
   },
 
