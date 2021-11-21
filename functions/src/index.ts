@@ -29,7 +29,7 @@ const resetCategoriesBalance = async (
       (
         await ref.collection('accounts').listDocuments()
       ).map(async (aref) => {
-        // for (cosnt cref of await aref.collection('categories').listDocuments()
+        // for (cosnt cref of await aref.collection('categories').listDocuments())
         return Promise.all(
           (await aref.collection('categories').listDocuments()).map((cref) => {
             return cref.set(
