@@ -120,6 +120,7 @@ export default {
   pwa: {
     manifest: {
       name: 'Mes Comptes',
+      short_name: 'Mes Comptes',
       start_url: '/login',
       lang: 'fr',
       background_color: '#121212',
@@ -128,6 +129,7 @@ export default {
       description: 'Surveillez vos économies de façon simple et efficace',
       theme_color: '#1E1E1E',
       lang: 'fr',
+      ogSiteName: 'comptes-oxy.web.app',
       ogTitle: 'Mes Comptes',
       ogHost: 'comptes-oxy.web.app',
       ogImage: 'https://picsum.photos/id/160/1700/950',
