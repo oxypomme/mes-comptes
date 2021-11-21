@@ -111,7 +111,11 @@ export default {
           onAuthStateChangedAction: 'auth/onAuth',
         },
       },
-      firestore: true,
+      firestore: {
+        enablePersistence: {
+          synchronizeTabs: true,
+        },
+      },
       performance: true,
       analytics: true,
     },
