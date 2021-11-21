@@ -32,7 +32,9 @@
                 <h4 class="font-weight-light">
                   Surveillez vos économies de façon simple et efficace
                 </h4>
-                <v-btn rounded color="primary mt-4"> S'inscrire </v-btn>
+                <v-btn to="login" large rounded color="primary mt-4">
+                  S'inscrire
+                </v-btn>
               </v-col>
             </v-row>
           </v-col>
