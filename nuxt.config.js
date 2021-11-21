@@ -122,7 +122,7 @@ export default {
       name: 'Mes Comptes',
       start_url: '/login',
       lang: 'fr',
-      background_color: '#1E1E1E',
+      background_color: '#121212',
     },
     meta: {
       description: 'Surveillez vos économies de façon simple et efficace',
