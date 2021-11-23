@@ -66,7 +66,6 @@ export default {
             icon: 'mdi-calendar',
             title: 'Planificateur',
             to: '/agenda',
-            disabled: true,
           },
           {
             icon: 'mdi-chart-box-outline',
