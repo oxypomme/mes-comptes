@@ -1,5 +1,19 @@
 <template>
   <v-simple-table :dense="$device.isMobile">
+    <template #top>
+      <div>
+        <v-toolbar color="#1E1E1E" flat rounded :dense="$device.isMobile">
+          <v-toolbar-title class="font-weight-light">
+            Planning
+          </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-btn icon color="green" @click="showNew">
+            <v-icon>mdi-plus</v-icon>
+          </v-btn>
+        </v-toolbar>
+        <v-divider class="d-block d-sm-none" />
+      </div>
+    </template>
     <template #default>
       <thead>
         <tr>
@@ -20,17 +34,15 @@
             }}
           </th>
         </tr>
-        <tr>
-          <th></th>
-          <th></th>
-          <th></th>
+        <tr v-if="items.length > 0">
+          <th colspan="3"></th>
           <th
             v-for="i in 12"
             :key="'ht' + i"
             :class="['text-center', currMonth == i - 1 && 'activeMonth']"
           >
-            <v-chip small :color="getSum(i) > 0 ? 'green' : 'red'">
-              {{ getSum(i).toFixed(2) }} €
+            <v-chip small :color="month(i) > 0 ? 'green' : 'red'">
+              {{ month(i).toFixed(2) }} €
             </v-chip>
           </th>
         </tr>
@@ -62,36 +74,17 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import { mapGetters } from 'vuex'
+
 export default Vue.extend({
   data: () => ({
     currMonth: new Date().getMonth(),
-    items: [
-      {
-        name: 'Mock 1',
-        category: 'Mock',
-        modifier: -1,
-        values: [
-          257.7, 255.7, 259.7, 257.7, 257.7, 257.7, 257.7, 257.7, 257.7, 257.7,
-          157.7, 257.7,
-        ],
-      },
-      {
-        name: 'Mock 2',
-        category: 'Mock',
-        modifier: 1,
-        values: [
-          257.7, 257.7, 257.7, 257.7, 257.7, 257.7, 257.7, 257.7, 257.7, 257.7,
-          57.7, 257.7,
-        ],
-      },
-    ],
   }),
+  computed: {
+    ...mapGetters({ items: 'agenda/getAgenda', month: 'agenda/getMonth' }),
+  },
   methods: {
-    getSum(month: number) {
-      return this.items
-        .map((l) => [l.values[month - 1], l.modifier])
-        .reduce((sum, v) => sum + v[0] * v[1], 0)
-    },
+    showNew() {},
   },
 })
 </script>

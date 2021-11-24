@@ -3,10 +3,12 @@ export default {
     if (authUser) {
       commit('SET_AUTH_USER', authUser)
       await dispatch('account/bindAccounts', authUser, { root: true })
+      await dispatch('agenda/bindAgenda', authUser, { root: true })
       await dispatch('bindSettings', {}, { root: true })
     } else {
       commit('RESET_STATE')
       await dispatch('account/unbindAccounts', null, { root: true })
+      await dispatch('agenda/unbindAgenda', null, { root: true })
       await dispatch('unbindSettings', {}, { root: true })
     }
   },
