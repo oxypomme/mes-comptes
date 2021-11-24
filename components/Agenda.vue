@@ -11,7 +11,12 @@
             <v-icon>mdi-plus</v-icon>
           </v-btn>
         </v-toolbar>
-        <v-divider class="d-block d-sm-none" />
+        <v-progress-linear
+          :indeterminate="loading"
+          :color="
+            loading ? 'primary' : $device.isMobile ? 'accent' : 'transparent'
+          "
+        ></v-progress-linear>
       </div>
     </template>
     <template #default>
@@ -64,7 +69,23 @@
             :key="'i' + i + 'j' + j"
             :class="['text-center', currMonth == j && 'activeMonth']"
           >
-            {{ Math.abs(value).toFixed(2) }} €
+            <v-edit-dialog
+              @save="save(i, j)"
+              @cancel="cancel"
+              @open="open(value)"
+              @close="close"
+            >
+              {{ value.toFixed(2) }} €
+              <template v-slot:input>
+                <v-text-field
+                  v-model="editedValue"
+                  :label="value.toFixed(2)"
+                  type="number"
+                  prefix="€"
+                  single-line
+                ></v-text-field>
+              </template>
+            </v-edit-dialog>
           </td>
         </tr>
       </tbody>
@@ -79,12 +100,29 @@ import { mapGetters } from 'vuex'
 export default Vue.extend({
   data: () => ({
     currMonth: new Date().getMonth(),
+    loading: false,
+    editedValue: '0.00',
   }),
   computed: {
     ...mapGetters({ items: 'agenda/getAgenda', month: 'agenda/getMonth' }),
   },
   methods: {
     showNew() {},
+    async save(row: number, month: number) {
+      this.loading = true
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      console.log(Object.values(this.items)[row], month)
+      this.loading = false
+    },
+    cancel() {
+      this.editedValue = '0.00'
+    },
+    open(value: number) {
+      this.editedValue = value.toFixed(2)
+    },
+    close() {
+      console.log('Dialog closed')
+    },
   },
 })
 </script>
