@@ -51,8 +51,12 @@ export default {
       await this.$fire.auth.currentUser.updatePassword(password)
     }
   },
-  loginUser(ctx, { email, password }) {
-    return this.$fire.auth.signInWithEmailAndPassword(email, password)
+  async loginUser({ getters }, { email, password }) {
+    await this.$fire.auth.signInWithEmailAndPassword(email, password)
+    // Awaiting onAuth end
+    while (!getters.getUser) {
+      await new Promise((resolve) => setTimeout(resolve, 100))
+    }
   },
   signOut() {
     return this.$fire.auth.signOut()

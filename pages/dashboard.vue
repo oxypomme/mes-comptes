@@ -15,6 +15,10 @@
 import Vue from 'vue'
 export default Vue.extend({
   mounted() {
+    if (!this.$store.getters['auth/getUser']) {
+      this.$router.push('/login')
+      return
+    }
     this.$store.commit('SET_TITLE', 'Tableau de bord')
   },
 })

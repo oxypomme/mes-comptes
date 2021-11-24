@@ -26,6 +26,10 @@ export default Vue.extend({
     title: 'Paramètres - ',
   },
   mounted() {
+    if (!this.$store.getters['auth/getUser']) {
+      this.$router.push('/login')
+      return
+    }
     this.$store.commit('SET_TITLE', 'Paramètres')
   },
 })
