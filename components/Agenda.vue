@@ -23,9 +23,40 @@
       <thead>
         <tr>
           <th></th>
-          <th>Nom</th>
-          <th>Categorie</th>
-          <th class="text-center">Type</th>
+          <th>
+            <v-hover v-slot="{ hover }" class="hoverable">
+              <span @click="changeSort('name')">
+                Nom
+                <v-icon v-if="hover || sortType === 'name'" small color="grey">
+                  mdi-{{ reverseSort ? 'arrow-up' : 'arrow-down' }}
+                </v-icon>
+              </span>
+            </v-hover>
+          </th>
+          <th>
+            <v-hover v-slot="{ hover }" class="hoverable">
+              <span @click="changeSort('category')">
+                Categorie
+                <v-icon
+                  v-if="hover || sortType === 'category'"
+                  small
+                  color="grey"
+                >
+                  mdi-{{ reverseSort ? 'arrow-up' : 'arrow-down' }}
+                </v-icon>
+              </span>
+            </v-hover>
+          </th>
+          <th class="text-center">
+            <v-hover v-slot="{ hover }" class="hoverable">
+              <span @click="changeSort('type')">
+                Type
+                <v-icon v-if="hover || sortType === 'type'" small color="grey">
+                  mdi-{{ reverseSort ? 'arrow-down' : 'arrow-up' }}
+                </v-icon>
+              </span>
+            </v-hover>
+          </th>
           <th
             v-for="i in 12"
             :key="'h' + i"
@@ -54,15 +85,15 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(item, i) in items" :key="'i' + i">
+        <tr v-for="(item, i) in [...items].sort(sorter)" :key="'i' + i">
           <td>
-            <v-btn icon color="red" @click="deleteRow(i)">
+            <v-btn icon color="red" @click="deleteRow(item.id)">
               <v-icon>mdi-delete</v-icon>
             </v-btn>
           </td>
           <td>
             <v-edit-dialog
-              @save="save(i, 'name')"
+              @save="save(item.id, 'name')"
               @cancel="cancel"
               @open="open(item.name)"
             >
@@ -79,7 +110,7 @@
           </td>
           <td>
             <v-edit-dialog
-              @save="save(i, 'category')"
+              @save="save(item.id, 'category')"
               @cancel="cancel"
               @open="open(item.category)"
             >
@@ -96,14 +127,14 @@
           </td>
           <td class="text-center">
             <v-edit-dialog
-              @save="save(i, 'modifier')"
+              @save="save(item.id, 'modifier')"
               @cancel="cancel"
               @open="open(item.modifier)"
             >
               <v-chip
                 :small="$device.isMobile"
                 :color="item.modifier > 0 ? 'green' : 'red'"
-                class="hoverable-chip"
+                class="hoverable"
               >
                 {{ item.modifier > 0 ? 'Crédit (+)' : 'Débit (-)' }}
               </v-chip>
@@ -128,7 +159,7 @@
             :class="['text-center', currMonth == j && 'activeMonth']"
           >
             <v-edit-dialog
-              @save="saveValue(i, j)"
+              @save="saveValue(item.id, j)"
               @cancel="cancel"
               @open="open(value.toFixed(2))"
             >
@@ -158,9 +189,38 @@ export default {
     currMonth: new Date().getMonth(),
     loading: false,
     editedValue: '0.00',
+    sortType: 'type',
+    reverseSort: false,
   }),
   computed: {
     ...mapGetters({ items: 'agenda/getAgenda', month: 'agenda/getMonth' }),
+    sorter() {
+      let priority = []
+      switch (this.sortType) {
+        case 'name':
+          priority = ['name', 'category', 'modifier']
+          break
+        case 'category':
+          priority = ['category', 'name', 'modifier']
+          break
+        case 'type':
+        default:
+          priority = ['modifier', 'category', 'name']
+          break
+      }
+      return (a, b) => {
+        let res = 0
+        let i = 0
+        while (res === 0 && i < priority.length) {
+          res =
+            priority[i] === 'modifier'
+              ? a[priority[i]] - b[priority[i]]
+              : a[priority[i]].localeCompare(b[priority[i]])
+          i++
+        }
+        return this.reverseSort ? -res : res
+      }
+    },
   },
   methods: {
     async addRow() {
@@ -168,31 +228,40 @@ export default {
       await this.$store.dispatch('agenda/createEntry')
       this.loading = false
     },
-    async deleteRow(index) {
+    async deleteRow(id) {
       this.loading = true
-      await this.$store.dispatch('agenda/deleteEntry', index)
+      await this.$store.dispatch('agenda/deleteEntry', id)
       this.loading = false
     },
-    async save(index, property) {
+    async save(id, property) {
       this.loading = true
       await this.$store.dispatch('agenda/updateEntry', {
-        index,
+        id,
         property,
         value: this.editedValue,
       })
       this.loading = false
     },
-    saveValue(index, month) {
-      const items = { ...this.items }
+    saveValue(id, month) {
+      const items = [...this.items]
+      const index = items.findIndex((r) => r.id === id)
       items[index].values[month] = parseFloat(this.editedValue)
       this.editedValue = items[index].values
-      this.save(index, 'values')
+      this.save(id, 'values')
     },
     cancel() {
       this.editedValue = '0.00'
     },
     open(value) {
       this.editedValue = value
+    },
+    changeSort(type) {
+      if (type === this.sortType) {
+        this.reverseSort = !this.reverseSort
+      } else {
+        this.sortType = type
+        this.reverseSort = false
+      }
     },
   },
 }
@@ -201,7 +270,11 @@ export default {
 .activeMonth {
   background: #1976d259;
 }
-.hoverable-chip:hover {
+.hoverable {
+  transition: color 0.25s;
+}
+.hoverable:hover {
   cursor: pointer;
+  color: white;
 }
 </style>

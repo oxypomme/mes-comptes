@@ -14,24 +14,24 @@ export default {
       values: Array(12).fill(0),
     })
   },
-  updateEntry({ getters, rootGetters }, { index, property, value }) {
+  updateEntry({ rootGetters }, { id, property, value }) {
     const { uid } = rootGetters['auth/getUser']
     const ref = this.$fire.firestore
       .collection('users')
       .doc(uid)
       .collection('agenda')
-      .doc(getters.getAgenda[index].id)
+      .doc(id)
     const data = {}
     data[property] = value
     return ref.update(data)
   },
-  deleteEntry({ getters, rootGetters }, index) {
+  deleteEntry({ rootGetters }, id) {
     const { uid } = rootGetters['auth/getUser']
     const ref = this.$fire.firestore
       .collection('users')
       .doc(uid)
       .collection('agenda')
-      .doc(getters.getAgenda[index].id)
+      .doc(id)
     return ref.delete()
   },
 
