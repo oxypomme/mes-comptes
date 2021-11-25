@@ -67,7 +67,10 @@
             ]"
           >
             {{
-              new Date(2021, i - 1).toLocaleDateString('fr', { month: 'long' })
+              new Date(
+                2021 + (currMonth > i - 1 ? 1 : 0),
+                i - 1
+              ).toLocaleDateString('fr', { month: 'long', year: 'numeric' })
             }}
           </th>
         </tr>
