@@ -16,39 +16,39 @@
           <v-card-text>
             <v-container>
               <v-row>
-                <v-col>
-                  <v-text-field
-                    v-model="category.name"
-                    label="Nom de la catégorie"
-                    required
-                    :dense="$device.isMobile"
-                  >
-                  </v-text-field>
-                </v-col>
+                <v-text-field
+                  v-model="category.name"
+                  label="Nom de la catégorie"
+                  required
+                  :dense="$device.isMobile"
+                >
+                </v-text-field>
+              </v-row>
+              <v-row align="center">
+                <v-checkbox
+                  v-model="isWithBudget"
+                  hide-details
+                  class="shrink mr-2 mt-0"
+                ></v-checkbox>
+                <v-text-field
+                  v-model="category.budget"
+                  :disabled="!isWithBudget"
+                  label="Budget par semaine de la catégorie"
+                  type="number"
+                  prefix="€"
+                  :dense="$device.isMobile"
+                >
+                </v-text-field>
               </v-row>
               <v-row>
-                <v-col>
-                  <v-text-field
-                    v-model="category.budget"
-                    label="Budget par semaine de la catégorie"
-                    type="number"
-                    prefix="€"
-                    :dense="$device.isMobile"
-                  >
-                  </v-text-field>
-                </v-col>
-              </v-row>
-              <v-row>
-                <v-col>
-                  <v-text-field
-                    v-model="category.balance"
-                    label="Solde de la catégorie"
-                    type="number"
-                    prefix="€"
-                    :dense="$device.isMobile"
-                  >
-                  </v-text-field>
-                </v-col>
+                <v-text-field
+                  v-model="category.balance"
+                  label="Solde de la catégorie"
+                  type="number"
+                  prefix="€"
+                  :dense="$device.isMobile"
+                >
+                </v-text-field>
               </v-row>
             </v-container>
           </v-card-text>
@@ -109,6 +109,32 @@
                   }}%)
                 </span>
               </v-tooltip>
+              <v-tooltip v-else-if="monthlyBudget !== 0" top>
+                <template #activator="{ on, attrs }">
+                  <v-chip
+                    :color="
+                      getCategRatioColor(
+                        {
+                          balance: categ.balance,
+                          budget: monthlyBudget / weeksCount,
+                        },
+                        true
+                      )[0]
+                    "
+                    v-bind="attrs"
+                    :small="$device.isMobile"
+                    v-on="on"
+                  >
+                    {{ (monthlyBudget - categ.balance).toFixed(2) }} €
+                  </v-chip>
+                </template>
+                <span>
+                  {{ categ.balance.toFixed(2) }} /
+                  {{ monthlyBudget.toFixed(2) }} € ({{
+                    ((categ.balance / monthlyBudget) * 100).toFixed(2)
+                  }}%)
+                </span>
+              </v-tooltip>
               <v-chip v-else color="primary" :small="$device.isMobile">
                 {{ categ.balance.toFixed(2) }} €
               </v-chip>
@@ -155,9 +181,13 @@ export default Vue.extend({
     valid: true,
     dialog: false,
     loading: false,
+    isWithBudget: true,
   }),
   computed: {
-    ...mapGetters({ categories: 'categories/getCategories' }),
+    ...mapGetters({
+      categories: 'categories/getCategories',
+      getMonth: 'agenda/getMonth',
+    }),
     weeksCount() {
       const resetDate = this.$store.getters.getSettings.resetDate?.toDate()
       const prevResetDate = new Date(resetDate)
@@ -169,6 +199,15 @@ export default Vue.extend({
       )
 
       return count
+    },
+    monthlyBudget() {
+      let budget = this.getMonth(new Date().getMonth() + 1)
+      for (const categ of this.categories) {
+        if (categ.budget > 0) {
+          budget -= categ.budget * (this.weeksCount as number)
+        }
+      }
+      return budget
     },
   },
   watch: {
@@ -184,6 +223,16 @@ export default Vue.extend({
       if (this.valid) {
         this.loading = true
         try {
+          if (!this.isWithBudget) {
+            ;(this.category as any).budget = -1
+            const cAuto = (this.categories as any[]).find((c) => c.budget < 0)
+            if (cAuto && cAuto.id !== (this.category as any).id) {
+              throw new Error(
+                "Vous ne pouvez avoir qu'une seule catégorie sans budget"
+              )
+            }
+          }
+
           if ((this.category as any).id) {
             await this.$store.dispatch('categories/editCategory', this.category)
             this.$toast.global.success('Catégorie éditée')
@@ -194,10 +243,10 @@ export default Vue.extend({
             )
             this.$toast.global.success('Catégorie créé')
           }
+          this.dialog = false
         } catch (e) {
           this.$toast.global.error((e as Error).message)
         }
-        this.dialog = false
         this.loading = false
       }
     },
@@ -240,11 +289,24 @@ export default Vue.extend({
       const categ = this.categories[i]
       this.category = { ...categ }
       ;(this.category as any).id = categ.id
+      if ((this.category as any).budget < 0) {
+        this.isWithBudget = false
+        ;(this.category as any).budget = 0
+      }
       this.dialog = true
     },
-    getCategRatioColor(categ: any) {
-      const ratio = categ.balance / (categ.budget * this.weeksCount)
-      return [ratio < 0.5 ? 'green' : ratio <= 0.75 ? 'orange' : 'red', ratio]
+    getCategRatioColor({ balance, budget }: any, isManual = false) {
+      const ratio = balance / (budget * (this.weeksCount as number))
+      return [
+        ratio < 0.5
+          ? isManual
+            ? 'primary'
+            : 'green'
+          : ratio <= 0.75
+          ? 'orange'
+          : 'red',
+        ratio,
+      ]
     },
   },
 })
