@@ -168,13 +168,19 @@
             >
               {{ value.toFixed(2) }} €
               <template #input>
-                <v-text-field
-                  v-model="editedValue"
-                  :label="value.toFixed(2)"
-                  type="number"
-                  prefix="€"
-                  single-line
-                ></v-text-field>
+                <v-form @submit="preventDefault">
+                  <v-text-field
+                    v-model="editedValue"
+                    :label="value.toFixed(2)"
+                    type="number"
+                    prefix="€"
+                    single-line
+                  ></v-text-field>
+                  <v-checkbox
+                    v-model="applyToAll"
+                    label="Appliquer à tous"
+                  ></v-checkbox>
+                </v-form>
               </template>
             </v-edit-dialog>
           </td>
@@ -192,6 +198,7 @@ export default {
     currMonth: new Date().getMonth(),
     loading: false,
     editedValue: '0.00',
+    applyToAll: false,
     sortType: 'type',
     reverseSort: false,
   }),
@@ -248,7 +255,13 @@ export default {
     saveValue(id, month) {
       const items = [...this.items]
       const index = items.findIndex((r) => r.id === id)
-      items[index].values[month] = parseFloat(this.editedValue)
+      if (this.applyToAll) {
+        for (let i = 0; i < items[index].values.length; i++) {
+          items[index].values[i] = parseFloat(this.editedValue)
+        }
+      } else {
+        items[index].values[month] = parseFloat(this.editedValue)
+      }
       this.editedValue = items[index].values
       this.save(id, 'values')
     },
@@ -256,6 +269,7 @@ export default {
       this.editedValue = '0.00'
     },
     open(value) {
+      this.applyToAll = false
       this.editedValue = value
     },
     changeSort(type) {
@@ -265,6 +279,9 @@ export default {
         this.sortType = type
         this.reverseSort = false
       }
+    },
+    preventDefault(e) {
+      e.preventDefault()
     },
   },
 }
