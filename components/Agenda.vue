@@ -54,15 +54,70 @@
       </thead>
       <tbody>
         <tr v-for="(item, i) in items" :key="'i' + i">
-          <td>{{ item.name }}</td>
-          <td>{{ item.category }}</td>
-          <td class="text-center">
-            <v-chip
-              :small="$device.isMobile"
-              :color="item.modifier > 0 ? 'green' : 'red'"
+          <td>
+            <v-edit-dialog
+              @save="save(i, 'name')"
+              @cancel="cancel"
+              @open="open(item.name)"
+              @close="close"
             >
-              {{ item.modifier > 0 ? 'Crédit (+)' : 'Débit (-)' }}
-            </v-chip>
+              {{ item.name }}
+              <template #input>
+                <v-text-field
+                  v-model="editedValue"
+                  :label="item.name"
+                  type="text"
+                  single-line
+                ></v-text-field>
+              </template>
+            </v-edit-dialog>
+          </td>
+          <td>
+            <v-edit-dialog
+              @save="save(i, 'category')"
+              @cancel="cancel"
+              @open="open(item.category)"
+              @close="close"
+            >
+              {{ item.category }}
+              <template #input>
+                <v-text-field
+                  v-model="editedValue"
+                  :label="item.category"
+                  type="text"
+                  single-line
+                ></v-text-field>
+              </template>
+            </v-edit-dialog>
+          </td>
+          <td class="text-center">
+            <v-edit-dialog
+              @save="save(i, 'modifier')"
+              @cancel="cancel"
+              @open="open(item.modifier)"
+              @close="close"
+            >
+              <v-chip
+                :small="$device.isMobile"
+                :color="item.modifier > 0 ? 'green' : 'red'"
+                class="hoverable-chip"
+              >
+                {{ item.modifier > 0 ? 'Crédit (+)' : 'Débit (-)' }}
+              </v-chip>
+              <template #input>
+                <v-select
+                  v-model="editedValue"
+                  :items="[
+                    { modifier: -1, label: 'Débit (-)' },
+                    { modifier: 1, label: 'Crédit (+)' },
+                  ]"
+                  :label="item.modifier > 0 ? 'Crédit (+)' : 'Débit (-)'"
+                  item-text="label"
+                  item-value="modifier"
+                  single-line
+                ></v-select>
+              </template>
+            </v-edit-dialog>
           </td>
           <td
             v-for="(value, j) in item.values"
@@ -70,13 +125,13 @@
             :class="['text-center', currMonth == j && 'activeMonth']"
           >
             <v-edit-dialog
-              @save="save(i, j)"
+              @save="saveValue(i, j)"
               @cancel="cancel"
-              @open="open(value)"
+              @open="open(value.toFixed(2))"
               @close="close"
             >
               {{ value.toFixed(2) }} €
-              <template v-slot:input>
+              <template #input>
                 <v-text-field
                   v-model="editedValue"
                   :label="value.toFixed(2)"
@@ -108,17 +163,31 @@ export default Vue.extend({
   },
   methods: {
     showNew() {},
-    async save(row: number, month: number) {
+    async save(row: number, property: string) {
       this.loading = true
       await new Promise((resolve) => setTimeout(resolve, 1000))
-      console.log(Object.values(this.items)[row], month)
+      console.log(
+        (Object.values(this.items)[row] as any)[property],
+        '=',
+        this.editedValue
+      )
+      this.loading = false
+    },
+    async saveValue(row: number, month: number) {
+      this.loading = true
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      console.log(
+        (Object.values(this.items)[row] as any).values[month],
+        '=',
+        parseFloat(this.editedValue)
+      )
       this.loading = false
     },
     cancel() {
       this.editedValue = '0.00'
     },
-    open(value: number) {
-      this.editedValue = value.toFixed(2)
+    open(value: string) {
+      this.editedValue = value
     },
     close() {
       console.log('Dialog closed')
@@ -129,5 +198,8 @@ export default Vue.extend({
 <style scoped>
 .activeMonth {
   background: #1976d259;
+}
+.hoverable-chip:hover {
+  cursor: pointer;
 }
 </style>
