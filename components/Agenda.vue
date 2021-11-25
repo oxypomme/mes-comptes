@@ -1,5 +1,5 @@
 <template>
-  <v-simple-table :dense="$device.isMobile">
+  <v-simple-table :dense="$device.isMobile" fixed-header height="77vh">
     <template #top>
       <div>
         <v-toolbar color="#1E1E1E" flat rounded :dense="$device.isMobile">
@@ -178,7 +178,7 @@
               @cancel="cancel"
               @open="open(value.toFixed(2))"
             >
-              {{ value.toFixed(2) }} €
+              {{ value > 0 ? `${value.toFixed(2)} €` : '' }}
               <template #input>
                 <v-form @submit="preventDefault">
                   <v-text-field
