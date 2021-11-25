@@ -39,7 +39,7 @@
             }}
           </th>
         </tr>
-        <tr v-if="items.length > 0">
+        <tr v-if="Object.values(items).length > 0">
           <th colspan="3"></th>
           <th
             v-for="i in 12"
@@ -59,7 +59,6 @@
               @save="save(i, 'name')"
               @cancel="cancel"
               @open="open(item.name)"
-              @close="close"
             >
               {{ item.name }}
               <template #input>
@@ -77,7 +76,6 @@
               @save="save(i, 'category')"
               @cancel="cancel"
               @open="open(item.category)"
-              @close="close"
             >
               {{ item.category }}
               <template #input>
@@ -95,7 +93,6 @@
               @save="save(i, 'modifier')"
               @cancel="cancel"
               @open="open(item.modifier)"
-              @close="close"
             >
               <v-chip
                 :small="$device.isMobile"
@@ -128,7 +125,6 @@
               @save="saveValue(i, j)"
               @cancel="cancel"
               @open="open(value.toFixed(2))"
-              @close="close"
             >
               {{ value.toFixed(2) }} €
               <template #input>
@@ -148,11 +144,10 @@
   </v-simple-table>
 </template>
 
-<script lang="ts">
-import Vue from 'vue'
+<script>
 import { mapGetters } from 'vuex'
 
-export default Vue.extend({
+export default {
   data: () => ({
     currMonth: new Date().getMonth(),
     loading: false,
@@ -162,38 +157,35 @@ export default Vue.extend({
     ...mapGetters({ items: 'agenda/getAgenda', month: 'agenda/getMonth' }),
   },
   methods: {
-    showNew() {},
-    async save(row: number, property: string) {
+    async showNew() {
       this.loading = true
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      console.log(
-        (Object.values(this.items)[row] as any)[property],
-        '=',
-        this.editedValue
-      )
+      await this.$store.dispatch('agenda/createEntry')
       this.loading = false
     },
-    async saveValue(row: number, month: number) {
+    async save(index, property) {
       this.loading = true
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      console.log(
-        (Object.values(this.items)[row] as any).values[month],
-        '=',
-        parseFloat(this.editedValue)
-      )
+      await this.$store.dispatch('agenda/updateEntry', {
+        index,
+        property,
+        value: this.editedValue,
+      })
       this.loading = false
+    },
+    saveValue(index, month) {
+      const items = { ...this.items }
+      const id = Object.keys(items)[index]
+      items[id].values[month] = parseFloat(this.editedValue)
+      this.editedValue = items[id].values
+      this.save(index, 'values')
     },
     cancel() {
       this.editedValue = '0.00'
     },
-    open(value: string) {
+    open(value) {
       this.editedValue = value
     },
-    close() {
-      console.log('Dialog closed')
-    },
   },
-})
+}
 </script>
 <style scoped>
 .activeMonth {
