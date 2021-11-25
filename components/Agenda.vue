@@ -96,6 +96,9 @@
           </td>
           <td>
             <v-edit-dialog
+              large
+              cancel-text="Annuler"
+              save-text="Valider"
               @save="save(item.id, 'name')"
               @cancel="cancel"
               @open="open(item.name)"
@@ -113,6 +116,9 @@
           </td>
           <td>
             <v-edit-dialog
+              large
+              cancel-text="Annuler"
+              save-text="Valider"
               @save="save(item.id, 'category')"
               @cancel="cancel"
               @open="open(item.category)"
@@ -130,6 +136,9 @@
           </td>
           <td class="text-center">
             <v-edit-dialog
+              large
+              cancel-text="Annuler"
+              save-text="Valider"
               @save="save(item.id, 'modifier')"
               @cancel="cancel"
               @open="open(item.modifier)"
@@ -162,6 +171,9 @@
             :class="['text-center', currMonth == j && 'activeMonth']"
           >
             <v-edit-dialog
+              large
+              cancel-text="Annuler"
+              save-text="Valider"
               @save="saveValue(item.id, j)"
               @cancel="cancel"
               @open="open(value.toFixed(2))"
