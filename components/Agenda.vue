@@ -173,9 +173,8 @@ export default {
     },
     saveValue(index, month) {
       const items = { ...this.items }
-      const id = Object.keys(items)[index]
-      items[id].values[month] = parseFloat(this.editedValue)
-      this.editedValue = items[id].values
+      items[index].values[month] = parseFloat(this.editedValue)
+      this.editedValue = items[index].values
       this.save(index, 'values')
     },
     cancel() {

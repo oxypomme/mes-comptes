@@ -1,20 +1,29 @@
 import { firestoreAction } from 'vuexfire'
 
 export default {
-  createEntry({ commit }) {
-    return commit('ADD', {
+  createEntry({ rootGetters }) {
+    const { uid } = rootGetters['auth/getUser']
+    const ref = this.$fire.firestore
+      .collection('users')
+      .doc(uid)
+      .collection('agenda')
+    return ref.add({
       name: 'Nom',
       category: 'Catégorie',
       modifier: -1,
       values: Array(12).fill(0),
     })
   },
-  updateEntry({ commit, getters }, { index, property, value }) {
-    return commit('EDIT', {
-      id: Object.keys(getters.getAgenda)[index],
-      property,
-      value,
-    })
+  updateEntry({ getters, rootGetters }, { index, property, value }) {
+    const { uid } = rootGetters['auth/getUser']
+    const ref = this.$fire.firestore
+      .collection('users')
+      .doc(uid)
+      .collection('agenda')
+      .doc(getters.getAgenda[index].id)
+    const data = {}
+    data[property] = value
+    return ref.update(data)
   },
 
   bindAgenda: firestoreAction(function ({ rootGetters, bindFirestoreRef }) {
@@ -23,10 +32,10 @@ export default {
       .collection('users')
       .doc(uid)
       .collection('agenda')
-    return bindFirestoreRef('bdata', ref, { wait: true })
+    return bindFirestoreRef('data', ref, { wait: true })
   }),
   unbindAgenda: firestoreAction(function ({ commit, unbindFirestoreRef }) {
-    unbindFirestoreRef('bdata', false)
+    unbindFirestoreRef('data', false)
     return commit('RESET_STATE')
   }),
 }
