@@ -25,6 +25,15 @@ export default {
     data[property] = value
     return ref.update(data)
   },
+  deleteEntry({ getters, rootGetters }, index) {
+    const { uid } = rootGetters['auth/getUser']
+    const ref = this.$fire.firestore
+      .collection('users')
+      .doc(uid)
+      .collection('agenda')
+      .doc(getters.getAgenda[index].id)
+    return ref.delete()
+  },
 
   bindAgenda: firestoreAction(function ({ rootGetters, bindFirestoreRef }) {
     const { uid } = rootGetters['auth/getUser']

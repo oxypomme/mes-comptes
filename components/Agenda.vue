@@ -7,7 +7,7 @@
             Planning
           </v-toolbar-title>
           <v-spacer></v-spacer>
-          <v-btn icon color="green" @click="showNew">
+          <v-btn icon color="green" @click="addRow">
             <v-icon>mdi-plus</v-icon>
           </v-btn>
         </v-toolbar>
@@ -22,6 +22,7 @@
     <template #default>
       <thead>
         <tr>
+          <th></th>
           <th>Nom</th>
           <th>Categorie</th>
           <th class="text-center">Type</th>
@@ -40,7 +41,7 @@
           </th>
         </tr>
         <tr v-if="Object.values(items).length > 0">
-          <th colspan="3"></th>
+          <th colspan="4"></th>
           <th
             v-for="i in 12"
             :key="'ht' + i"
@@ -54,6 +55,11 @@
       </thead>
       <tbody>
         <tr v-for="(item, i) in items" :key="'i' + i">
+          <td>
+            <v-btn icon color="red" @click="deleteRow(i)">
+              <v-icon>mdi-delete</v-icon>
+            </v-btn>
+          </td>
           <td>
             <v-edit-dialog
               @save="save(i, 'name')"
@@ -157,9 +163,14 @@ export default {
     ...mapGetters({ items: 'agenda/getAgenda', month: 'agenda/getMonth' }),
   },
   methods: {
-    async showNew() {
+    async addRow() {
       this.loading = true
       await this.$store.dispatch('agenda/createEntry')
+      this.loading = false
+    },
+    async deleteRow(index) {
+      this.loading = true
+      await this.$store.dispatch('agenda/deleteEntry', index)
       this.loading = false
     },
     async save(index, property) {
