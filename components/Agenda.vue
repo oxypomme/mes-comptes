@@ -202,22 +202,34 @@
   </v-simple-table>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from 'vue'
 import { mapGetters } from 'vuex'
 
-export default {
+type SortType = 'name' | 'category' | 'type'
+
+export default Vue.extend({
   data: () => ({
     currMonth: new Date().getMonth(),
     loading: false,
     editedValue: '0.00',
     applyToAll: false,
-    sortType: 'type',
+    sortType: 'type' as SortType,
     reverseSort: false,
   }),
   computed: {
-    ...mapGetters({ items: 'agenda/getAgenda', month: 'agenda/getMonth' }),
+    ...mapGetters({ month: 'agenda/getMonth' }),
+    /**
+     * User's agenda
+     */
+    items(): AgendaRow[] {
+      return this.$store.getters['agenda/getAgenda']
+    },
+    /**
+     * Function to sort user's agenda
+     */
     sorter() {
-      let priority = []
+      let priority: (keyof Omit<AgendaRow, 'values' | 'id'>)[] = []
       switch (this.sortType) {
         case 'name':
           priority = ['name', 'category', 'modifier']
@@ -230,14 +242,13 @@ export default {
           priority = ['modifier', 'category', 'name']
           break
       }
-      return (a, b) => {
+      return (a: AgendaRow, b: AgendaRow) => {
         let res = 0
         let i = 0
         while (res === 0 && i < priority.length) {
+          const key = priority[i]
           res =
-            priority[i] === 'modifier'
-              ? a[priority[i]] - b[priority[i]]
-              : a[priority[i]].localeCompare(b[priority[i]])
+            key === 'modifier' ? a[key] - b[key] : a[key].localeCompare(b[key])
           i++
         }
         return this.reverseSort ? -res : res
@@ -245,26 +256,45 @@ export default {
     },
   },
   methods: {
+    /**
+     * Add a row to the agenda
+     */
     async addRow() {
       this.loading = true
       await this.$store.dispatch('agenda/createEntry')
       this.loading = false
     },
-    async deleteRow(id) {
+    /**
+     * Delete a row from the agenda
+     */
+    async deleteRow(id: string) {
       this.loading = true
       await this.$store.dispatch('agenda/deleteEntry', id)
       this.loading = false
     },
-    async save(id, property) {
+    /**
+     * Edit a value in a row from the agenda
+     *
+     * @param {string} id The id of the row
+     * @param {keyof AgendaRow} property The property to update
+     * @param {any} value The value to update. If not set, it will update row with `this?editedValue`
+     */
+    async save(id: string, property: keyof AgendaRow, value?: any) {
       this.loading = true
       await this.$store.dispatch('agenda/updateEntry', {
         id,
         property,
-        value: this.editedValue,
+        value: value ?? this.editedValue,
       })
       this.loading = false
     },
-    saveValue(id, month) {
+    /**
+     * Edit a value in a row at a specific month from the agenda
+     *
+     * @param {string} id The id of the row
+     * @param {number} month The index of the month
+     */
+    saveValue(id: string, month: number) {
       const items = [...this.items]
       const index = items.findIndex((r) => r.id === id)
       if (this.applyToAll) {
@@ -274,17 +304,27 @@ export default {
       } else {
         items[index].values[month] = parseFloat(this.editedValue)
       }
-      this.editedValue = items[index].values
-      this.save(id, 'values')
+      this.save(id, 'values', items[index].values)
     },
+    /**
+     * Reset `this.editedValue`
+     */
     cancel() {
       this.editedValue = '0.00'
     },
-    open(value) {
+    /**
+     * Prepare dialog to open
+     */
+    open(value: string) {
       this.applyToAll = false
       this.editedValue = value
     },
-    changeSort(type) {
+    /**
+     * Edit sort type
+     *
+     * @param {SortType} type The new sort type
+     */
+    changeSort(type: SortType) {
       if (type === this.sortType) {
         this.reverseSort = !this.reverseSort
       } else {
@@ -292,11 +332,14 @@ export default {
         this.reverseSort = false
       }
     },
-    preventDefault(e) {
+    /**
+     * Wrapper to `Event.preventDefault`
+     */
+    preventDefault(e: Event) {
       e.preventDefault()
     },
   },
-}
+})
 </script>
 <style scoped>
 .activeMonth {

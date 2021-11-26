@@ -124,23 +124,30 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { mapGetters } from 'vuex'
 
 export default Vue.extend({
   data: () => ({
     selectedItem: undefined,
     initAccount: {
-      id: null,
+      id: undefined as string | undefined,
       name: '',
       balance: '0',
     },
-    account: {},
+    account: {} as any, // TODO: WTF any ?
     valid: true,
     dialog: false,
     loading: false,
   }),
   computed: {
-    ...mapGetters({ accounts: 'account/getAccounts' }),
+    /**
+     * The sub-accounts of the user
+     */
+    accounts(): Account[] {
+      return this.$store.getters['account/getAccounts']
+    },
+    /**
+     * The amount owned by the user
+     */
     totalBalance() {
       let total = 0
       for (const acc of this.accounts) {
@@ -150,17 +157,23 @@ export default Vue.extend({
     },
   },
   watch: {
+    /**
+     * Change selected account in state
+     */
     selectedItem() {
       this.$store.dispatch('account/selectAccount', this.selectedItem)
     },
   },
   methods: {
+    /**
+     * Create sub account
+     */
     async createAccount(e: Event) {
       e.preventDefault()
       if (this.valid) {
         this.loading = true
         try {
-          if ((this.account as any).id) {
+          if (this.account.id) {
             await this.$store.dispatch('account/editAccount', this.account)
             this.$toast.global.success('Compte edité')
           } else {
@@ -174,6 +187,10 @@ export default Vue.extend({
         this.loading = false
       }
     },
+    /**
+     * Delete sub account
+     * @param {number} i The index in `this.accounts`
+     */
     async deleteAccount(i: number) {
       const res = await this.$dialog.confirm({
         text: 'Voulez vous supprimer le compte ?',
@@ -189,6 +206,7 @@ export default Vue.extend({
           },
         },
       })
+
       if (res) {
         this.loading = true
         try {
@@ -203,16 +221,22 @@ export default Vue.extend({
         this.loading = false
       }
     },
+    /**
+     * Show popup for adding a new sub account
+     */
     showNew() {
       // this.valid = false
       this.account = { ...this.initAccount }
       this.dialog = true
     },
+    /**
+     * Show popup for editing a sub account
+     * @param {number} i The index in `this.accounts`
+     */
     showEdit(i: number) {
       this.valid = true
       const acc = this.accounts[i]
-      this.account = { ...acc }
-      ;(this.account as any).id = acc.id
+      this.account = { ...acc, balance: acc.balance.toString(), id: acc.id }
       this.dialog = true
     },
   },

@@ -92,15 +92,21 @@ export default Vue.extend({
     ],
   }),
   computed: {
+    /**
+     * Wrapper for rawemail
+     */
     email: {
       get() {
-        const { email } = this.$store.getters['auth/getUser']
+        const { email } = this.$store.getters['auth/getUser'] as User
         return this.rawemail?.trim() ?? email
       },
       set(value: string) {
         this.rawemail = value
       },
     },
+    /**
+     * Password strength
+     */
     score() {
       switch (passStrength(this.password).score) {
         case 4:
@@ -132,6 +138,11 @@ export default Vue.extend({
     },
   },
   methods: {
+    /**
+     * Update user's auth data
+     *
+     * @param {Event} e The event
+     */
     async updateAuth(e: Event) {
       e.preventDefault()
       if (this.valid) {
@@ -150,6 +161,9 @@ export default Vue.extend({
         this.loading = false
       }
     },
+    /**
+     * Delete user's account
+     */
     async deleteAuth() {
       if (this.valid) {
         this.loading = true
@@ -166,6 +180,7 @@ export default Vue.extend({
             },
           },
         })
+
         if (res) {
           try {
             await this.$store.dispatch('auth/deleteUser')

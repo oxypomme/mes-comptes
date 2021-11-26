@@ -174,9 +174,9 @@ export default Vue.extend({
       name: '',
       amount: '',
       category: '',
-      modifier: -1,
+      modifier: -1 as ValueModifier,
     },
-    operation: {},
+    operation: {} as InputOperation,
     dialog: false,
     valid: true,
   }),
@@ -187,14 +187,26 @@ export default Vue.extend({
       ops: 'operations/getOperations',
     }),
 
+    /**
+     * Number of pages in total
+     * @deprecated Unused because pagination in not implemented
+     */
     pageCount() {
-      return Math.ceil((this.account?.operationCount ?? 0) / this.items)
+      return Math.ceil(
+        ((this.account as Account | null)?.operationCount ?? 0) / this.items
+      )
     },
-    operations() {
+    /**
+     * Current account's operations
+     */
+    operations(): Operation[] {
       return [...this.ops.data]
     },
   },
   watch: {
+    /**
+     * Fetch more operations on page change
+     */
     async page() {
       this.loading = true
       await this.$store.dispatch('operations/getOperations', {
@@ -204,12 +216,15 @@ export default Vue.extend({
     },
   },
   methods: {
+    /**
+     * Create an operation
+     */
     async createOperation(e: Event) {
       e.preventDefault()
       if (this.valid) {
         this.loading = true
         try {
-          if ((this.operation as any).id) {
+          if (this.operation.id) {
             await this.$store.dispatch('operations/editOperation', {
               ...this.operation,
             })
@@ -228,7 +243,10 @@ export default Vue.extend({
         this.loading = false
       }
     },
-    async deleteOperation({ id, amount, category }: any) {
+    /**
+     * Delete an operation
+     */
+    async deleteOperation({ id, amount, category }: Operation) {
       this.loading = true
       try {
         await this.$store.dispatch('operations/deleteOperation', {
@@ -241,15 +259,20 @@ export default Vue.extend({
       }
       this.loading = false
     },
+    /**
+     * Prepare popup for new operation
+     */
     showNew() {
       // this.valid = false
       this.operation = { ...this.initOperation }
       this.dialog = true
     },
-    showEdit(item: any) {
+    /**
+     * Prepare popup to edit a operation
+     */
+    showEdit(item: Operation) {
       this.valid = true
-      this.operation = { ...item }
-      ;(this.operation as any).id = item.id
+      this.operation = { ...item, amount: item.amount.toString(), id: item.id }
       this.dialog = true
     },
   },

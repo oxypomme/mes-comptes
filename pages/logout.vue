@@ -8,11 +8,9 @@
 import Vue from 'vue'
 export default Vue.extend({
   async mounted() {
-    if (!this.$store.getters['auth/getUser']) {
-      this.$router.push('/login')
-      return
+    if (this.$store.getters['auth/getUser']) {
+      await this.$store.dispatch('auth/signOut')
     }
-    await this.$store.dispatch('auth/signOut')
     this.$router.push('/login')
   },
 })

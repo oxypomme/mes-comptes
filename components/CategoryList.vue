@@ -89,7 +89,7 @@
               <v-tooltip v-if="categ.budget > 0" top>
                 <template #activator="{ on, attrs }">
                   <v-chip
-                    :color="getCategRatioColor(categ)[0]"
+                    :color="getCategRatioColor(categ).color"
                     v-bind="attrs"
                     :small="$device.isMobile"
                     v-on="on"
@@ -105,33 +105,33 @@
                 <span>
                   {{ categ.balance.toFixed(2) }} /
                   {{ (categ.budget * weeksCount).toFixed(2) }} € ({{
-                    (getCategRatioColor(categ)[1] * 100).toFixed(2)
+                    (getCategRatioColor(categ).ratio * 100).toFixed(2)
                   }}%)
                 </span>
               </v-tooltip>
-              <v-tooltip v-else-if="monthlyBudget !== 0" top>
+              <v-tooltip v-else-if="monthlyRest !== 0" top>
                 <template #activator="{ on, attrs }">
                   <v-chip
                     :color="
                       getCategRatioColor(
                         {
                           balance: categ.balance,
-                          budget: monthlyBudget / weeksCount,
+                          budget: monthlyRest / weeksCount,
                         },
                         true
-                      )[0]
+                      ).color
                     "
                     v-bind="attrs"
                     :small="$device.isMobile"
                     v-on="on"
                   >
-                    {{ (monthlyBudget - categ.balance).toFixed(2) }} €
+                    {{ (monthlyRest - categ.balance).toFixed(2) }} €
                   </v-chip>
                 </template>
                 <span>
                   {{ categ.balance.toFixed(2) }} /
-                  {{ monthlyBudget.toFixed(2) }} € ({{
-                    ((categ.balance / monthlyBudget) * 100).toFixed(2)
+                  {{ monthlyRest.toFixed(2) }} € ({{
+                    ((categ.balance / monthlyRest) * 100).toFixed(2)
                   }}%)
                 </span>
               </v-tooltip>
@@ -166,17 +166,16 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { mapGetters } from 'vuex'
 
 export default Vue.extend({
   data: () => ({
     initCategory: {
-      id: null,
+      id: undefined,
       name: '',
       balance: '0',
       budget: '0',
     },
-    category: {},
+    category: {} as InputCategory,
     selectedItem: undefined,
     valid: true,
     dialog: false,
@@ -184,11 +183,22 @@ export default Vue.extend({
     isWithBudget: true,
   }),
   computed: {
-    ...mapGetters({
-      categories: 'categories/getCategories',
-      getMonth: 'agenda/getMonth',
-    }),
-    weeksCount() {
+    /**
+     * Selected account's categories
+     */
+    categories(): Category[] {
+      return this.$store.getters['categories/getCategories']
+    },
+    /**
+     * Current monthly budget from agenda
+     */
+    monthlyBudget(): number {
+      return this.$store.getters['agenda/getMonth'](new Date().getMonth() + 1)
+    },
+    /**
+     * Number of weeks in current month
+     */
+    weeksCount(): number {
       const resetDate = this.$store.getters.getSettings.resetDate?.toDate()
       const prevResetDate = new Date(resetDate)
       prevResetDate.setMonth(prevResetDate.getMonth() - 1)
@@ -200,17 +210,23 @@ export default Vue.extend({
 
       return count
     },
-    monthlyBudget() {
-      let budget = this.getMonth(new Date().getMonth() + 1)
+    /**
+     * Budget for auto categories
+     */
+    monthlyRest(): number {
+      let budget = this.monthlyBudget
       for (const categ of this.categories) {
         if (categ.budget > 0) {
-          budget -= categ.budget * (this.weeksCount as number)
+          budget -= categ.budget * this.weeksCount
         }
       }
       return budget
     },
   },
   watch: {
+    /**
+     * Update operations in state
+     */
     selectedItem() {
       this.$store.dispatch('operations/getOperations', {
         category: this.selectedItem,
@@ -218,22 +234,27 @@ export default Vue.extend({
     },
   },
   methods: {
+    /**
+     * Create a new category
+     *
+     * @param {Event} e The event
+     */
     async createCategory(e: Event) {
       e.preventDefault()
       if (this.valid) {
         this.loading = true
         try {
           if (!this.isWithBudget) {
-            ;(this.category as any).budget = -1
-            const cAuto = (this.categories as any[]).find((c) => c.budget < 0)
-            if (cAuto && cAuto.id !== (this.category as any).id) {
+            this.category.budget = '-1'
+            const cAuto = this.categories.find((c) => c.budget < 0)
+            if (cAuto && cAuto.id !== this.category.id) {
               throw new Error(
                 "Vous ne pouvez avoir qu'une seule catégorie sans budget"
               )
             }
           }
 
-          if ((this.category as any).id) {
+          if (this.category.id) {
             await this.$store.dispatch('categories/editCategory', this.category)
             this.$toast.global.success('Catégorie éditée')
           } else {
@@ -250,6 +271,11 @@ export default Vue.extend({
         this.loading = false
       }
     },
+    /**
+     * Delete category
+     *
+     * @param {number} i The index in `this.categories`
+     */
     async deleteCategory(i: number) {
       const res = await this.$dialog.confirm({
         text: 'Voulez vous supprimer la catégorie (cela ne supprimera pas les opérations liées) ?',
@@ -279,34 +305,52 @@ export default Vue.extend({
         this.loading = false
       }
     },
+    /**
+     * Prepare popup for new category
+     */
     showNew() {
       // this.valid = false
       this.category = { ...this.initCategory }
       this.dialog = true
     },
+    /**
+     * Prepare popup for editing a category
+     */
     showEdit(i: number) {
       this.valid = true
       const categ = this.categories[i]
-      this.category = { ...categ }
-      ;(this.category as any).id = categ.id
-      if ((this.category as any).budget < 0) {
+      this.category = {
+        ...categ,
+        balance: categ.balance.toString(),
+        budget: categ.budget.toString(),
+        id: categ.id,
+      }
+      // TODO: check if id usefull
+      if (categ.budget < 0) {
         this.isWithBudget = false
-        ;(this.category as any).budget = 0
+        this.category.budget = '0'
       }
       this.dialog = true
     },
-    getCategRatioColor({ balance, budget }: any, isManual = false) {
+    /**
+     * Calculate usage ratio of a Category
+     *
+     * @param {Category} categ The category
+     * @param {boolean} isPrimary If the 'OK' color should be primary
+     */
+    getCategRatioColor({ balance, budget }: Category, isPrimary = false) {
       const ratio = balance / (budget * (this.weeksCount as number))
-      return [
-        ratio < 0.5
-          ? isManual
-            ? 'primary'
-            : 'green'
-          : ratio <= 0.75
-          ? 'orange'
-          : 'red',
+      return {
+        color:
+          ratio < 0.5
+            ? isPrimary
+              ? 'primary'
+              : 'green'
+            : ratio <= 0.75
+            ? 'orange'
+            : 'red',
         ratio,
-      ]
+      }
     },
   },
 })

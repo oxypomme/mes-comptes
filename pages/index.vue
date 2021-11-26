@@ -177,6 +177,7 @@ export default Vue.extend({
     ],
   }),
   mounted() {
+    // Check if connected
     if (this.$store.getters['auth/getUser']) {
       this.$router.push('/dashboard')
     }
