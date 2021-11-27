@@ -63,4 +63,46 @@ export default {
 .vueToast {
   font-family: 'Roboto', sans-serif;
 }
+
+.theme--light {
+  & ::-webkit-scrollbar {
+    width: 15px;
+
+    &-track {
+      background: #e6e6e6;
+      border-left: 1px solid #dadada;
+    }
+
+    &-thumb {
+      background: #b0b0b0;
+      border: solid 3px #e6e6e6;
+      border-radius: 7px;
+
+      &:hover {
+        background: black;
+      }
+    }
+  }
+}
+
+.theme--dark {
+  & ::-webkit-scrollbar {
+    width: 15px;
+
+    &-track {
+      background: #202020;
+      border-left: 1px solid #2c2c2c;
+    }
+
+    &-thumb {
+      background: #3e3e3e;
+      border: solid 3px #202020;
+      border-radius: 7px;
+
+      &:hover {
+        background: white;
+      }
+    }
+  }
+}
 </style>
