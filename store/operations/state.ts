@@ -1,4 +1,3 @@
-import type firebase from 'firebase'
 import type { Operation } from '~/types'
 
 /**
@@ -12,17 +11,20 @@ const state = () => ({
    */
   data: [] as Operation[],
   /**
-   * First fetched document
-   */
-  firstdoc: undefined as any | firebase.firestore.DocumentSnapshot | undefined,
-  /**
-   * Last fetched document
-   */
-  lastdoc: undefined as any | firebase.firestore.DocumentSnapshot | undefined,
-  /**
    * Number per page
    */
-  items: 5,
+  items: 15,
+  /**
+   * Current page in state
+   */
+  page: 1,
+  /**
+   * Keep in state every page's limit
+   */
+  anchors: {
+    firsts: {} as { [page: string]: Operation },
+    lasts: {} as { [page: string]: Operation },
+  },
 })
 
 export default state

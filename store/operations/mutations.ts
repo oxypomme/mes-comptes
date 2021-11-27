@@ -1,5 +1,4 @@
 import type { MutationTree } from 'vuex'
-import type firebase from 'firebase'
 import type { OperationState } from './state'
 
 /**
@@ -13,27 +12,27 @@ const mutations: MutationTree<OperationState> = {
    */
   RESET_STATE: (state) => {
     state.data = []
-    state.firstdoc = undefined
-    state.lastdoc = undefined
-    state.items = 5
+    state.items = 15
+    state.page = 1
+    state.anchors = {
+      firsts: {},
+      lasts: {},
+    }
   },
   /**
-   * Set the first fetched operation
+   * Keep a trace of operation that limit a page
    *
    * @param state The state
-   * @param doc The operation
+   * @param pagination The pagination data
    */
-  FIRST_DOC: (state, doc?: firebase.firestore.DocumentSnapshot) => {
-    state.firstdoc = doc
-  },
-  /**
-   * Set the last fetched operation
-   *
-   * @param state The state
-   * @param doc The operation
-   */
-  LAST_DOC: (state, doc?: firebase.firestore.DocumentSnapshot) => {
-    state.lastdoc = doc
+  SET_PAGE: (state, { page, fdoc, ldoc }) => {
+    state.page = page
+    if (fdoc) {
+      state.anchors.firsts[page] = fdoc
+    }
+    if (ldoc) {
+      state.anchors.lasts[page] = ldoc
+    }
   },
 }
 

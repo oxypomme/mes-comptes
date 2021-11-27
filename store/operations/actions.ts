@@ -166,10 +166,22 @@ const actions: ActionTree<OperationState, RootState> = {
     docref = oref.orderBy('createdAt', 'desc')
 
     // paginate
-    if (progression > 0 && state.lastdoc?.doc) {
-      docref = docref.startAfter(state.lastdoc.doc)
-    } else if (progression < 0 && state.firstdoc?.doc) {
-      docref = docref.endBefore(state.firstdoc.doc)
+    const newPage = state.page + progression
+    if (state.data.length > 0) {
+      if (!isNaN(newPage) && state.anchors.firsts[newPage + 1]) {
+        const firstDoc = state.anchors.firsts[newPage + 1]
+        docref = docref.endBefore(firstDoc._doc)
+      }
+
+      if (newPage > 1) {
+        let lastDoc = state.data[state.data.length - 1]
+        if (state.anchors.lasts[newPage - 1]) {
+          lastDoc = state.anchors.lasts[newPage - 1]
+        }
+        if (lastDoc) {
+          docref = docref.startAfter(lastDoc._doc)
+        }
+      }
     }
 
     const res = await bindFirestoreRef('data', docref.limit(state.items), {
@@ -180,20 +192,12 @@ const actions: ActionTree<OperationState, RootState> = {
         return data
       },
     })
-    // update pagination
-    if (res.length > 0) {
-      commit(
-        'FIRST_DOC',
-        Object.defineProperty({}, 'doc', { value: res[0]._doc })
-      )
-      commit(
-        'LAST_DOC',
-        Object.defineProperty({}, 'doc', { value: res[res.length - 1]._doc })
-      )
-    } else {
-      commit('FIRST_DOC', undefined)
-      commit('LAST_DOC', undefined)
-    }
+
+    commit('SET_PAGE', {
+      page: !isNaN(newPage) ? newPage : 1,
+      fdoc: res[0],
+      ldoc: res[res.length - 1],
+    })
   }),
 }
 

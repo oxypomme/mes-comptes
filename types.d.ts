@@ -33,6 +33,7 @@ type InputCategory = Omit<Category, 'balance' | 'budget'> & {
 }
 
 interface Operation extends FirestoreData {
+  _doc?: firebase.firestore.DocumentSnapshot<firebase.firestore.DocumentData>
   name: string
   amount: number // float
   category: firebase.firestore.DocumentReference
