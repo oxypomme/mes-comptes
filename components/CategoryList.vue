@@ -166,7 +166,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { Category, InputCategory } from '~/types'
+import type { Category, InputCategory } from '~/types'
 
 export default Vue.extend({
   data: () => ({
@@ -200,13 +200,15 @@ export default Vue.extend({
      * Number of weeks in current month
      */
     weeksCount(): number {
-      const resetDate = this.$store.getters.getSettings.resetDate?.toDate()
+      const resetDate =
+        this.$store.getters.getSettings.resetDate?.toDate() as Date
       const prevResetDate = new Date(resetDate)
       prevResetDate.setMonth(prevResetDate.getMonth() - 1)
 
       const count = Math.round(
         // W * D * m * s * ms
-        (resetDate - (prevResetDate as any)) / (7 * 24 * 60 * 60 * 1000)
+        (resetDate.getTime() - prevResetDate.getTime()) /
+          (7 * 24 * 60 * 60 * 1000)
       )
 
       return count
@@ -238,7 +240,7 @@ export default Vue.extend({
     /**
      * Create a new category
      *
-     * @param {Event} e The event
+     * @param e The event
      */
     async createCategory(e: Event) {
       e.preventDefault()
@@ -275,7 +277,7 @@ export default Vue.extend({
     /**
      * Delete category
      *
-     * @param {number} i The index in `this.categories`
+     * @param i The index in `this.categories`
      */
     async deleteCategory(i: number) {
       const res = await this.$dialog.confirm({
@@ -336,8 +338,8 @@ export default Vue.extend({
     /**
      * Calculate usage ratio of a Category
      *
-     * @param {Category} categ The category
-     * @param {boolean} isPrimary If the 'OK' color should be primary
+     * @param categ The category
+     * @param isPrimary If the 'OK' color should be primary
      */
     getCategRatioColor({ balance, budget }: Category, isPrimary = false) {
       const ratio = balance / (budget * (this.weeksCount as number))

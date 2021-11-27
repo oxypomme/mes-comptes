@@ -73,7 +73,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import passStrength from 'zxcvbn'
-import { User } from '~/types'
+import type { User } from '~/types'
 
 export default Vue.extend({
   data: () => ({
@@ -142,7 +142,7 @@ export default Vue.extend({
     /**
      * Update user's auth data
      *
-     * @param {Event} e The event
+     * @param e The event
      */
     async updateAuth(e: Event) {
       e.preventDefault()

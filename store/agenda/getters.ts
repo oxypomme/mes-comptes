@@ -1,10 +1,26 @@
 import type { GetterTree } from 'vuex'
-import type { RootState } from '..'
+import type { RootState } from '../state'
 import type { AgendaState } from './state'
 import type { AgendaRow } from '~/types'
 
+/**
+ * Getters for user's agenda
+ */
 const getters: GetterTree<AgendaState, RootState> = {
+  /**
+   * Get the full agenda
+   *
+   * @param state The state
+   * @returns The data
+   */
   getAgenda: (state) => state.data,
+  /**
+   * Get the monthly budget for a chosen month
+   *
+   * @param _ The state
+   * @param getters The other getters
+   * @returns A function to get the budget
+   */
   getMonth:
     (_, getters) =>
     (

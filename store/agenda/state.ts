@@ -1,6 +1,14 @@
-import { AgendaRow } from '~/types'
+import type { AgendaRow } from '~/types'
 
+/**
+ * The state for user's agenda
+ *
+ * @returns The state
+ */
 const state = () => ({
+  /**
+   * The agenda
+   */
   data: [] as AgendaRow[],
 })
 

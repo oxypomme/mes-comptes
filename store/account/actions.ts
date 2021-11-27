@@ -1,17 +1,20 @@
 import { firestoreAction } from 'vuexfire'
 import type { ActionTree, Store } from 'vuex'
 import type firebase from 'firebase'
-import type { RootState } from '..'
+import type { RootState } from '../state'
 import type { AccountState } from './state'
-import { Account, InputAccount, User } from '~/types'
+import type { Account, InputAccount, User } from '~/types'
 
+/**
+ * Actions for user's accounts
+ */
 const actions: ActionTree<AccountState, RootState> = {
   /**
    * Create an account for the authed user
    *
    * @param context Vuex context
    * @param account The account
-   * @returns The promise of addition
+   * @returns The promise of creation
    */
   createAccount({ rootGetters }, { name, balance }: InputAccount) {
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
@@ -74,7 +77,9 @@ const actions: ActionTree<AccountState, RootState> = {
       .doc(id)
     return ref.delete()
   },
-
+  /**
+   * Bind user's accounts to the state
+   */
   bindAccounts: firestoreAction(function (
     this: Store<RootState>,
     { bindFirestoreRef },
@@ -87,10 +92,16 @@ const actions: ActionTree<AccountState, RootState> = {
       .orderBy('createdAt')
     return bindFirestoreRef('accounts', ref, { wait: true })
   }),
+  /**
+   * Unbind user's accounts to the state
+   */
   unbindAccounts: firestoreAction(function ({ commit, unbindFirestoreRef }) {
     unbindFirestoreRef('accounts', false)
     commit('RESET_STATE')
   }),
+  /**
+   * Update user's selected account, then fetch linked categories and operations
+   */
   selectAccount: firestoreAction(async function (
     this: Store<RootState>,
     { rootGetters, getters, dispatch, bindFirestoreRef },

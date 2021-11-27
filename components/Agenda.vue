@@ -205,7 +205,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
-import { AgendaRow } from '~/types'
+import type { AgendaRow } from '~/types'
 
 type SortType = 'name' | 'category' | 'type'
 
@@ -276,11 +276,15 @@ export default Vue.extend({
     /**
      * Edit a value in a row from the agenda
      *
-     * @param {string} id The id of the row
-     * @param {keyof AgendaRow} property The property to update
-     * @param {any} value The value to update. If not set, it will update row with `this?editedValue`
+     * @param id The id of the row
+     * @param property The property to update
+     * @param value The value to update. If not set, it will update row with `this?editedValue`
      */
-    async save(id: string, property: keyof AgendaRow, value?: any) {
+    async save(
+      id: string,
+      property: keyof AgendaRow,
+      value?: AgendaRow[keyof AgendaRow]
+    ) {
       this.loading = true
       await this.$store.dispatch('agenda/updateEntry', {
         id,
@@ -292,8 +296,8 @@ export default Vue.extend({
     /**
      * Edit a value in a row at a specific month from the agenda
      *
-     * @param {string} id The id of the row
-     * @param {number} month The index of the month
+     * @param id The id of the row
+     * @param month The index of the month
      */
     saveValue(id: string, month: number) {
       const items = [...this.items]
@@ -323,7 +327,7 @@ export default Vue.extend({
     /**
      * Edit sort type
      *
-     * @param {SortType} type The new sort type
+     * @param type The new sort type
      */
     changeSort(type: SortType) {
       if (type === this.sortType) {

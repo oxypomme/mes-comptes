@@ -57,3 +57,6 @@ interface InputUser {
 interface SettingsState {
   resetDate: firebase.firestore.Timestamp
 }
+interface Settings {
+  resetDate: Date
+}

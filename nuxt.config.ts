@@ -1,3 +1,4 @@
+// @ts-ignore
 import colors from 'vuetify/es5/util/colors'
 import fireconfig from './firebase.json'
 
@@ -61,7 +62,7 @@ export default {
       // Register custom toasts
       {
         name: 'show',
-        message: (message) => message,
+        message: (message: string) => message,
         options: {
           type: 'default',
           duration: 2000,
@@ -69,7 +70,7 @@ export default {
       },
       {
         name: 'success',
-        message: (message) => message,
+        message: (message: string) => message,
         options: {
           type: 'success',
           icon: 'check',
@@ -78,7 +79,7 @@ export default {
       },
       {
         name: 'info',
-        message: (message) => message,
+        message: (message: string) => message,
         options: {
           type: 'info',
           icon: 'information-outline',
@@ -87,7 +88,7 @@ export default {
       },
       {
         name: 'error',
-        message: (message) => message,
+        message: (message: string) => message,
         options: {
           type: 'error',
           icon: 'alert-circle-outline',

@@ -124,7 +124,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { Account } from '~/types'
+import type { Account, InputAccount } from '~/types'
 
 export default Vue.extend({
   data: () => ({
@@ -134,7 +134,7 @@ export default Vue.extend({
       name: '',
       balance: '0',
     },
-    account: {} as any, // TODO: WTF any ?
+    account: {} as InputAccount,
     valid: true,
     dialog: false,
     loading: false,
@@ -190,7 +190,7 @@ export default Vue.extend({
     },
     /**
      * Delete sub account
-     * @param {number} i The index in `this.accounts`
+     * @param i The index in `this.accounts`
      */
     async deleteAccount(i: number) {
       const res = await this.$dialog.confirm({
@@ -232,7 +232,7 @@ export default Vue.extend({
     },
     /**
      * Show popup for editing a sub account
-     * @param {number} i The index in `this.accounts`
+     * @param i The index in `this.accounts`
      */
     showEdit(i: number) {
       this.valid = true

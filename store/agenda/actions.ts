@@ -1,11 +1,20 @@
 import { firestoreAction } from 'vuexfire'
 import type { ActionTree, Store } from 'vuex'
 import type firebase from 'firebase'
-import type { RootState } from '..'
+import type { RootState } from '../state'
 import type { AgendaState } from './state'
-import { AgendaRow, User } from '~/types'
+import type { AgendaRow, User } from '~/types'
 
+/**
+ * Actions for user's agenda
+ */
 const actions: ActionTree<AgendaState, RootState> = {
+  /**
+   * Create a row for the authed user
+   *
+   * @param context Vuex context
+   * @returns The promise of creation
+   */
   createEntry({ rootGetters }) {
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
     if (!uid) {
@@ -24,13 +33,24 @@ const actions: ActionTree<AgendaState, RootState> = {
       createdAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
     } as AgendaRow & { createdAt: firebase.firestore.FieldValue })
   },
+  /**
+   * Update a row for the authed user
+   *
+   * @param context Vuex context
+   * @param row The representation of a row
+   * @returns The promise of edition
+   */
   updateEntry(
     { rootGetters },
     {
       id,
       property,
       value,
-    }: { id: string; property: keyof AgendaRow; value: any }
+    }: {
+      id: string
+      property: keyof AgendaRow
+      value: AgendaRow[keyof AgendaRow]
+    }
   ) {
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
     if (!uid) {
@@ -47,6 +67,13 @@ const actions: ActionTree<AgendaState, RootState> = {
       updatedAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
     } as Partial<AgendaRow> & { updatedAt: firebase.firestore.FieldValue })
   },
+  /**
+   * Delete a row for the authed user
+   *
+   * @param context Vuex context
+   * @param id The id of the row
+   * @returns The promise of deletion
+   */
   deleteEntry({ rootGetters }, id: string) {
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
     if (!uid) {
@@ -60,7 +87,9 @@ const actions: ActionTree<AgendaState, RootState> = {
       .doc(id)
     return ref.delete()
   },
-
+  /**
+   * Bind user's agenda to the state
+   */
   bindAgenda: firestoreAction(function (
     this: Store<RootState>,
     { bindFirestoreRef },
@@ -72,6 +101,9 @@ const actions: ActionTree<AgendaState, RootState> = {
       .collection('agenda')
     return bindFirestoreRef('data', ref, { wait: true })
   }),
+  /**
+   * Unbind user's agenda to the state
+   */
   unbindAgenda: firestoreAction(function ({ commit, unbindFirestoreRef }) {
     unbindFirestoreRef('data', false)
     commit('RESET_STATE')

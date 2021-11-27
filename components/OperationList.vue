@@ -135,7 +135,7 @@
         <v-btn icon color="blue" @click="showEdit(item)">
           <v-icon>mdi-pencil</v-icon>
         </v-btn>
-        <v-btn icon color="red" @click="deleteOperation(item)">
+        <v-btn icon color="red" @click="deleteOperation(item.id)">
           <v-icon>mdi-delete</v-icon>
         </v-btn>
       </template>
@@ -151,7 +151,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
-import { Account, InputOperation, Operation, ValueModifier } from '~/types'
+import type { Account, InputOperation, Operation, ValueModifier } from '~/types'
 
 export default Vue.extend({
   data: () => ({
@@ -247,14 +247,10 @@ export default Vue.extend({
     /**
      * Delete an operation
      */
-    async deleteOperation({ id, amount, category }: Operation) {
+    async deleteOperation(id: string) {
       this.loading = true
       try {
-        await this.$store.dispatch('operations/deleteOperation', {
-          id,
-          amount,
-          category,
-        })
+        await this.$store.dispatch('operations/deleteOperation', id)
       } catch (e) {
         this.$toast.global.error((e as Error).message)
       }

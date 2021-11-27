@@ -1,7 +1,7 @@
 import { firestoreAction } from 'vuexfire'
 import type { ActionTree, Store } from 'vuex'
 import type firebase from 'firebase'
-import type { RootState } from '..'
+import type { RootState } from '../state'
 import type { OperationState } from './state'
 import type {
   Account,
@@ -11,7 +11,17 @@ import type {
   User,
 } from '~/types'
 
+/**
+ * Actions for user's operations
+ */
 const actions: ActionTree<OperationState, RootState> = {
+  /**
+   * Create an operation for the authed user in the selected account
+   *
+   * @param param0 Vuex context
+   * @param param1 The operation
+   * @returns The promise of creation
+   */
   createOperation(
     { rootGetters },
     { name, amount, category, modifier }: InputOperation
@@ -32,6 +42,8 @@ const actions: ActionTree<OperationState, RootState> = {
       .doc(uid)
       .collection('accounts')
       .doc(aid)
+
+    // Get category reference
     let cref = null
     if (category && typeof category === 'string')
       cref = ref.collection('categories').doc(category)
@@ -43,6 +55,13 @@ const actions: ActionTree<OperationState, RootState> = {
       createdAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
     } as Operation & { createdAt: firebase.firestore.FieldValue })
   },
+  /**
+   * Edit an operation for the auther user in the selected account
+   *
+   * @param context Vuex context
+   * @param operation The operation
+   * @returns The promise of edition
+   */
   editOperation(
     { rootGetters },
     { id, name, amount, category }: InputOperation
@@ -79,7 +98,14 @@ const actions: ActionTree<OperationState, RootState> = {
         updatedAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
       } as Operation & { updatedAt: firebase.firestore.FieldValue })
   },
-  deleteOperation({ rootGetters }, { id }) {
+  /**
+   * Delete an operation for the auther user in the selected account
+   *
+   * @param context Vuex context
+   * @param id The id of the operation
+   * @returns The promise of deletion
+   */
+  deleteOperation({ rootGetters }, id) {
     // const amnt = parseFloat(amount)
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
     if (!uid) {
@@ -96,9 +122,16 @@ const actions: ActionTree<OperationState, RootState> = {
       .doc(uid)
       .collection('accounts')
       .doc(aid)
+      .collection('operations')
+      .doc(id)
 
-    return ref.collection('operations').doc(id).delete()
+    return ref.delete()
   },
+  /**
+   * Bind user's operations for the auther user in the selected account
+   *
+   * TODO: pagination
+   */
   getOperations: firestoreAction(function (
     this: Store<RootState>,
     { rootGetters, bindFirestoreRef },
