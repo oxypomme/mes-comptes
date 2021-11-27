@@ -130,17 +130,12 @@ const actions: ActionTree<OperationState, RootState> = {
   /**
    * Bind user's operations for the auther user in the selected account
    *
-   * TODO: pagination
+   * @param index Index in `categories`
    */
-  getOperations: firestoreAction(function (
+  getOperations: firestoreAction(async function (
     this: Store<RootState>,
-    { rootGetters, bindFirestoreRef },
-    {
-      category,
-    }: {
-      limit: number
-      category: number
-    }
+    { rootGetters, bindFirestoreRef, state, commit },
+    { category, progression }: { category: number; progression: number }
   ) {
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
     if (!uid) {
@@ -162,14 +157,43 @@ const actions: ActionTree<OperationState, RootState> = {
     const oref = ref.collection('operations')
 
     let docref: firebase.firestore.Query
+    // filtering by category
     if (category !== undefined) {
       const categories = rootGetters['categories/getCategories'] as Category[]
       docref = oref.where('category', '==', cref.doc(categories[category].id))
     }
 
     docref = oref.orderBy('createdAt', 'desc')
-    // .limit(limit)
-    return bindFirestoreRef('data', docref)
+
+    // paginate
+    if (progression > 0 && state.lastdoc?.doc) {
+      docref = docref.startAfter(state.lastdoc.doc)
+    } else if (progression < 0 && state.firstdoc?.doc) {
+      docref = docref.endBefore(state.firstdoc.doc)
+    }
+
+    const res = await bindFirestoreRef('data', docref.limit(state.items), {
+      serialize: (doc) => {
+        const data = doc.data()
+        Object.defineProperty(data, 'id', { value: doc.id })
+        Object.defineProperty(data, '_doc', { value: doc })
+        return data
+      },
+    })
+    // update pagination
+    if (res.length > 0) {
+      commit(
+        'FIRST_DOC',
+        Object.defineProperty({}, 'doc', { value: res[0]._doc })
+      )
+      commit(
+        'LAST_DOC',
+        Object.defineProperty({}, 'doc', { value: res[res.length - 1]._doc })
+      )
+    } else {
+      commit('FIRST_DOC', undefined)
+      commit('LAST_DOC', undefined)
+    }
   }),
 }
 

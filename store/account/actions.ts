@@ -126,13 +126,7 @@ const actions: ActionTree<AccountState, RootState> = {
       .doc(aid)
     await bindFirestoreRef('current', ref, { wait: true })
     // TODO?: No await ?
-    dispatch(
-      'operations/getOperations',
-      {
-        limit: 100,
-      },
-      { root: true }
-    )
+    dispatch('operations/getOperations', {}, { root: true })
     return dispatch('categories/getCategories', null, { root: true })
   }),
 }

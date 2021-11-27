@@ -88,8 +88,7 @@
     <v-data-table
       :headers="headers"
       :items="operations"
-      :page.sync="page"
-      :items-per-page="items"
+      :items-per-page="ops.items"
       :loading="loading"
       class="elevation-1"
       hide-default-footer
@@ -161,7 +160,6 @@ import type { Account, InputOperation, Operation, ValueModifier } from '~/types'
 export default Vue.extend({
   data: () => ({
     page: 1,
-    items: 100,
     loading: false,
     headers: [
       {
@@ -195,11 +193,10 @@ export default Vue.extend({
 
     /**
      * Number of pages in total
-     * @deprecated Unused because pagination in not implemented
      */
     pageCount() {
       return Math.ceil(
-        ((this.account as Account | null)?.operationCount ?? 0) / this.items
+        ((this.account as Account | null)?.operationCount ?? 0) / this.ops.items
       )
     },
     /**
@@ -213,10 +210,10 @@ export default Vue.extend({
     /**
      * Fetch more operations on page change
      */
-    async page() {
+    async page(newValue, lastValue) {
       this.loading = true
       await this.$store.dispatch('operations/getOperations', {
-        limit: this.items,
+        progression: newValue - lastValue,
       })
       this.loading = false
     },
