@@ -111,7 +111,7 @@
               {{ item.name }}
               <template #input>
                 <v-text-field
-                  v-model="editedValue"
+                  v-model="editedValue.value"
                   :label="item.name"
                   type="text"
                   single-line
@@ -131,7 +131,7 @@
               {{ item.category }}
               <template #input>
                 <v-text-field
-                  v-model="editedValue"
+                  v-model="editedValue.value"
                   :label="item.category"
                   type="text"
                   single-line
@@ -157,7 +157,7 @@
               </v-chip>
               <template #input>
                 <v-select
-                  v-model="editedValue"
+                  v-model="editedValue.value"
                   :items="[
                     { modifier: -1, label: 'Débit (-)' },
                     { modifier: 1, label: 'Crédit (+)' },
@@ -187,14 +187,14 @@
               <template #input>
                 <v-form @submit="preventDefault">
                   <v-text-field
-                    v-model="editedValue"
+                    v-model="editedValue.value"
                     :label="value.toFixed(2)"
                     type="number"
                     prefix="€"
                     single-line
                   ></v-text-field>
                   <v-checkbox
-                    v-model="applyToAll"
+                    v-model="editedValue.applyToAll"
                     label="Appliquer à tous"
                   ></v-checkbox>
                 </v-form>
@@ -218,8 +218,10 @@ export default Vue.extend({
   data: () => ({
     currMonth: new Date().getMonth(),
     loading: false,
-    editedValue: '0.00',
-    applyToAll: false,
+    editedValue: {
+      value: '0.00',
+      applyToAll: false,
+    },
     sortType: 'type' as SortType,
     reverseSort: false,
   }),
@@ -294,7 +296,7 @@ export default Vue.extend({
       await this.$store.dispatch('agenda/updateEntry', {
         id,
         property,
-        value: value ?? this.editedValue,
+        value: value ?? this.editedValue.value,
       })
       this.loading = false
     },
@@ -307,12 +309,12 @@ export default Vue.extend({
     saveValue(id: string, month: number) {
       const items = [...this.items]
       const index = items.findIndex((r) => r.id === id)
-      if (this.applyToAll) {
+      if (this.editedValue.applyToAll) {
         for (let i = 0; i < items[index].values.length; i++) {
-          items[index].values[i] = parseFloat(this.editedValue)
+          items[index].values[i] = parseFloat(this.editedValue.value)
         }
       } else {
-        items[index].values[month] = parseFloat(this.editedValue)
+        items[index].values[month] = parseFloat(this.editedValue.value)
       }
       this.save(id, 'values', items[index].values)
     },
@@ -320,14 +322,16 @@ export default Vue.extend({
      * Reset `this.editedValue`
      */
     cancel() {
-      this.editedValue = '0.00'
+      this.editedValue = {
+        value: '0.00',
+        applyToAll: false,
+      }
     },
     /**
      * Prepare dialog to open
      */
     open(value: string) {
-      this.applyToAll = false
-      this.editedValue = value
+      this.editedValue = { value, applyToAll: false }
     },
     /**
      * Edit sort type
