@@ -43,7 +43,7 @@
         </v-row>
         <v-row>
           <v-btn
-            color="green"
+            color="success"
             class="mt-4"
             type="submit"
             block
@@ -55,7 +55,7 @@
         </v-row>
         <v-row>
           <v-btn
-            color="red"
+            color="error"
             class="mt-4"
             block
             :loading="loading"
@@ -177,7 +177,7 @@ export default Vue.extend({
             },
             true: {
               text: 'Confirmer',
-              color: 'red',
+              color: 'error',
             },
           },
         })

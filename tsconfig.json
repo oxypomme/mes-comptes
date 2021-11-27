@@ -18,6 +18,7 @@
       "@/*": ["./*"]
     },
     "types": [
+      "vuetify",
       "@nuxt/types",
       "@nuxtjs/device",
       "@types/node",

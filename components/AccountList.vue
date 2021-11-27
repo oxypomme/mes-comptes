@@ -47,7 +47,7 @@
             <v-spacer></v-spacer>
             <v-btn color="error" text @click="dialog = false"> Annuler </v-btn>
             <v-btn
-              color="green"
+              color="success"
               :loading="loading"
               :disabled="!valid"
               text
@@ -72,7 +72,12 @@
           >
             {{ totalBalance.toFixed(2) }} €
           </v-chip>
-          <v-btn icon color="green" :small="$device.isMobile" @click="showNew">
+          <v-btn
+            icon
+            color="success"
+            :small="$device.isMobile"
+            @click="showNew"
+          >
             <v-icon>mdi-plus</v-icon>
           </v-btn>
         </span>
@@ -108,7 +113,7 @@
               </v-btn>
               <v-btn
                 icon
-                color="red"
+                color="error"
                 :x-small="$device.isMobile"
                 @click="deleteAccount(i)"
               >
@@ -199,11 +204,11 @@ export default Vue.extend({
         actions: {
           false: {
             text: 'Annuler',
-            color: 'red',
+            color: 'error',
           },
           true: {
             text: 'Confirmer',
-            color: 'green',
+            color: 'success',
           },
         },
       })

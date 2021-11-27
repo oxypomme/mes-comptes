@@ -73,7 +73,7 @@
             <v-spacer></v-spacer>
             <v-btn color="error" text @click="dialog = false"> Annuler </v-btn>
             <v-btn
-              color="green"
+              color="success"
               :loading="loading"
               :disabled="!valid"
               text
@@ -97,12 +97,17 @@
     >
       <template #top>
         <div>
-          <v-toolbar color="#1E1E1E" flat rounded :dense="$device.isMobile">
+          <v-toolbar
+            :color="$vuetify.theme.dark ? '#1E1E1E' : '#fff'"
+            flat
+            rounded
+            :dense="$device.isMobile"
+          >
             <v-toolbar-title class="font-weight-light">
               Opérations
             </v-toolbar-title>
             <v-spacer></v-spacer>
-            <v-btn icon color="green" @click="showNew">
+            <v-btn icon color="success" @click="showNew">
               <v-icon>mdi-plus</v-icon>
             </v-btn>
           </v-toolbar>
@@ -135,7 +140,7 @@
         <v-btn icon color="blue" @click="showEdit(item)">
           <v-icon>mdi-pencil</v-icon>
         </v-btn>
-        <v-btn icon color="red" @click="deleteOperation(item.id)">
+        <v-btn icon color="error" @click="deleteOperation(item.id)">
           <v-icon>mdi-delete</v-icon>
         </v-btn>
       </template>

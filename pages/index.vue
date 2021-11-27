@@ -86,9 +86,9 @@
                       <v-list-item>
                         <v-list-item-icon>
                           <span v-if="feat.max">{{ feat.max }}</span>
-                          <v-icon v-else-if="feat.status === false" color="red"
-                            >mdi-close-thick</v-icon
-                          >
+                          <v-icon v-else-if="feat.status === false" color="red">
+                            mdi-close-thick
+                          </v-icon>
                           <v-icon v-else color="green">mdi-check-bold</v-icon>
                         </v-list-item-icon>
                         <v-list-item-content>

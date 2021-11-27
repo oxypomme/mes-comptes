@@ -15,7 +15,7 @@ const actions: ActionTree<RootState, RootState> = {
    * @param settings The new settings
    * @returns
    */
-  updateSettings({ rootGetters }, { resetDate }: Settings) {
+  updateSettings({ rootGetters }, { resetDate, lightTheme }: Settings) {
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
     if (!uid) {
       throw new Error('Vous devez être connecté pour effectuer cette action')
@@ -25,6 +25,7 @@ const actions: ActionTree<RootState, RootState> = {
     return ref.set(
       {
         resetDate: this.$fireModule.firestore.Timestamp.fromDate(resetDate),
+        lightTheme,
       },
       { merge: true }
     )

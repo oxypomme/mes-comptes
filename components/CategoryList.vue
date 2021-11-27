@@ -59,7 +59,7 @@
             <v-spacer></v-spacer>
             <v-btn color="error" text @click="dialog = false"> Annuler </v-btn>
             <v-btn
-              color="green"
+              color="success"
               :loading="loading"
               :disabled="!valid"
               text
@@ -74,7 +74,7 @@
     <v-card>
       <v-card-title>
         <span class="font-weight-light">Catégories</span>
-        <v-btn class="last-item" icon color="green" @click="showNew">
+        <v-btn class="last-item" icon color="success" @click="showNew">
           <v-icon>mdi-plus</v-icon>
         </v-btn>
       </v-card-title>
@@ -150,7 +150,7 @@
               </v-btn>
               <v-btn
                 icon
-                color="red"
+                color="error"
                 :x-small="$device.isMobile"
                 @click="deleteCategory(i)"
               >
@@ -286,11 +286,11 @@ export default Vue.extend({
         actions: {
           false: {
             text: 'Annuler',
-            color: 'red',
+            color: 'error',
           },
           true: {
             text: 'Confirmer',
-            color: 'green',
+            color: 'success',
           },
         },
       })

@@ -2,12 +2,17 @@
   <v-simple-table :dense="$device.isMobile" fixed-header height="77vh">
     <template #top>
       <div>
-        <v-toolbar color="#1E1E1E" flat rounded :dense="$device.isMobile">
+        <v-toolbar
+          :color="$vuetify.theme.dark ? '#1E1E1E' : '#fff'"
+          flat
+          rounded
+          :dense="$device.isMobile"
+        >
           <v-toolbar-title class="font-weight-light">
             Planning
           </v-toolbar-title>
           <v-spacer></v-spacer>
-          <v-btn icon color="green" @click="addRow">
+          <v-btn icon color="success" @click="addRow">
             <v-icon>mdi-plus</v-icon>
           </v-btn>
         </v-toolbar>
@@ -90,7 +95,7 @@
       <tbody>
         <tr v-for="(item, i) in [...items].sort(sorter)" :key="'i' + i">
           <td>
-            <v-btn icon color="red" @click="deleteRow(item.id)">
+            <v-btn icon color="error" @click="deleteRow(item.id)">
               <v-icon>mdi-delete</v-icon>
             </v-btn>
           </td>

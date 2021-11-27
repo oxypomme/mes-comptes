@@ -34,7 +34,7 @@
             <v-spacer></v-spacer>
             <v-btn color="error" text @click="dialog = false"> Annuler </v-btn>
             <v-btn
-              color="green"
+              color="success"
               :loading="loading"
               :disabled="!valid"
               text
@@ -88,7 +88,7 @@
           </v-row>
           <v-row>
             <v-btn
-              color="green"
+              color="success"
               class="mt-1"
               block
               :loading="loading || dialog"
