@@ -73,6 +73,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import passStrength from 'zxcvbn'
+import { User } from '~/types'
 
 export default Vue.extend({
   data: () => ({

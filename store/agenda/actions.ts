@@ -1,5 +1,5 @@
 import { firestoreAction } from 'vuexfire'
-import type { ActionTree } from 'vuex'
+import type { ActionTree, Store } from 'vuex'
 import type firebase from 'firebase'
 import type { RootState } from '..'
 import type { AgendaState } from './state'
@@ -62,6 +62,7 @@ const actions: ActionTree<AgendaState, RootState> = {
   },
 
   bindAgenda: firestoreAction(function (
+    this: Store<RootState>,
     { bindFirestoreRef },
     { uid }: firebase.User
   ) {

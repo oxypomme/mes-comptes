@@ -1,5 +1,5 @@
 import { firestoreAction } from 'vuexfire'
-import type { ActionTree } from 'vuex'
+import type { ActionTree, Store } from 'vuex'
 import type firebase from 'firebase'
 import type { RootState } from '..'
 import type { OperationState } from './state'
@@ -100,6 +100,7 @@ const actions: ActionTree<OperationState, RootState> = {
     return ref.collection('operations').doc(id).delete()
   },
   getOperations: firestoreAction(function (
+    this: Store<RootState>,
     { rootGetters, bindFirestoreRef },
     {
       category,
@@ -118,23 +119,24 @@ const actions: ActionTree<OperationState, RootState> = {
       throw new Error('Un compte doit être séléctionné')
     }
 
-    let ref = this.$fire.firestore
+    const ref = this.$fire.firestore
       .collection('users')
       .doc(uid)
       .collection('accounts')
       .doc(aid)
     const cref = ref.collection('categories')
 
-    ref = ref.collection('operations')
+    const oref = ref.collection('operations')
 
+    let docref: firebase.firestore.Query
     if (category !== undefined) {
       const categories = rootGetters['categories/getCategories'] as Category[]
-      ref = ref.where('category', '==', cref.doc(categories[category].id))
+      docref = oref.where('category', '==', cref.doc(categories[category].id))
     }
 
-    ref = ref.orderBy('createdAt', 'desc')
+    docref = oref.orderBy('createdAt', 'desc')
     // .limit(limit)
-    return bindFirestoreRef('data', ref)
+    return bindFirestoreRef('data', docref)
   }),
 }
 

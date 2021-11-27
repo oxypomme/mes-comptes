@@ -166,6 +166,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import { Category, InputCategory } from '~/types'
 
 export default Vue.extend({
   data: () => ({

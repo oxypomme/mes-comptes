@@ -151,6 +151,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
+import { Account, InputOperation, Operation, ValueModifier } from '~/types'
 
 export default Vue.extend({
   data: () => ({

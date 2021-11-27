@@ -205,6 +205,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
+import { AgendaRow } from '~/types'
 
 type SortType = 'name' | 'category' | 'type'
 

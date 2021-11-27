@@ -1,5 +1,5 @@
 import { firestoreAction } from 'vuexfire'
-import type { ActionTree } from 'vuex'
+import type { ActionTree, Store } from 'vuex'
 import type firebase from 'firebase'
 import type { RootState } from '..'
 import type { CategoryState } from './state'
@@ -76,10 +76,10 @@ const actions: ActionTree<CategoryState, RootState> = {
 
     return ref.delete()
   },
-  getCategories: firestoreAction(async function ({
-    rootGetters,
-    bindFirestoreRef,
-  }) {
+  getCategories: firestoreAction(async function (
+    this: Store<RootState>,
+    { rootGetters, bindFirestoreRef }
+  ) {
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
     if (!uid) {
       throw new Error('Vous devez être connecté pour effectuer cette action')

@@ -1,5 +1,5 @@
 import { firestoreAction } from 'vuexfire'
-import type { ActionTree } from 'vuex'
+import type { ActionTree, Store } from 'vuex'
 import type firebase from 'firebase'
 import type { RootState } from '..'
 import type { AccountState } from './state'
@@ -75,22 +75,24 @@ const actions: ActionTree<AccountState, RootState> = {
     return ref.delete()
   },
 
-  // TODO: Test this, as it can be broken
-  bindAccounts() {
-    return firestoreAction(({ bindFirestoreRef }, { uid }: firebase.User) => {
-      const ref = this.$fire.firestore
-        .collection('users')
-        .doc(uid)
-        .collection('accounts')
-        .orderBy('createdAt')
-      return bindFirestoreRef('accounts', ref, { wait: true })
-    })
-  },
+  bindAccounts: firestoreAction(function (
+    this: Store<RootState>,
+    { bindFirestoreRef },
+    { uid }: firebase.User
+  ) {
+    const ref = this.$fire.firestore
+      .collection('users')
+      .doc(uid)
+      .collection('accounts')
+      .orderBy('createdAt')
+    return bindFirestoreRef('accounts', ref, { wait: true })
+  }),
   unbindAccounts: firestoreAction(function ({ commit, unbindFirestoreRef }) {
     unbindFirestoreRef('accounts', false)
     commit('RESET_STATE')
   }),
   selectAccount: firestoreAction(async function (
+    this: Store<RootState>,
     { rootGetters, getters, dispatch, bindFirestoreRef },
     index
   ) {
