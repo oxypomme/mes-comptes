@@ -167,20 +167,13 @@ const actions: ActionTree<OperationState, RootState> = {
 
     // paginate
     const newPage = state.page + progression
-    if (state.data.length > 0) {
-      if (!isNaN(newPage) && state.anchors.firsts[newPage + 1]) {
-        const firstDoc = state.anchors.firsts[newPage + 1]
-        docref = docref.endBefore(firstDoc._doc)
+    if (newPage > 1) {
+      let lastDoc = state.data[state.data.length - 1]
+      if (state.anchors.lasts[newPage - 1]) {
+        lastDoc = state.anchors.lasts[newPage - 1]
       }
-
-      if (newPage > 1) {
-        let lastDoc = state.data[state.data.length - 1]
-        if (state.anchors.lasts[newPage - 1]) {
-          lastDoc = state.anchors.lasts[newPage - 1]
-        }
-        if (lastDoc) {
-          docref = docref.startAfter(lastDoc._doc)
-        }
+      if (lastDoc) {
+        docref = docref.startAfter(lastDoc._doc)
       }
     }
 
