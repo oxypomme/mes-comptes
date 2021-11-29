@@ -4,9 +4,7 @@
       <v-card>
         <v-form v-model="valid" @submit="save">
           <v-toolbar elevation="0" dense>
-            <v-toolbar-title>
-              {{ editedValue.name }}
-            </v-toolbar-title>
+            <v-toolbar-title> Éditer {{ editedValue.name }} </v-toolbar-title>
             <v-spacer></v-spacer>
             <v-btn icon color="grey" small plain @click="dialog = false">
               <v-icon>mdi-close</v-icon>
@@ -22,6 +20,7 @@
                   :label="editedLabel"
                   :prefix="typeof editedValue.field === 'string' ? '' : '€'"
                   required
+                  class="text-capitalize"
                   :dense="$device.isMobile"
                 >
                 </v-text-field>
@@ -240,14 +239,18 @@ export default Vue.extend({
     ...mapGetters({ month: 'agenda/getMonth' }),
     /**
      * User's agenda
+     *
+     * @returns The agenda
      */
     items(): AgendaRow[] {
       return this.$store.getters['agenda/getAgenda']
     },
     /**
      * Function to sort user's agenda
+     *
+     * @returns The function
      */
-    sorter() {
+    sorter(): (a: AgendaRow, b: AgendaRow) => number {
       let priority: (keyof Omit<AgendaRow, 'values' | 'id'>)[] = []
       switch (this.sortType) {
         case 'name':
@@ -261,7 +264,7 @@ export default Vue.extend({
           priority = ['modifier', 'category', 'name']
           break
       }
-      return (a: AgendaRow, b: AgendaRow) => {
+      return (a, b) => {
         let res = 0
         let i = 0
         while (res === 0 && i < priority.length) {
@@ -275,9 +278,12 @@ export default Vue.extend({
     },
     /**
      * Get the current label edited
+     *
+     * @returns The label
      */
     editedLabel(): string {
       if (typeof this.editedValue.field === 'string') {
+        // Return the correct label
         switch (this.editedValue.field) {
           case 'name':
             return 'Nom'
@@ -287,6 +293,7 @@ export default Vue.extend({
             return 'Valeur'
         }
       } else {
+        // Return the concerned month
         return new Date(
           2021 + (this.currMonth > this.editedValue.field ? 1 : 0),
           this.editedValue.field
@@ -303,7 +310,11 @@ export default Vue.extend({
      */
     async addRow() {
       this.loading = true
-      await this.$store.dispatch('agenda/createEntry')
+      try {
+        await this.$store.dispatch('agenda/createEntry')
+      } catch (e) {
+        this.$toast.global.error((e as Error).message)
+      }
       this.loading = false
     },
     /**
@@ -313,7 +324,11 @@ export default Vue.extend({
      */
     async deleteRow(id: string) {
       this.loading = true
-      await this.$store.dispatch('agenda/deleteEntry', id)
+      try {
+        await this.$store.dispatch('agenda/deleteEntry', id)
+      } catch (e) {
+        this.$toast.global.error((e as Error).message)
+      }
       this.loading = false
     },
     /**
@@ -338,20 +353,18 @@ export default Vue.extend({
           property,
           value,
         })
-        this.loading = false
-        this.dialog = false
       } catch (e) {
         this.$toast.global.error((e as Error).message)
       }
+      this.loading = false
+      this.dialog = false
     },
     /**
      * Edit a value in a row at a specific month from the agenda
      *
-     * @param id The id of the row
-     * @param month The index of the month
      * @returns The values of the row
      */
-    editValue() {
+    editValue(): number[] {
       const items = [...this.items]
       const index = items.findIndex((r) => r.id === this.editedValue.id)
       if (this.editedValue.applyToAll) {
@@ -367,10 +380,14 @@ export default Vue.extend({
     },
     /**
      * Prepare dialog to open
+     *
+     * @param row The row
+     * @param field The field of the row
+     * @param value The current value of the row
      */
     open({ id, name }: AgendaRow, field: string, value: string) {
       this.editedValue = { id, name, field, value, applyToAll: false }
-      this.dialog = false
+      // this.valid = false
       this.dialog = true
     },
     /**
@@ -388,6 +405,8 @@ export default Vue.extend({
     },
     /**
      * Wrapper to `Event.preventDefault`
+     *
+     * @param e The event
      */
     preventDefault(e: Event) {
       e.preventDefault()
