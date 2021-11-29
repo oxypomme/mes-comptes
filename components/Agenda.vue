@@ -175,7 +175,7 @@
             </td>
             <td>
               <span class="hoverable" @click="open(item, 'name', item.name)">
-                {{ item.name }}
+                {{ item.name ?? '-' }}
               </span>
             </td>
             <td>
@@ -183,7 +183,7 @@
                 class="hoverable"
                 @click="open(item, 'category', item.category)"
               >
-                {{ item.category }}
+                {{ item.category ?? '-' }}
               </span>
             </td>
             <td class="text-center">
