@@ -39,8 +39,10 @@
   </v-list>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import Vue from 'vue'
+
+export default Vue.extend({
   computed: {
     items() {
       const isLoggedIn = !!this.$store.getters['auth/getUser']
@@ -66,7 +68,6 @@ export default {
             icon: 'mdi-calendar',
             title: 'Planificateur',
             to: '/agenda',
-            disabled: true,
           },
           {
             icon: 'mdi-chart-box-outline',
@@ -101,5 +102,5 @@ export default {
       ]
     },
   },
-}
+})
 </script>

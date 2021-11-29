@@ -37,8 +37,15 @@
           </v-menu>
         </v-row>
         <v-row>
+          <v-switch
+            v-model="settings.lightTheme"
+            label="Theme lumineux (BETA)"
+            @click="toggleTheme"
+          ></v-switch>
+        </v-row>
+        <v-row>
           <v-btn
-            color="green"
+            color="success"
             class="mt-4"
             :loading="loading"
             :disabled="!valid"
@@ -63,6 +70,9 @@ export default Vue.extend({
     loading: false,
   }),
   computed: {
+    /**
+     * Current user's settings
+     */
     settings() {
       const date = this.$store.getters.getSettings.resetDate.toDate() as Date
       return {
@@ -74,6 +84,9 @@ export default Vue.extend({
     },
   },
   methods: {
+    /**
+     * Edit user's settings
+     */
     async updateSettings(e: Event) {
       e.preventDefault()
       if (this.valid) {
@@ -91,7 +104,11 @@ export default Vue.extend({
       }
     },
     saveResetDate(date: string) {
-      ;(this.$refs.menu as any).save(date)
+      ;(this.$refs.menu as Element & { save: (data: any) => any }).save(date)
+    },
+    toggleTheme(e: Event) {
+      this.$vuetify.theme.dark = !this.settings.lightTheme
+      this.updateSettings(e)
     },
   },
 })

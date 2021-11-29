@@ -34,7 +34,7 @@
         </v-row>
         <v-row>
           <v-btn
-            color="green"
+            color="success"
             class="mt-4"
             type="submit"
             block

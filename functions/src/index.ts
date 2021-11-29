@@ -9,6 +9,12 @@ import {
 initializeApp()
 const store = firestore()
 
+/**
+ * Reset user's categories' balances if needed
+ *
+ * @param ref The user reference
+ * @param d The current date
+ */
 const resetCategoriesBalance = async (
   ref: firestore.DocumentReference<firestore.DocumentData>,
   d: Date
@@ -45,6 +51,9 @@ const resetCategoriesBalance = async (
   }
 }
 
+/**
+ * Check every user if an action is needed
+ */
 const checkUsers = async () => {
   const d = new Date()
   const users = await store.collection('users').listDocuments()
@@ -57,6 +66,12 @@ const checkUsers = async () => {
   return null
 }
 
+/**
+ * Update balances on a new operation
+ *
+ * @param changes The changes of the document
+ * @param context The context of the event
+ */
 const onOperationWrite = async (
   { after, before }: Change<firefnc.DocumentSnapshot>,
   { params }: EventContext
@@ -124,11 +139,17 @@ const onOperationWrite = async (
   return null
 }
 
+/**
+ * Check users every 24 hours
+ */
 export const scheduledFunction = pubsub
   .schedule('every 24 hours')
   // .schedule('every 30 seconds')
   .onRun(checkUsers)
 
+/**
+ * Trigger balance update on new operation
+ */
 export const syncBalance = firefnc
   .document('users/{userId}/accounts/{accountId}/operations/{operationId}')
   .onWrite(onOperationWrite)

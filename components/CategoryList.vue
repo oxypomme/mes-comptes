@@ -16,39 +16,39 @@
           <v-card-text>
             <v-container>
               <v-row>
-                <v-col>
-                  <v-text-field
-                    v-model="category.name"
-                    label="Nom de la catégorie"
-                    required
-                    :dense="$device.isMobile"
-                  >
-                  </v-text-field>
-                </v-col>
+                <v-text-field
+                  v-model="category.name"
+                  label="Nom de la catégorie"
+                  required
+                  :dense="$device.isMobile"
+                >
+                </v-text-field>
+              </v-row>
+              <v-row align="center">
+                <v-checkbox
+                  v-model="isWithBudget"
+                  hide-details
+                  class="shrink mr-2 mt-0"
+                ></v-checkbox>
+                <v-text-field
+                  v-model="category.budget"
+                  :disabled="!isWithBudget"
+                  label="Budget par semaine de la catégorie"
+                  type="number"
+                  prefix="€"
+                  :dense="$device.isMobile"
+                >
+                </v-text-field>
               </v-row>
               <v-row>
-                <v-col>
-                  <v-text-field
-                    v-model="category.budget"
-                    label="Budget par semaine de la catégorie"
-                    type="number"
-                    prefix="€"
-                    :dense="$device.isMobile"
-                  >
-                  </v-text-field>
-                </v-col>
-              </v-row>
-              <v-row>
-                <v-col>
-                  <v-text-field
-                    v-model="category.balance"
-                    label="Solde de la catégorie"
-                    type="number"
-                    prefix="€"
-                    :dense="$device.isMobile"
-                  >
-                  </v-text-field>
-                </v-col>
+                <v-text-field
+                  v-model="category.balance"
+                  label="Solde de la catégorie"
+                  type="number"
+                  prefix="€"
+                  :dense="$device.isMobile"
+                >
+                </v-text-field>
               </v-row>
             </v-container>
           </v-card-text>
@@ -59,7 +59,7 @@
             <v-spacer></v-spacer>
             <v-btn color="error" text @click="dialog = false"> Annuler </v-btn>
             <v-btn
-              color="green"
+              color="success"
               :loading="loading"
               :disabled="!valid"
               text
@@ -74,7 +74,7 @@
     <v-card>
       <v-card-title>
         <span class="font-weight-light">Catégories</span>
-        <v-btn class="last-item" icon color="green" @click="showNew">
+        <v-btn class="last-item" icon color="success" @click="showNew">
           <v-icon>mdi-plus</v-icon>
         </v-btn>
       </v-card-title>
@@ -89,7 +89,7 @@
               <v-tooltip v-if="categ.budget > 0" top>
                 <template #activator="{ on, attrs }">
                   <v-chip
-                    :color="getCategRatioColor(categ)[0]"
+                    :color="getCategRatioColor(categ).color"
                     v-bind="attrs"
                     :small="$device.isMobile"
                     v-on="on"
@@ -105,7 +105,33 @@
                 <span>
                   {{ categ.balance.toFixed(2) }} /
                   {{ (categ.budget * weeksCount).toFixed(2) }} € ({{
-                    (getCategRatioColor(categ)[1] * 100).toFixed(2)
+                    (getCategRatioColor(categ).ratio * 100).toFixed(2)
+                  }}%)
+                </span>
+              </v-tooltip>
+              <v-tooltip v-else-if="monthlyRest !== 0" top>
+                <template #activator="{ on, attrs }">
+                  <v-chip
+                    :color="
+                      getCategRatioColor(
+                        {
+                          balance: categ.balance,
+                          budget: monthlyRest / weeksCount,
+                        },
+                        true
+                      ).color
+                    "
+                    v-bind="attrs"
+                    :small="$device.isMobile"
+                    v-on="on"
+                  >
+                    {{ (monthlyRest - categ.balance).toFixed(2) }} €
+                  </v-chip>
+                </template>
+                <span>
+                  {{ categ.balance.toFixed(2) }} /
+                  {{ monthlyRest.toFixed(2) }} € ({{
+                    ((categ.balance / monthlyRest) * 100).toFixed(2)
                   }}%)
                 </span>
               </v-tooltip>
@@ -124,7 +150,7 @@
               </v-btn>
               <v-btn
                 icon
-                color="red"
+                color="error"
                 :x-small="$device.isMobile"
                 @click="deleteCategory(i)"
               >
@@ -140,38 +166,70 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { mapGetters } from 'vuex'
+import type { Category, InputCategory } from '~/types'
 
 export default Vue.extend({
   data: () => ({
     initCategory: {
-      id: null,
+      id: undefined,
       name: '',
       balance: '0',
       budget: '0',
     },
-    category: {},
+    category: {} as InputCategory,
     selectedItem: undefined,
     valid: true,
     dialog: false,
     loading: false,
+    isWithBudget: true,
   }),
   computed: {
-    ...mapGetters({ categories: 'categories/getCategories' }),
-    weeksCount() {
-      const resetDate = this.$store.getters.getSettings.resetDate?.toDate()
+    /**
+     * Selected account's categories
+     */
+    categories(): Category[] {
+      return this.$store.getters['categories/getCategories']
+    },
+    /**
+     * Current monthly budget from agenda
+     */
+    monthlyBudget(): number {
+      return this.$store.getters['agenda/getMonth'](new Date().getMonth() + 1)
+    },
+    /**
+     * Number of weeks in current month
+     */
+    weeksCount(): number {
+      const resetDate =
+        this.$store.getters.getSettings.resetDate?.toDate() as Date
       const prevResetDate = new Date(resetDate)
       prevResetDate.setMonth(prevResetDate.getMonth() - 1)
 
       const count = Math.round(
         // W * D * m * s * ms
-        (resetDate - (prevResetDate as any)) / (7 * 24 * 60 * 60 * 1000)
+        (resetDate.getTime() - prevResetDate.getTime()) /
+          (7 * 24 * 60 * 60 * 1000)
       )
 
       return count
     },
+    /**
+     * Budget for auto categories
+     */
+    monthlyRest(): number {
+      let budget = this.monthlyBudget
+      for (const categ of this.categories) {
+        if (categ.budget > 0) {
+          budget -= categ.budget * this.weeksCount
+        }
+      }
+      return budget
+    },
   },
   watch: {
+    /**
+     * Update operations in state
+     */
     selectedItem() {
       this.$store.dispatch('operations/getOperations', {
         category: this.selectedItem,
@@ -179,12 +237,27 @@ export default Vue.extend({
     },
   },
   methods: {
+    /**
+     * Create a new category
+     *
+     * @param e The event
+     */
     async createCategory(e: Event) {
       e.preventDefault()
       if (this.valid) {
         this.loading = true
         try {
-          if ((this.category as any).id) {
+          if (!this.isWithBudget) {
+            this.category.budget = '-1'
+            const cAuto = this.categories.find((c) => c.budget < 0)
+            if (cAuto && cAuto.id !== this.category.id) {
+              throw new Error(
+                "Vous ne pouvez avoir qu'une seule catégorie sans budget"
+              )
+            }
+          }
+
+          if (this.category.id) {
             await this.$store.dispatch('categories/editCategory', this.category)
             this.$toast.global.success('Catégorie éditée')
           } else {
@@ -194,13 +267,18 @@ export default Vue.extend({
             )
             this.$toast.global.success('Catégorie créé')
           }
+          this.dialog = false
         } catch (e) {
           this.$toast.global.error((e as Error).message)
         }
-        this.dialog = false
         this.loading = false
       }
     },
+    /**
+     * Delete category
+     *
+     * @param i The index in `this.categories`
+     */
     async deleteCategory(i: number) {
       const res = await this.$dialog.confirm({
         text: 'Voulez vous supprimer la catégorie (cela ne supprimera pas les opérations liées) ?',
@@ -208,11 +286,11 @@ export default Vue.extend({
         actions: {
           false: {
             text: 'Annuler',
-            color: 'red',
+            color: 'error',
           },
           true: {
             text: 'Confirmer',
-            color: 'green',
+            color: 'success',
           },
         },
       })
@@ -230,21 +308,52 @@ export default Vue.extend({
         this.loading = false
       }
     },
+    /**
+     * Prepare popup for new category
+     */
     showNew() {
       // this.valid = false
       this.category = { ...this.initCategory }
       this.dialog = true
     },
+    /**
+     * Prepare popup for editing a category
+     */
     showEdit(i: number) {
       this.valid = true
       const categ = this.categories[i]
-      this.category = { ...categ }
-      ;(this.category as any).id = categ.id
+      this.category = {
+        ...categ,
+        balance: categ.balance.toString(),
+        budget: categ.budget.toString(),
+        id: categ.id,
+      }
+      // TODO: check if id usefull
+      if (categ.budget < 0) {
+        this.isWithBudget = false
+        this.category.budget = '0'
+      }
       this.dialog = true
     },
-    getCategRatioColor(categ: any) {
-      const ratio = categ.balance / (categ.budget * this.weeksCount)
-      return [ratio < 0.5 ? 'green' : ratio <= 0.75 ? 'orange' : 'red', ratio]
+    /**
+     * Calculate usage ratio of a Category
+     *
+     * @param categ The category
+     * @param isPrimary If the 'OK' color should be primary
+     */
+    getCategRatioColor({ balance, budget }: Category, isPrimary = false) {
+      const ratio = balance / (budget * (this.weeksCount as number))
+      return {
+        color:
+          ratio < 0.5
+            ? isPrimary
+              ? 'primary'
+              : 'green'
+            : ratio <= 0.75
+            ? 'orange'
+            : 'red',
+        ratio,
+      }
     },
   },
 })

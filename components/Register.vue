@@ -34,7 +34,7 @@
             <v-spacer></v-spacer>
             <v-btn color="error" text @click="dialog = false"> Annuler </v-btn>
             <v-btn
-              color="green"
+              color="success"
               :loading="loading"
               :disabled="!valid"
               text
@@ -88,7 +88,7 @@
           </v-row>
           <v-row>
             <v-btn
-              color="green"
+              color="success"
               class="mt-1"
               block
               :loading="loading || dialog"
@@ -106,6 +106,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import passStrength from 'zxcvbn'
+
 export default Vue.extend({
   data: () => ({
     loading: false,
@@ -127,6 +128,9 @@ export default Vue.extend({
     balance: '0',
   }),
   computed: {
+    /**
+     * Password strength
+     */
     score() {
       switch (passStrength(this.password).score) {
         case 4:
@@ -158,28 +162,18 @@ export default Vue.extend({
     },
   },
   methods: {
+    /**
+     * Open dialog for additonal fields
+     */
     openInit(e: Event) {
       e.preventDefault()
       if (this.firstvalid) {
         this.dialog = true
       }
     },
-    debug() {
-      return this.$dialog.confirm({
-        text: 'Voulez vous supprimer le compte ?',
-        title: 'Attention',
-        actions: {
-          false: {
-            text: 'Annuler',
-            color: 'red',
-          },
-          true: {
-            text: 'Confirmer',
-            color: 'green',
-          },
-        },
-      })
-    },
+    /**
+     * Register new user
+     */
     async register(e: Event) {
       e.preventDefault()
       try {

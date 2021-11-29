@@ -1,19 +1,10 @@
 <template>
   <v-container>
     <v-row justify="center">
-      <v-col lg="9">
-        <v-row>
-          <v-col>
-            <v-card>
-              <Settings />
-            </v-card>
-          </v-col>
-          <v-col>
-            <v-card>
-              <AuthSettings />
-            </v-card>
-          </v-col>
-        </v-row>
+      <v-col>
+        <!-- <v-card> -->
+        <Agenda />
+        <!-- </v-card> -->
       </v-col>
     </v-row>
   </v-container>
@@ -23,7 +14,7 @@
 import Vue from 'vue'
 export default Vue.extend({
   head: {
-    title: 'Paramètres - ',
+    title: 'Planificateur - ',
   },
   mounted() {
     // Check if connected
@@ -32,7 +23,7 @@ export default Vue.extend({
       return
     }
     // Update title
-    this.$store.commit('SET_TITLE', 'Paramètres')
+    this.$store.commit('SET_TITLE', 'Planificateur')
   },
 })
 </script>

@@ -47,7 +47,7 @@
             <v-spacer></v-spacer>
             <v-btn color="error" text @click="dialog = false"> Annuler </v-btn>
             <v-btn
-              color="green"
+              color="success"
               :loading="loading"
               :disabled="!valid"
               text
@@ -72,7 +72,12 @@
           >
             {{ totalBalance.toFixed(2) }} €
           </v-chip>
-          <v-btn icon color="green" :small="$device.isMobile" @click="showNew">
+          <v-btn
+            icon
+            color="success"
+            :small="$device.isMobile"
+            @click="showNew"
+          >
             <v-icon>mdi-plus</v-icon>
           </v-btn>
         </span>
@@ -108,7 +113,7 @@
               </v-btn>
               <v-btn
                 icon
-                color="red"
+                color="error"
                 :x-small="$device.isMobile"
                 @click="deleteAccount(i)"
               >
@@ -124,23 +129,31 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { mapGetters } from 'vuex'
+import type { Account, InputAccount } from '~/types'
 
 export default Vue.extend({
   data: () => ({
     selectedItem: undefined,
     initAccount: {
-      id: null,
+      id: undefined as string | undefined,
       name: '',
       balance: '0',
     },
-    account: {},
+    account: {} as InputAccount,
     valid: true,
     dialog: false,
     loading: false,
   }),
   computed: {
-    ...mapGetters({ accounts: 'account/getAccounts' }),
+    /**
+     * The sub-accounts of the user
+     */
+    accounts(): Account[] {
+      return this.$store.getters['account/getAccounts']
+    },
+    /**
+     * The amount owned by the user
+     */
     totalBalance() {
       let total = 0
       for (const acc of this.accounts) {
@@ -150,17 +163,23 @@ export default Vue.extend({
     },
   },
   watch: {
+    /**
+     * Change selected account in state
+     */
     selectedItem() {
       this.$store.dispatch('account/selectAccount', this.selectedItem)
     },
   },
   methods: {
+    /**
+     * Create sub account
+     */
     async createAccount(e: Event) {
       e.preventDefault()
       if (this.valid) {
         this.loading = true
         try {
-          if ((this.account as any).id) {
+          if (this.account.id) {
             await this.$store.dispatch('account/editAccount', this.account)
             this.$toast.global.success('Compte edité')
           } else {
@@ -174,6 +193,10 @@ export default Vue.extend({
         this.loading = false
       }
     },
+    /**
+     * Delete sub account
+     * @param i The index in `this.accounts`
+     */
     async deleteAccount(i: number) {
       const res = await this.$dialog.confirm({
         text: 'Voulez vous supprimer le compte ?',
@@ -181,14 +204,15 @@ export default Vue.extend({
         actions: {
           false: {
             text: 'Annuler',
-            color: 'red',
+            color: 'error',
           },
           true: {
             text: 'Confirmer',
-            color: 'green',
+            color: 'success',
           },
         },
       })
+
       if (res) {
         this.loading = true
         try {
@@ -203,16 +227,22 @@ export default Vue.extend({
         this.loading = false
       }
     },
+    /**
+     * Show popup for adding a new sub account
+     */
     showNew() {
       // this.valid = false
       this.account = { ...this.initAccount }
       this.dialog = true
     },
+    /**
+     * Show popup for editing a sub account
+     * @param i The index in `this.accounts`
+     */
     showEdit(i: number) {
       this.valid = true
       const acc = this.accounts[i]
-      this.account = { ...acc }
-      ;(this.account as any).id = acc.id
+      this.account = { ...acc, balance: acc.balance.toString(), id: acc.id }
       this.dialog = true
     },
   },
