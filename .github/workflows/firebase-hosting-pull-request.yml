@@ -24,7 +24,7 @@ jobs:
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_COMPTES_OXY }}'
           projectId: comptes-oxy
 
-     - name: Calculate version and changelog
+      - name: Calculate version and changelog
         id: tag_version
         uses: mathieudutour/github-tag-action@v5.6
         with:
