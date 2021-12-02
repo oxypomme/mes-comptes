@@ -3,7 +3,7 @@ import {
   Change,
   EventContext,
   firestore as firefnc,
-  pubsub,
+  region,
 } from 'firebase-functions'
 
 initializeApp()
@@ -142,14 +142,16 @@ const onOperationWrite = async (
 /**
  * Check users every 24 hours
  */
-export const scheduledFunction = pubsub
-  .schedule('every 24 hours')
+export const scheduledFunction = region('europe-west1')
+  .pubsub.schedule('every 24 hours')
   // .schedule('every 30 seconds')
   .onRun(checkUsers)
 
 /**
  * Trigger balance update on new operation
  */
-export const syncBalance = firefnc
-  .document('users/{userId}/accounts/{accountId}/operations/{operationId}')
+export const syncBalance = region('europe-west1')
+  .firestore.document(
+    'users/{userId}/accounts/{accountId}/operations/{operationId}'
+  )
   .onWrite(onOperationWrite)
