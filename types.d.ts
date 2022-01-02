@@ -1,4 +1,5 @@
 import type firebase from 'firebase'
+import type { ECategoryType } from './ECategoryType'
 
 interface FirestoreData {
   id?: string
@@ -26,6 +27,7 @@ interface Category extends FirestoreData {
   name: string
   balance: number // float
   budget: number // float
+  type: ECategoryType
 }
 type InputCategory = Omit<Category, 'balance' | 'budget'> & {
   balance: string

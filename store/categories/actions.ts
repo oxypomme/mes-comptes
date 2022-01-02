@@ -16,7 +16,10 @@ const actions: ActionTree<CategoryState, RootState> = {
    * @param category The category
    * @returns The promise of creation
    */
-  createCategory({ rootGetters }, { name, budget, balance }: InputCategory) {
+  createCategory(
+    { rootGetters },
+    { name, budget, balance, type }: InputCategory
+  ) {
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
     if (!uid) {
       throw new Error('Vous devez être connecté pour effectuer cette action')
@@ -37,6 +40,7 @@ const actions: ActionTree<CategoryState, RootState> = {
       name,
       budget: parseFloat(budget),
       balance: parseFloat(balance),
+      type,
       createdAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
     } as Category & { createdAt: firebase.firestore.FieldValue })
   },
@@ -47,7 +51,10 @@ const actions: ActionTree<CategoryState, RootState> = {
    * @param category The category
    * @returns The promise of edition
    */
-  editCategory({ rootGetters }, { id, name, budget, balance }: InputCategory) {
+  editCategory(
+    { rootGetters },
+    { id, name, budget, balance, type }: InputCategory
+  ) {
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
     if (!uid) {
       throw new Error('Vous devez être connecté pour effectuer cette action')
@@ -69,6 +76,7 @@ const actions: ActionTree<CategoryState, RootState> = {
       name,
       budget: parseFloat(budget),
       balance: parseFloat(balance),
+      type,
       updatedAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
     } as Category & { updatedAt: firebase.firestore.FieldValue })
   },

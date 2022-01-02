@@ -24,15 +24,19 @@
                 >
                 </v-text-field>
               </v-row>
+              <v-row>
+                <v-select
+                  v-model="category.type"
+                  :items="categoryTypes"
+                  item-text="label"
+                  item-value="value"
+                  label="Type"
+                ></v-select>
+              </v-row>
               <v-row align="center">
-                <v-checkbox
-                  v-model="isWithBudget"
-                  hide-details
-                  class="shrink mr-2 mt-0"
-                ></v-checkbox>
                 <v-text-field
                   v-model="category.budget"
-                  :disabled="!isWithBudget"
+                  :disabled="category.type !== 0"
                   label="Budget par semaine de la catégorie"
                   type="number"
                   prefix="€"
@@ -86,7 +90,7 @@
               <v-list-item-title v-text="categ.name"></v-list-item-title>
             </v-list-item-content>
             <v-list-item-icon>
-              <v-tooltip v-if="categ.budget > 0" top>
+              <v-tooltip v-if="categ.type === 0" top>
                 <template #activator="{ on, attrs }">
                   <v-chip
                     :color="getCategRatioColor(categ).color"
@@ -109,7 +113,7 @@
                   }}%)
                 </span>
               </v-tooltip>
-              <v-tooltip v-else-if="monthlyRest !== 0" top>
+              <v-tooltip v-else-if="categ.type === 1 && monthlyRest !== 0" top>
                 <template #activator="{ on, attrs }">
                   <v-chip
                     :color="
@@ -166,7 +170,8 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import type { Category, InputCategory } from '~/types'
+import { ECategoryType } from '~/ECategoryType'
+import type { Account, Category, InputCategory } from '~/types'
 
 export default Vue.extend({
   data: () => ({
@@ -175,13 +180,31 @@ export default Vue.extend({
       name: '',
       balance: '0',
       budget: '0',
+      type: ECategoryType.BUDGET,
     },
     category: {} as InputCategory,
+    categoryTypes: [
+      {
+        label: 'Budget',
+        value: ECategoryType.BUDGET,
+      },
+      {
+        label: 'Calculée',
+        value: ECategoryType.CALCULATED,
+      },
+      {
+        label: 'Planifié (Crédit +)',
+        value: ECategoryType.PLANNED_CREDIT,
+      },
+      {
+        label: 'Planifié (Crédit -)',
+        value: ECategoryType.PLANNED_DEBIT,
+      },
+    ],
     selectedItem: undefined,
     valid: true,
     dialog: false,
     loading: false,
-    isWithBudget: true,
   }),
   computed: {
     /**
@@ -219,7 +242,7 @@ export default Vue.extend({
     monthlyRest(): number {
       let budget = this.monthlyBudget
       for (const categ of this.categories) {
-        if (categ.budget > 0) {
+        if (categ.type === ECategoryType.BUDGET) {
           budget -= categ.budget * this.weeksCount
         }
       }
@@ -247,12 +270,14 @@ export default Vue.extend({
       if (this.valid) {
         this.loading = true
         try {
-          if (!this.isWithBudget) {
-            this.category.budget = '-1'
-            const cAuto = this.categories.find((c) => c.budget < 0)
+          if (this.category.type !== ECategoryType.BUDGET) {
+            this.category.budget = '0'
+            const cAuto = this.categories.find(
+              (c) => c.type === this.category.type
+            )
             if (cAuto && cAuto.id !== this.category.id) {
               throw new Error(
-                "Vous ne pouvez avoir qu'une seule catégorie sans budget"
+                "Vous ne pouvez avoir qu'une seule catégorie calculée"
               )
             }
           }
@@ -329,10 +354,6 @@ export default Vue.extend({
         id: categ.id,
       }
       // TODO: check if id usefull
-      if (categ.budget < 0) {
-        this.isWithBudget = false
-        this.category.budget = '0'
-      }
       this.dialog = true
     },
     /**
