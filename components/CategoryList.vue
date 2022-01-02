@@ -78,9 +78,30 @@
     <v-card>
       <v-card-title>
         <span class="font-weight-light">Catégories</span>
-        <v-btn class="last-item" icon color="success" @click="showNew">
-          <v-icon>mdi-plus</v-icon>
-        </v-btn>
+        <span class="last-item">
+          <v-tooltip top>
+            <template #activator="{ on, attrs }">
+              <v-chip
+                v-bind="attrs"
+                v-on="on"
+                :small="$device.isMobile"
+                :color="
+                  monthlyBudget - totalBalance > 100
+                    ? 'green'
+                    : monthlyBudget - totalBalance > 0
+                    ? 'orange'
+                    : 'red'
+                "
+              >
+                {{ (monthlyBudget - totalBalance).toFixed(2) }} €
+              </v-chip>
+            </template>
+            <span> Roulement: {{ roulement.toFixed(2) }} € </span>
+          </v-tooltip>
+          <v-btn class="last-item" icon color="success" @click="showNew">
+            <v-icon>mdi-plus</v-icon>
+          </v-btn>
+        </span>
       </v-card-title>
       <v-divider />
       <v-list :dense="$device.isMobile">
@@ -247,6 +268,23 @@ export default Vue.extend({
         }
       }
       return budget
+    },
+    /**
+     * Total balance of categories (w/o Planned)
+     */
+    totalBalance(): number {
+      let balance = 0
+      for (const categ of this.categories) {
+        balance += categ.balance
+      }
+      return balance
+    },
+    /**
+     *
+     */
+    roulement(): number {
+      const account = this.$store.getters['account/getCurrent'] as Account
+      return account.balance - (this.monthlyBudget - this.totalBalance)
     },
   },
   watch: {
