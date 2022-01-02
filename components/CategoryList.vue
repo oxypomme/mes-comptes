@@ -287,16 +287,6 @@ export default Vue.extend({
       return account.balance - (this.monthlyBudget - this.totalBalance)
     },
   },
-  watch: {
-    /**
-     * Update operations in state
-     */
-    selectedItem() {
-      this.$store.dispatch('operations/getOperations', {
-        category: this.selectedItem,
-      })
-    },
-  },
   methods: {
     /**
      * Create a new category

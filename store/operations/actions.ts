@@ -3,13 +3,7 @@ import type { ActionTree, Store } from 'vuex'
 import type firebase from 'firebase'
 import type { RootState } from '../state'
 import type { OperationState } from './state'
-import type {
-  Account,
-  Category,
-  InputOperation,
-  Operation,
-  User,
-} from '~/types'
+import type { Account, InputOperation, Operation, User } from '~/types'
 
 /**
  * Actions for user's operations
@@ -152,18 +146,10 @@ const actions: ActionTree<OperationState, RootState> = {
       .doc(uid)
       .collection('accounts')
       .doc(aid)
-    const cref = ref.collection('categories')
 
     const oref = ref.collection('operations')
 
-    let docref: firebase.firestore.Query
-    // filtering by category
-    if (category !== undefined) {
-      const categories = rootGetters['categories/getCategories'] as Category[]
-      docref = oref.where('category', '==', cref.doc(categories[category].id))
-    }
-
-    docref = oref.orderBy('createdAt', 'desc')
+    let docref = oref.orderBy('createdAt', 'desc')
 
     // paginate
     const newPage = state.page + progression
