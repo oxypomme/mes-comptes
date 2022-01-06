@@ -20,7 +20,7 @@ const resetCategoriesBalance = async (
   d: Date
 ) => {
   if (
-    d > ((await ref.get()).get('resetDate') as firestore.Timestamp).toDate()
+    d >= ((await ref.get()).get('resetDate') as firestore.Timestamp).toDate()
   ) {
     const nd = new Date(d)
     nd.setMonth(d.getMonth() + 1)
