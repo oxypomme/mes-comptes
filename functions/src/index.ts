@@ -1,13 +1,12 @@
-import { firestore, initializeApp } from 'firebase-admin'
+import { firestore } from 'firebase-admin'
 import {
   Change,
   EventContext,
   firestore as firefnc,
   region,
 } from 'firebase-functions'
-
-initializeApp()
-const store = firestore()
+import store from './store'
+import authHandler from './auth'
 
 /**
  * Reset user's categories' balances if needed
@@ -155,3 +154,8 @@ export const syncBalance = region('europe-west1')
     'users/{userId}/accounts/{accountId}/operations/{operationId}'
   )
   .onWrite(onOperationWrite)
+
+/**
+ * Request for Webauthn options
+ */
+export const auth = region('europe-west1').https.onRequest(authHandler)
