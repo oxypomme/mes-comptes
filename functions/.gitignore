@@ -9,3 +9,4 @@ typings/
 node_modules/
 
 firebase-key.json
+.env

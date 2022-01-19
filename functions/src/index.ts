@@ -5,8 +5,7 @@ import {
   firestore as firefnc,
   region,
 } from 'firebase-functions'
-import store from './store'
-import authHandler from './auth'
+import { store } from './firebase'
 
 /**
  * Reset user's categories' balances if needed
@@ -55,7 +54,7 @@ const resetCategoriesBalance = async (
  */
 const checkUsers = async () => {
   const d = new Date()
-  const users = await store.collection('users').listDocuments()
+  const users = await store().collection('users').listDocuments()
   Promise.all([
     ...users.map(async (ref) => {
       await resetCategoriesBalance(ref, d)
@@ -154,8 +153,3 @@ export const syncBalance = region('europe-west1')
     'users/{userId}/accounts/{accountId}/operations/{operationId}'
   )
   .onWrite(onOperationWrite)
-
-/**
- * Request for Webauthn options
- */
-export const auth = region('europe-west1').https.onRequest(authHandler)
