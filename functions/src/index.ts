@@ -1,13 +1,11 @@
-import { firestore, initializeApp } from 'firebase-admin'
+import { firestore } from 'firebase-admin'
 import {
   Change,
   EventContext,
   firestore as firefnc,
-  pubsub,
+  region,
 } from 'firebase-functions'
-
-initializeApp()
-const store = firestore()
+import { store } from './firebase'
 
 /**
  * Reset user's categories' balances if needed
@@ -20,7 +18,7 @@ const resetCategoriesBalance = async (
   d: Date
 ) => {
   if (
-    d > ((await ref.get()).get('resetDate') as firestore.Timestamp).toDate()
+    d >= ((await ref.get()).get('resetDate') as firestore.Timestamp).toDate()
   ) {
     const nd = new Date(d)
     nd.setMonth(d.getMonth() + 1)
@@ -56,7 +54,7 @@ const resetCategoriesBalance = async (
  */
 const checkUsers = async () => {
   const d = new Date()
-  const users = await store.collection('users').listDocuments()
+  const users = await store().collection('users').listDocuments()
   Promise.all([
     ...users.map(async (ref) => {
       await resetCategoriesBalance(ref, d)
@@ -142,14 +140,16 @@ const onOperationWrite = async (
 /**
  * Check users every 24 hours
  */
-export const scheduledFunction = pubsub
-  .schedule('every 24 hours')
+export const scheduledFunction = region('europe-west1')
+  .pubsub.schedule('every 24 hours')
   // .schedule('every 30 seconds')
   .onRun(checkUsers)
 
 /**
  * Trigger balance update on new operation
  */
-export const syncBalance = firefnc
-  .document('users/{userId}/accounts/{accountId}/operations/{operationId}')
+export const syncBalance = region('europe-west1')
+  .firestore.document(
+    'users/{userId}/accounts/{accountId}/operations/{operationId}'
+  )
   .onWrite(onOperationWrite)
