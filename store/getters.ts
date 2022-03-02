@@ -19,6 +19,27 @@ const getters: GetterTree<RootState, RootState> = {
    * @returns The title
    */
   getTitle: (state) => state.title,
+  /**
+   * Number of weeks in current month
+   */
+  getWeekCount: (state) => {
+    let resetDate = new Date()
+    if (state.settings.resetDate) {
+      resetDate = state.settings.resetDate.toDate()
+    } else {
+      resetDate.setMonth(resetDate.getMonth() + 1)
+    }
+    const prevResetDate = new Date(resetDate)
+    prevResetDate.setMonth(prevResetDate.getMonth() - 1)
+
+    const count = Math.round(
+      // W * D * m * s * ms
+      (resetDate.getTime() - prevResetDate.getTime()) /
+        (7 * 24 * 60 * 60 * 1000)
+    )
+
+    return count
+  },
 }
 
 export default getters

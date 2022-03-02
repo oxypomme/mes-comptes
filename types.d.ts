@@ -44,12 +44,12 @@ interface Operation extends FirestoreData {
   _doc?: firebase.firestore.DocumentSnapshot<firebase.firestore.DocumentData>
   name: string
   amount: number // float
-  category: firebase.firestore.DocumentReference
+  category: firebase.firestore.DocumentReference | null
   modifier: ValueModifier
 }
 type InputOperation = Omit<Operation, 'amount' | 'category'> & {
   amount: string
-  category: string | firebase.firestore.DocumentReference
+  category: string | firebase.firestore.DocumentReference | null
 }
 
 interface User {

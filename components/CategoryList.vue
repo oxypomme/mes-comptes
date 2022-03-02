@@ -182,6 +182,7 @@ export default Vue.extend({
     ...mapGetters({
       monthlyBudget: 'agenda/getCurrent',
       categories: 'categories/getCategories',
+      weeksCount: 'getWeekCount',
     }),
     categoryTypes() {
       const types = [
@@ -233,10 +234,8 @@ export default Vue.extend({
      */
     categoryUsage() {
       return ({ balance, budget, type }: Category) => {
-        if (type === ECategoryType.BUDGET) {
-          budget *= this.weeksCount
-        }
-        return toLS(Math.abs(balance - budget))
+        const usage = budget - balance
+        return toLS(type === ECategoryType.PLANNED_CREDIT ? -usage : usage)
       }
     },
     /**
@@ -244,65 +243,33 @@ export default Vue.extend({
      */
     categoryTooltip() {
       return (categ: Category) => {
-        // eslint-disable-next-line prefer-const
-        let { balance, budget } = categ
-        if (categ.type === ECategoryType.BUDGET) {
-          budget *= this.weeksCount
-        }
-        return `${toLS(Math.abs(balance))} / ${toLS(Math.abs(budget))} (${toLS(
-          this.getCategRatioColor(categ).ratio,
-          {
-            style: 'percent',
-          }
-        )})`
+        return `${toLS(Math.abs(categ.balance))} / ${toLS(
+          Math.abs(categ.budget)
+        )} (${toLS(this.getCategRatioColor(categ).ratio, {
+          style: 'percent',
+        })})`
       }
-    },
-    /**
-     * Number of weeks in current month
-     */
-    weeksCount(): number {
-      const resetDate =
-        this.$store.getters.getSettings.resetDate?.toDate() as Date
-      const prevResetDate = new Date(resetDate)
-      prevResetDate.setMonth(prevResetDate.getMonth() - 1)
-
-      const count = Math.round(
-        // W * D * m * s * ms
-        (resetDate.getTime() - prevResetDate.getTime()) /
-          (7 * 24 * 60 * 60 * 1000)
-      )
-
-      return count
     },
     /**
      * Budget for auto categories
      */
     monthlyRest(): number {
-      let budget = this.monthlyBudget.total
-      for (const categ of this.categories as Category[]) {
-        if (categ.type === ECategoryType.BUDGET) {
-          budget -= categ.budget * this.weeksCount
-        }
-      }
-      return budget
+      return (this.categories as Category[])
+        .filter(({ type }) => type === ECategoryType.BUDGET)
+        .reduce((sum, { budget }) => sum - budget, this.monthlyBudget.total)
     },
     /**
-     * Total balance of categories
-     */
-    totalBalance(): number {
-      let balance = 0
-      for (const categ of this.categories as Category[]) {
-        balance += categ.budget - categ.balance
-      }
-      return balance
-    },
-    /**
-     * Total balance of account minus categories
+     * Total balance of account minus categories budget
      */
     roulement(): string {
       const account = this.$store.getters['account/getCurrent'] as Account
       if (account) {
-        return toLS(account.balance - this.totalBalance)
+        const totalBudget = (this.categories as Category[]).reduce(
+          (sum, { budget }) => sum + budget,
+          0
+        )
+
+        return toLS(account.balance + totalBudget)
       }
       return '0'
     },
@@ -398,7 +365,7 @@ export default Vue.extend({
       this.category = {
         ...categ,
         balance: categ.balance.toString(),
-        budget: categ.budget.toString(),
+        budget: (categ.budget / this.weeksCount).toString(),
         id: categ.id,
       }
       // TODO: check if id usefull
@@ -410,10 +377,7 @@ export default Vue.extend({
      * @param categ The category
      * @param isPrimary If the 'OK' color should be primary
      */
-    getCategRatioColor({ balance, budget, type }: Category, isPrimary = false) {
-      if (type === ECategoryType.BUDGET) {
-        budget *= this.weeksCount
-      }
+    getCategRatioColor({ balance, budget }: Category, isPrimary = false) {
       const ratio = Math.abs(balance) / Math.abs(budget)
       return {
         color:

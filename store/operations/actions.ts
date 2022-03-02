@@ -129,7 +129,7 @@ const actions: ActionTree<OperationState, RootState> = {
   getOperations: firestoreAction(async function (
     this: Store<RootState>,
     { rootGetters, bindFirestoreRef, state, commit },
-    { category, progression }: { category: number; progression: number }
+    { progression }: { progression: number }
   ) {
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
     if (!uid) {

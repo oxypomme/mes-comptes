@@ -133,7 +133,13 @@ const actions: ActionTree<CategoryState, RootState> = {
       .collection('categories')
       .orderBy('createdAt')
 
-    await bindFirestoreRef('data', ref)
+    await bindFirestoreRef('data', ref, {
+      serialize: (doc) => {
+        const data = doc.data()
+        Object.defineProperty(data, 'id', { value: doc.id })
+        return data
+      },
+    })
   }),
 }
 

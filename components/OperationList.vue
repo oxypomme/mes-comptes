@@ -56,7 +56,7 @@
                 <v-col>
                   <v-select
                     v-model="operation.category"
-                    :items="categories"
+                    :items="selectCategories"
                     item-text="name"
                     item-value="id"
                     label="Catégorie"
@@ -155,7 +155,14 @@
 <script lang="ts">
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
-import type { Account, InputOperation, Operation, ValueModifier } from '~/types'
+import { ECategoryType } from '~/ECategoryType'
+import type {
+  Account,
+  Category,
+  InputOperation,
+  Operation,
+  ValueModifier,
+} from '~/types'
 
 export default Vue.extend({
   data: () => ({
@@ -177,7 +184,7 @@ export default Vue.extend({
     initOperation: {
       name: '',
       amount: '',
-      category: '',
+      category: null,
       modifier: -1 as ValueModifier,
     },
     operation: {} as InputOperation,
@@ -187,10 +194,24 @@ export default Vue.extend({
   computed: {
     ...mapGetters({
       account: 'account/getCurrent',
-      categories: 'categories/getCategories',
       ops: 'operations/getOperations',
     }),
-
+    /**
+     * Options for select categories
+     */
+    selectCategories(): Category[] {
+      const categs = this.$store.getters['categories/getCategories']
+      return [
+        {
+          id: null,
+          name: '',
+          balance: 0,
+          budget: 0,
+          type: ECategoryType.BUDGET,
+        },
+        ...categs,
+      ]
+    },
     /**
      * Number of pages in total
      */

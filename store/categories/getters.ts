@@ -17,29 +17,41 @@ const getter: GetterTree<CategoryState, RootState> = {
    */
   getCategories: (state, _a, _b, rootGetters) => {
     const agenda = rootGetters['agenda/getCurrent'] as AgendaComputed
-    // 🤮
-    const categories: Category[] = JSON.parse(JSON.stringify(state.data))
+    const weekcount = rootGetters.getWeekCount
 
-    for (const categ of categories) {
-      switch (categ.type) {
+    const categories: Category[] = []
+    for (const { id, name, budget, balance, type } of state.data) {
+      let b = budget
+      switch (type) {
+        case ECategoryType.BUDGET:
+          b = budget * weekcount
+          break
         case ECategoryType.CALCULATED:
-          categ.budget =
+          b =
             agenda.total -
-            categories
+            state.data
               .filter(({ type }) => type === ECategoryType.BUDGET)
-              .reduce((sum, { budget }) => sum + budget, 0)
+              .reduce((sum, { budget }) => sum + budget * weekcount, 0)
           break
         case ECategoryType.PLANNED_CREDIT:
-          categ.budget = -agenda.credit
+          b = -agenda.credit
           break
         case ECategoryType.PLANNED_DEBIT:
-          // categ.debug = 'planned+'
-          categ.budget = agenda.debit
+          b = agenda.debit
           break
         default:
           break
       }
+
+      categories.push({
+        id,
+        name,
+        budget: b,
+        balance,
+        type,
+      })
     }
+
     return categories
   },
 }
