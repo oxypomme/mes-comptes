@@ -173,36 +173,60 @@ export default Vue.extend({
       type: ECategoryType.BUDGET,
     },
     category: {} as InputCategory,
-    categoryTypes: [
-      {
-        label: 'Budget',
-        value: ECategoryType.BUDGET,
-      },
-      {
-        label: 'Calculée',
-        value: ECategoryType.CALCULATED,
-      },
-      {
-        label: 'Planifié (Crédit +)',
-        value: ECategoryType.PLANNED_CREDIT,
-      },
-      {
-        label: 'Planifié (Crédit -)',
-        value: ECategoryType.PLANNED_DEBIT,
-      },
-    ],
     selectedItem: undefined,
     valid: true,
     dialog: false,
     loading: false,
   }),
   computed: {
-    ...mapGetters({ monthlyBudget: 'agenda/getCurrent' }),
-    /**
-     * Selected account's categories
-     */
-    categories(): Category[] {
-      return this.$store.getters['categories/getCategories']
+    ...mapGetters({
+      monthlyBudget: 'agenda/getCurrent',
+      categories: 'categories/getCategories',
+    }),
+    categoryTypes() {
+      const types = [
+        {
+          label: 'Budget',
+          value: ECategoryType.BUDGET,
+        },
+      ]
+      // Add option for calculated if not already present
+      if (
+        (this.categories as Category[]).findIndex(
+          ({ type }) =>
+            type === ECategoryType.CALCULATED && type !== this.category.type
+        ) < 0
+      ) {
+        types.push({
+          label: 'Calculée',
+          value: ECategoryType.CALCULATED,
+        })
+      }
+      // Add option for planned credit if not already present
+      if (
+        (this.categories as Category[]).findIndex(
+          ({ type }) =>
+            type === ECategoryType.PLANNED_CREDIT && type !== this.category.type
+        ) < 0
+      ) {
+        types.push({
+          label: 'Planifié (Crédit +)',
+          value: ECategoryType.PLANNED_CREDIT,
+        })
+      }
+      // Add option for planned debit if not already present
+      if (
+        (this.categories as Category[]).findIndex(
+          ({ type }) =>
+            type === ECategoryType.PLANNED_DEBIT && type !== this.category.type
+        ) < 0
+      ) {
+        types.push({
+          label: 'Planifié (Crédit -)',
+          value: ECategoryType.PLANNED_DEBIT,
+        })
+      }
+      return types
     },
     /**
      * Formated category rest
@@ -255,7 +279,7 @@ export default Vue.extend({
      */
     monthlyRest(): number {
       let budget = this.monthlyBudget.total
-      for (const categ of this.categories) {
+      for (const categ of this.categories as Category[]) {
         if (categ.type === ECategoryType.BUDGET) {
           budget -= categ.budget * this.weeksCount
         }
@@ -267,7 +291,7 @@ export default Vue.extend({
      */
     totalBalance(): number {
       let balance = 0
-      for (const categ of this.categories) {
+      for (const categ of this.categories as Category[]) {
         balance += categ.budget - categ.balance
       }
       return balance
@@ -296,7 +320,7 @@ export default Vue.extend({
         try {
           if (this.category.type !== ECategoryType.BUDGET) {
             this.category.budget = '0'
-            const cAuto = this.categories.find(
+            const cAuto = (this.categories as Category[]).find(
               (c) => c.type === this.category.type
             )
             if (cAuto && cAuto.id !== this.category.id) {
