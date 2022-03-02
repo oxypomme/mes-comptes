@@ -23,6 +23,12 @@ interface AgendaRow extends FirestoreData {
   values: number[] // 1 element for each month (12 elements in total); float
 }
 
+interface AgendaComputed {
+  debit: number
+  credit: number
+  total: number
+}
+
 interface Category extends FirestoreData {
   name: string
   balance: number // float

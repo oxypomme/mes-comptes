@@ -81,22 +81,11 @@
         <span class="last-item">
           <v-tooltip top>
             <template #activator="{ on, attrs }">
-              <v-chip
-                v-bind="attrs"
-                v-on="on"
-                :small="$device.isMobile"
-                :color="
-                  monthlyBudget - totalBalance > 100
-                    ? 'green'
-                    : monthlyBudget - totalBalance > 0
-                    ? 'orange'
-                    : 'red'
-                "
-              >
-                {{ (monthlyBudget - totalBalance).toFixed(2) }} €
+              <v-chip v-bind="attrs" :small="$device.isMobile" v-on="on">
+                {{ roulement }} €
               </v-chip>
             </template>
-            <span> Roulement: {{ roulement.toFixed(2) }} € </span>
+            <span> Roulement </span>
           </v-tooltip>
           <v-btn class="last-item" icon color="success" @click="showNew">
             <v-icon>mdi-plus</v-icon>
@@ -107,11 +96,26 @@
       <v-list :dense="$device.isMobile">
         <v-list-item-group v-model="selectedItem">
           <v-list-item v-for="(categ, i) in categories" :key="i">
+            <v-icon
+              small
+              class="mr-2"
+              :color="categ.type === 2 ? 'green' : 'red'"
+            >
+              {{
+                categ.type === 1
+                  ? 'mdi-calculator'
+                  : categ.type === 2
+                  ? 'mdi-calendar'
+                  : categ.type === 3
+                  ? 'mdi-calendar'
+                  : 'mdi-chart-pie'
+              }}
+            </v-icon>
             <v-list-item-content>
               <v-list-item-title v-text="categ.name"></v-list-item-title>
             </v-list-item-content>
             <v-list-item-icon>
-              <v-tooltip v-if="categ.type === 0" top>
+              <v-tooltip top>
                 <template #activator="{ on, attrs }">
                   <v-chip
                     :color="getCategRatioColor(categ).color"
@@ -119,50 +123,13 @@
                     :small="$device.isMobile"
                     v-on="on"
                   >
-                    {{
-                      Math.abs(
-                        categ.balance - categ.budget * weeksCount
-                      ).toFixed(2)
-                    }}
-                    €
+                    {{ categoryUsage(categ) }} €
                   </v-chip>
                 </template>
                 <span>
-                  {{ categ.balance.toFixed(2) }} /
-                  {{ (categ.budget * weeksCount).toFixed(2) }} € ({{
-                    (getCategRatioColor(categ).ratio * 100).toFixed(2)
-                  }}%)
+                  {{ categoryTooltip(categ) }}
                 </span>
               </v-tooltip>
-              <v-tooltip v-else-if="categ.type === 1 && monthlyRest !== 0" top>
-                <template #activator="{ on, attrs }">
-                  <v-chip
-                    :color="
-                      getCategRatioColor(
-                        {
-                          balance: categ.balance,
-                          budget: monthlyRest / weeksCount,
-                        },
-                        true
-                      ).color
-                    "
-                    v-bind="attrs"
-                    :small="$device.isMobile"
-                    v-on="on"
-                  >
-                    {{ (monthlyRest - categ.balance).toFixed(2) }} €
-                  </v-chip>
-                </template>
-                <span>
-                  {{ categ.balance.toFixed(2) }} /
-                  {{ monthlyRest.toFixed(2) }} € ({{
-                    ((categ.balance / monthlyRest) * 100).toFixed(2)
-                  }}%)
-                </span>
-              </v-tooltip>
-              <v-chip v-else color="primary" :small="$device.isMobile">
-                {{ categ.balance.toFixed(2) }} €
-              </v-chip>
 
               <v-btn
                 icon
@@ -191,6 +158,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import { mapGetters } from 'vuex'
 import { ECategoryType } from '~/ECategoryType'
 import type { Account, Category, InputCategory } from '~/types'
 
@@ -228,17 +196,32 @@ export default Vue.extend({
     loading: false,
   }),
   computed: {
+    ...mapGetters({ monthlyBudget: 'agenda/getCurrent' }),
     /**
      * Selected account's categories
      */
     categories(): Category[] {
       return this.$store.getters['categories/getCategories']
     },
-    /**
-     * Current monthly budget from agenda
-     */
-    monthlyBudget(): number {
-      return this.$store.getters['agenda/getMonth'](new Date().getMonth() + 1)
+    categoryUsage() {
+      return ({ balance, budget, type }: Category) => {
+        if (type === ECategoryType.BUDGET) {
+          budget *= this.weeksCount
+        }
+        return Math.abs(balance - budget).toFixed(2)
+      }
+    },
+    categoryTooltip() {
+      return (categ: Category) => {
+        // eslint-disable-next-line prefer-const
+        let { balance, budget } = categ
+        if (categ.type === ECategoryType.BUDGET) {
+          budget *= this.weeksCount
+        }
+        return `${Math.abs(balance).toFixed(2)} / ${Math.abs(budget).toFixed(
+          2
+        )} € (${(this.getCategRatioColor(categ).ratio * 100).toFixed(2)}%)`
+      }
     },
     /**
      * Number of weeks in current month
@@ -261,7 +244,7 @@ export default Vue.extend({
      * Budget for auto categories
      */
     monthlyRest(): number {
-      let budget = this.monthlyBudget
+      let budget = this.monthlyBudget.total
       for (const categ of this.categories) {
         if (categ.type === ECategoryType.BUDGET) {
           budget -= categ.budget * this.weeksCount
@@ -270,7 +253,7 @@ export default Vue.extend({
       return budget
     },
     /**
-     * Total balance of categories (w/o Planned)
+     * Total balance of categories
      */
     totalBalance(): number {
       let balance = 0
@@ -280,14 +263,27 @@ export default Vue.extend({
       return balance
     },
     /**
-     *
+     * Total balance of account minus categories
      */
-    roulement(): number {
+    roulement(): string {
       const account = this.$store.getters['account/getCurrent'] as Account
-      return account.balance - (this.monthlyBudget - this.totalBalance)
+      if (account) {
+        return this.toLS(account.balance - this.totalBalance)
+      }
+      return '0'
     },
   },
   methods: {
+    /**
+     * Format a number
+     *
+     * @param x Th number
+     */
+    toLS(x: number): string {
+      return x.toLocaleString(undefined, {
+        maximumFractionDigits: 2,
+      })
+    },
     /**
      * Create a new category
      *
@@ -390,8 +386,11 @@ export default Vue.extend({
      * @param categ The category
      * @param isPrimary If the 'OK' color should be primary
      */
-    getCategRatioColor({ balance, budget }: Category, isPrimary = false) {
-      const ratio = balance / (budget * (this.weeksCount as number))
+    getCategRatioColor({ balance, budget, type }: Category, isPrimary = false) {
+      if (type === ECategoryType.BUDGET) {
+        budget *= this.weeksCount
+      }
+      const ratio = Math.abs(balance) / Math.abs(budget)
       return {
         color:
           ratio < 0.5

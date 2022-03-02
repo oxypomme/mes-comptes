@@ -160,8 +160,8 @@
               :key="'ht' + i"
               :class="['text-center', currMonth == i - 1 && 'activeMonth']"
             >
-              <v-chip small :color="month(i) > 0 ? 'green' : 'red'">
-                {{ month(i).toFixed(2) }} €
+              <v-chip small :color="month(i).total > 0 ? 'green' : 'red'">
+                {{ month(i).total.toFixed(2) }} €
               </v-chip>
             </th>
           </tr>
@@ -175,7 +175,7 @@
             </td>
             <td>
               <span class="hoverable" @click="open(item, 'name', item.name)">
-                {{ item.name ?? '-' }}
+                {{ item.name || '-' }}
               </span>
             </td>
             <td>
@@ -183,7 +183,7 @@
                 class="hoverable"
                 @click="open(item, 'category', item.category)"
               >
-                {{ item.category ?? '-' }}
+                {{ item.category || '-' }}
               </span>
             </td>
             <td class="text-center">
