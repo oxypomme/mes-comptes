@@ -82,7 +82,7 @@
           <v-tooltip top>
             <template #activator="{ on, attrs }">
               <v-chip v-bind="attrs" :small="$device.isMobile" v-on="on">
-                {{ roulement }} €
+                {{ roulement }}
               </v-chip>
             </template>
             <span> Roulement </span>
@@ -123,7 +123,7 @@
                     :small="$device.isMobile"
                     v-on="on"
                   >
-                    {{ categoryUsage(categ) }} €
+                    {{ categoryUsage(categ) }}
                   </v-chip>
                 </template>
                 <span>
@@ -161,6 +161,7 @@ import Vue from 'vue'
 import { mapGetters } from 'vuex'
 import { ECategoryType } from '~/ECategoryType'
 import type { Account, Category, InputCategory } from '~/types'
+import { toLS } from '~/ts/format'
 
 export default Vue.extend({
   data: () => ({
@@ -203,14 +204,20 @@ export default Vue.extend({
     categories(): Category[] {
       return this.$store.getters['categories/getCategories']
     },
+    /**
+     * Formated category rest
+     */
     categoryUsage() {
       return ({ balance, budget, type }: Category) => {
         if (type === ECategoryType.BUDGET) {
           budget *= this.weeksCount
         }
-        return Math.abs(balance - budget).toFixed(2)
+        return toLS(Math.abs(balance - budget))
       }
     },
+    /**
+     * Tooltip content of a category
+     */
     categoryTooltip() {
       return (categ: Category) => {
         // eslint-disable-next-line prefer-const
@@ -218,9 +225,12 @@ export default Vue.extend({
         if (categ.type === ECategoryType.BUDGET) {
           budget *= this.weeksCount
         }
-        return `${Math.abs(balance).toFixed(2)} / ${Math.abs(budget).toFixed(
-          2
-        )} € (${(this.getCategRatioColor(categ).ratio * 100).toFixed(2)}%)`
+        return `${toLS(Math.abs(balance))} / ${toLS(Math.abs(budget))} (${toLS(
+          this.getCategRatioColor(categ).ratio,
+          {
+            style: 'percent',
+          }
+        )})`
       }
     },
     /**
@@ -258,7 +268,7 @@ export default Vue.extend({
     totalBalance(): number {
       let balance = 0
       for (const categ of this.categories) {
-        balance += categ.balance
+        balance += categ.budget - categ.balance
       }
       return balance
     },
@@ -268,22 +278,12 @@ export default Vue.extend({
     roulement(): string {
       const account = this.$store.getters['account/getCurrent'] as Account
       if (account) {
-        return this.toLS(account.balance - this.totalBalance)
+        return toLS(account.balance - this.totalBalance)
       }
       return '0'
     },
   },
   methods: {
-    /**
-     * Format a number
-     *
-     * @param x Th number
-     */
-    toLS(x: number): string {
-      return x.toLocaleString(undefined, {
-        maximumFractionDigits: 2,
-      })
-    },
     /**
      * Create a new category
      *
