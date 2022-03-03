@@ -15,7 +15,8 @@
 
           <v-card-text>
             <v-container>
-              <v-row>
+              <v-row class="align-center">
+                <icon-picker v-model="category.icon" class="mr-2" />
                 <v-text-field
                   v-model="category.name"
                   label="Nom de la catégorie"
@@ -101,15 +102,7 @@
               class="mr-2"
               :color="categ.type === 2 ? 'green' : 'red'"
             >
-              {{
-                categ.type === 1
-                  ? 'mdi-calculator'
-                  : categ.type === 2
-                  ? 'mdi-calendar'
-                  : categ.type === 3
-                  ? 'mdi-calendar'
-                  : 'mdi-chart-pie'
-              }}
+              {{ categ.icon }}
             </v-icon>
             <v-list-item-content>
               <v-list-item-title v-text="categ.name"></v-list-item-title>
@@ -168,6 +161,7 @@ export default Vue.extend({
     initCategory: {
       id: undefined,
       name: '',
+      icon: 'mdi-wallet',
       balance: '0',
       budget: '0',
       type: ECategoryType.BUDGET,

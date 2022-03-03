@@ -20,13 +20,16 @@ const getter: GetterTree<CategoryState, RootState> = {
     const weekcount = rootGetters.getWeekCount
 
     const categories: Category[] = []
-    for (const { id, name, budget, balance, type } of state.data) {
+    for (const { id, name, budget, balance, type, icon } of state.data) {
+      let i = icon
       let b = budget
       switch (type) {
         case ECategoryType.BUDGET:
+          i = icon ?? 'mdi-chart-pie'
           b = budget * weekcount
           break
         case ECategoryType.CALCULATED:
+          i = icon ?? 'mdi-calculator'
           b =
             agenda.total -
             state.data
@@ -34,9 +37,11 @@ const getter: GetterTree<CategoryState, RootState> = {
               .reduce((sum, { budget }) => sum + budget * weekcount, 0)
           break
         case ECategoryType.PLANNED_CREDIT:
+          i = icon ?? 'mdi-calendar'
           b = -agenda.credit
           break
         case ECategoryType.PLANNED_DEBIT:
+          i = icon ?? 'mdi-calendar'
           b = agenda.debit
           break
         default:
@@ -49,6 +54,7 @@ const getter: GetterTree<CategoryState, RootState> = {
         budget: b,
         balance,
         type,
+        icon: i,
       })
     }
 

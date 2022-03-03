@@ -18,7 +18,7 @@ const actions: ActionTree<CategoryState, RootState> = {
    */
   createCategory(
     { rootGetters },
-    { name, budget, balance, type }: InputCategory
+    { name, budget, balance, type, icon }: InputCategory
   ) {
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
     if (!uid) {
@@ -41,6 +41,7 @@ const actions: ActionTree<CategoryState, RootState> = {
       budget: parseFloat(budget),
       balance: parseFloat(balance),
       type,
+      icon,
       createdAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
     } as Category & { createdAt: firebase.firestore.FieldValue })
   },
@@ -53,7 +54,7 @@ const actions: ActionTree<CategoryState, RootState> = {
    */
   editCategory(
     { rootGetters },
-    { id, name, budget, balance, type }: InputCategory
+    { id, name, budget, balance, type, icon }: InputCategory
   ) {
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
     if (!uid) {
@@ -77,6 +78,7 @@ const actions: ActionTree<CategoryState, RootState> = {
       budget: parseFloat(budget),
       balance: parseFloat(balance),
       type,
+      icon,
       updatedAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
     } as Category & { updatedAt: firebase.firestore.FieldValue })
   },

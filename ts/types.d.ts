@@ -31,6 +31,7 @@ interface AgendaComputed {
 
 interface Category extends FirestoreData {
   name: string
+  icon?: string
   balance: number // float
   budget: number // float
   type: ECategoryType

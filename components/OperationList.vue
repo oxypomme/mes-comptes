@@ -133,6 +133,9 @@
         {{ Math.abs(item.amount).toFixed(2) }} €
       </template>
       <template #item.category="{ item }">
+        <v-icon v-if="item.category" small>
+          {{ item.category.icon }}
+        </v-icon>
         {{ item.category ? item.category.name : '' }}
       </template>
       <template #item.actions="{ item }">
