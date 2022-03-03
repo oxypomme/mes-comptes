@@ -159,8 +159,8 @@
 <script lang="ts">
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
-import { ECategoryType } from '~/ECategoryType'
-import type { Account, Category, InputCategory } from '~/types'
+import { ECategoryType } from '~/ts/ECategoryType'
+import type { Account, Category, InputCategory } from '~/ts/types'
 import { toLS } from '~/ts/format'
 
 export default Vue.extend({
@@ -394,6 +394,7 @@ export default Vue.extend({
   },
 })
 </script>
+
 <style lang="scss" scoped>
 .last-item {
   margin-left: auto;

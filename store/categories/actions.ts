@@ -3,7 +3,7 @@ import type { ActionTree, Store } from 'vuex'
 import type firebase from 'firebase'
 import type { RootState } from '../state'
 import type { CategoryState } from './state'
-import type { User, Account, Category, InputCategory } from '~/types'
+import type { User, Account, Category, InputCategory } from '~/ts/types'
 
 /**
  * Actions for categories

@@ -25,7 +25,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import type { SettingsState } from '~/types'
+import type { SettingsState } from '~/ts/types'
 
 export default Vue.extend({
   data() {

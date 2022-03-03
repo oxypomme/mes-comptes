@@ -129,7 +129,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import type { Account, InputAccount } from '~/types'
+import type { Account, InputAccount } from '~/ts/types'
 
 export default Vue.extend({
   data: () => ({

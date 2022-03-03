@@ -3,7 +3,7 @@ import type { ActionTree, Store } from 'vuex'
 import type firebase from 'firebase'
 import type { RootState } from '../state'
 import type { OperationState } from './state'
-import type { Account, InputOperation, Operation, User } from '~/types'
+import type { Account, InputOperation, Operation, User } from '~/ts/types'
 
 /**
  * Actions for user's operations

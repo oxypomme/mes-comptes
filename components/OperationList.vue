@@ -155,14 +155,14 @@
 <script lang="ts">
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
-import { ECategoryType } from '~/ECategoryType'
+import { ECategoryType } from '~/ts/ECategoryType'
 import type {
   Account,
   Category,
   InputOperation,
   Operation,
   ValueModifier,
-} from '~/types'
+} from '~/ts/types'
 
 export default Vue.extend({
   data: () => ({

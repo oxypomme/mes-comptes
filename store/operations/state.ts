@@ -1,4 +1,4 @@
-import type { Operation } from '~/types'
+import type { Operation } from '~/ts/types'
 
 /**
  * State for user's operations

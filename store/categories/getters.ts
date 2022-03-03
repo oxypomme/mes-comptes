@@ -1,8 +1,8 @@
 import type { GetterTree } from 'vuex'
 import type { RootState } from '../state'
 import type { CategoryState } from './state'
-import { ECategoryType } from '~/ECategoryType'
-import type { AgendaComputed, Category } from '~/types'
+import { ECategoryType } from '~/ts/ECategoryType'
+import type { AgendaComputed, Category } from '~/ts/types'
 
 /**
  * Getters for user's categories

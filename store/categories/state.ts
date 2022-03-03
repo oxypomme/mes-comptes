@@ -1,4 +1,4 @@
-import type { Category } from '~/types'
+import type { Category } from '~/ts/types'
 
 /**
  * State for user's categories

@@ -1,7 +1,7 @@
 import type { GetterTree } from 'vuex'
 import type { RootState } from '../state'
 import type { AgendaState } from './state'
-import type { AgendaRow } from '~/types'
+import type { AgendaRow } from '~/ts/types'
 
 const agendaMonthReducer =
   (month: number) =>
