@@ -80,7 +80,7 @@
       <v-card-title>
         <span class="font-weight-light">Catégories</span>
         <span class="last-item">
-          <v-tooltip top>
+          <v-tooltip v-if="parseInt(roulement) > -1" top>
             <template #activator="{ on, attrs }">
               <v-chip v-bind="attrs" :small="$device.isMobile" v-on="on">
                 {{ roulement }}
@@ -228,9 +228,7 @@ export default Vue.extend({
      */
     categoryUsage() {
       return ({ balance, budget }: Category) => {
-        const usage = budget - balance
-
-        return toLS(usage)
+        return toLS(budget - balance)
       }
     },
     /**
@@ -260,22 +258,32 @@ export default Vue.extend({
       const account = this.$store.getters['account/getCurrent'] as Account
       if (account) {
         let value = account.balance
+        const check = {
+          plannedCredit: false,
+          plannedDebit: false,
+        }
         for (const { budget, balance, type } of this.categories as Category[]) {
           switch (type) {
             case ECategoryType.PLANNED_CREDIT:
               value += budget - balance
+              check.plannedCredit = true
               break
             case ECategoryType.PLANNED_DEBIT:
               value += balance - budget
+              check.plannedDebit = true
               break
             default:
               value -= Math.max(budget - balance, 0)
               break
           }
         }
-        return toLS(value)
+
+        if (check.plannedCredit && check.plannedDebit) {
+          return toLS(value)
+        }
+        return '-1'
       }
-      return '0'
+      return '-1'
     },
   },
   methods: {
