@@ -4,6 +4,7 @@ import type firebase from 'firebase'
 import type { RootState } from '../state'
 import type { CategoryState } from './state'
 import type { User, Account, Category, InputCategory } from '~/ts/types'
+import { ECategoryType } from '~/ts/ECategoryType'
 
 /**
  * Actions for categories
@@ -30,6 +31,8 @@ const actions: ActionTree<CategoryState, RootState> = {
       throw new Error('Un compte doit être séléctionné')
     }
 
+    const ba = parseFloat(balance)
+
     const ref = this.$fire.firestore
       .collection('users')
       .doc(uid)
@@ -39,7 +42,7 @@ const actions: ActionTree<CategoryState, RootState> = {
     return ref.add({
       name,
       budget: parseFloat(budget),
-      balance: parseFloat(balance),
+      balance: type === ECategoryType.PLANNED_CREDIT ? -ba : ba,
       type,
       icon,
       createdAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
@@ -66,6 +69,8 @@ const actions: ActionTree<CategoryState, RootState> = {
       throw new Error('Un compte doit être séléctionné')
     }
 
+    const ba = parseFloat(balance)
+
     const ref = this.$fire.firestore
       .collection('users')
       .doc(uid)
@@ -76,7 +81,7 @@ const actions: ActionTree<CategoryState, RootState> = {
     return ref.update({
       name,
       budget: parseFloat(budget),
-      balance: parseFloat(balance),
+      balance: type === ECategoryType.PLANNED_CREDIT ? -ba : ba,
       type,
       icon,
       updatedAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
