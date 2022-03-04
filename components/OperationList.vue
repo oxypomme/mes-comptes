@@ -113,7 +113,7 @@
           <v-divider class="d-block d-sm-none" />
         </div>
       </template>
-      <template #item.createdAt="{ item }">
+      <template #[`item.createdAt`]="{ item }">
         {{
           (item.createdAt
             ? item.createdAt.toDate()
@@ -121,7 +121,7 @@
           ).toLocaleDateString()
         }}
       </template>
-      <template #item.type="{ item }">
+      <template #[`item.type`]="{ item }">
         <v-chip
           :small="$device.isMobile"
           :color="item.amount > 0 ? 'green' : 'red'"
@@ -129,16 +129,16 @@
           {{ item.amount > 0 ? 'Crédit (+)' : 'Débit (-)' }}
         </v-chip>
       </template>
-      <template #item.amount="{ item }">
+      <template #[`item.amount`]="{ item }">
         {{ toLS(Math.abs(item.amount)) }}
       </template>
-      <template #item.category="{ item }">
+      <template #[`item.category`]="{ item }">
         <v-icon v-if="item.category" small>
           {{ item.category.icon }}
         </v-icon>
         {{ item.category ? item.category.name : '' }}
       </template>
-      <template #item.actions="{ item }">
+      <template #[`item.actions`]="{ item }">
         <v-btn icon color="blue" @click="showEdit(item)">
           <v-icon>mdi-pencil</v-icon>
         </v-btn>
