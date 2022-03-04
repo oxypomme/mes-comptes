@@ -3,13 +3,7 @@ import type { ActionTree, Store } from 'vuex'
 import type firebase from 'firebase'
 import type { RootState } from '../state'
 import type { OperationState } from './state'
-import type {
-  Account,
-  Category,
-  InputOperation,
-  Operation,
-  User,
-} from '~/types'
+import type { Account, InputOperation, Operation, User } from '~/ts/types'
 
 /**
  * Actions for user's operations
@@ -64,7 +58,7 @@ const actions: ActionTree<OperationState, RootState> = {
    */
   editOperation(
     { rootGetters },
-    { id, name, amount, category }: InputOperation
+    { id, name, amount, category, modifier }: InputOperation
   ) {
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
     if (!uid) {
@@ -77,7 +71,7 @@ const actions: ActionTree<OperationState, RootState> = {
     }
 
     // Parse amount & category
-    const amnt = parseFloat(amount)
+    const amnt = parseFloat(amount) * modifier
     if (category && typeof category !== 'string') {
       category = category.id
     }
@@ -135,7 +129,7 @@ const actions: ActionTree<OperationState, RootState> = {
   getOperations: firestoreAction(async function (
     this: Store<RootState>,
     { rootGetters, bindFirestoreRef, state, commit },
-    { category, progression }: { category: number; progression: number }
+    { progression }: { progression: number }
   ) {
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
     if (!uid) {
@@ -152,18 +146,10 @@ const actions: ActionTree<OperationState, RootState> = {
       .doc(uid)
       .collection('accounts')
       .doc(aid)
-    const cref = ref.collection('categories')
 
     const oref = ref.collection('operations')
 
-    let docref: firebase.firestore.Query
-    // filtering by category
-    if (category !== undefined) {
-      const categories = rootGetters['categories/getCategories'] as Category[]
-      docref = oref.where('category', '==', cref.doc(categories[category].id))
-    }
-
-    docref = oref.orderBy('createdAt', 'desc')
+    let docref = oref.orderBy('createdAt', 'desc')
 
     // paginate
     const newPage = state.page + progression

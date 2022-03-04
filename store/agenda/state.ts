@@ -1,4 +1,4 @@
-import type { AgendaRow } from '~/types'
+import type { AgendaRow } from '~/ts/types'
 
 /**
  * The state for user's agenda

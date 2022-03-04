@@ -3,7 +3,8 @@ import type { ActionTree, Store } from 'vuex'
 import type firebase from 'firebase'
 import type { RootState } from '../state'
 import type { CategoryState } from './state'
-import type { User, Account, Category, InputCategory } from '~/types'
+import type { User, Account, Category, InputCategory } from '~/ts/types'
+import { ECategoryType } from '~/ts/ECategoryType'
 
 /**
  * Actions for categories
@@ -16,7 +17,10 @@ const actions: ActionTree<CategoryState, RootState> = {
    * @param category The category
    * @returns The promise of creation
    */
-  createCategory({ rootGetters }, { name, budget, balance }: InputCategory) {
+  createCategory(
+    { rootGetters },
+    { name, budget, balance, type, icon }: InputCategory
+  ) {
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
     if (!uid) {
       throw new Error('Vous devez être connecté pour effectuer cette action')
@@ -26,6 +30,8 @@ const actions: ActionTree<CategoryState, RootState> = {
     if (!aid) {
       throw new Error('Un compte doit être séléctionné')
     }
+
+    const ba = parseFloat(balance)
 
     const ref = this.$fire.firestore
       .collection('users')
@@ -36,7 +42,9 @@ const actions: ActionTree<CategoryState, RootState> = {
     return ref.add({
       name,
       budget: parseFloat(budget),
-      balance: parseFloat(balance),
+      balance: type === ECategoryType.PLANNED_CREDIT ? -ba : ba,
+      type,
+      icon,
       createdAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
     } as Category & { createdAt: firebase.firestore.FieldValue })
   },
@@ -47,7 +55,10 @@ const actions: ActionTree<CategoryState, RootState> = {
    * @param category The category
    * @returns The promise of edition
    */
-  editCategory({ rootGetters }, { id, name, budget, balance }: InputCategory) {
+  editCategory(
+    { rootGetters },
+    { id, name, budget, balance, type, icon }: InputCategory
+  ) {
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
     if (!uid) {
       throw new Error('Vous devez être connecté pour effectuer cette action')
@@ -57,6 +68,8 @@ const actions: ActionTree<CategoryState, RootState> = {
     if (!aid) {
       throw new Error('Un compte doit être séléctionné')
     }
+
+    const ba = parseFloat(balance)
 
     const ref = this.$fire.firestore
       .collection('users')
@@ -68,7 +81,9 @@ const actions: ActionTree<CategoryState, RootState> = {
     return ref.update({
       name,
       budget: parseFloat(budget),
-      balance: parseFloat(balance),
+      balance: type === ECategoryType.PLANNED_CREDIT ? -ba : ba,
+      type,
+      icon,
       updatedAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
     } as Category & { updatedAt: firebase.firestore.FieldValue })
   },
@@ -125,7 +140,13 @@ const actions: ActionTree<CategoryState, RootState> = {
       .collection('categories')
       .orderBy('createdAt')
 
-    await bindFirestoreRef('data', ref)
+    await bindFirestoreRef('data', ref, {
+      serialize: (doc) => {
+        const data = doc.data()
+        Object.defineProperty(data, 'id', { value: doc.id })
+        return data
+      },
+    })
   }),
 }
 

@@ -27,7 +27,7 @@
                 </v-col>
               </v-row>
               <v-row>
-                <v-col v-if="!operation.id">
+                <v-col>
                   <v-select
                     v-model="operation.modifier"
                     :items="[
@@ -56,7 +56,7 @@
                 <v-col>
                   <v-select
                     v-model="operation.category"
-                    :items="categories"
+                    :items="selectCategories"
                     item-text="name"
                     item-value="id"
                     label="Catégorie"
@@ -113,7 +113,7 @@
           <v-divider class="d-block d-sm-none" />
         </div>
       </template>
-      <template #item.createdAt="{ item }">
+      <template #[`item.createdAt`]="{ item }">
         {{
           (item.createdAt
             ? item.createdAt.toDate()
@@ -121,7 +121,7 @@
           ).toLocaleDateString()
         }}
       </template>
-      <template #item.type="{ item }">
+      <template #[`item.type`]="{ item }">
         <v-chip
           :small="$device.isMobile"
           :color="item.amount > 0 ? 'green' : 'red'"
@@ -129,13 +129,16 @@
           {{ item.amount > 0 ? 'Crédit (+)' : 'Débit (-)' }}
         </v-chip>
       </template>
-      <template #item.amount="{ item }">
-        {{ Math.abs(item.amount).toFixed(2) }} €
+      <template #[`item.amount`]="{ item }">
+        {{ toLS(Math.abs(item.amount)) }}
       </template>
-      <template #item.category="{ item }">
+      <template #[`item.category`]="{ item }">
+        <v-icon v-if="item.category" small>
+          {{ item.category.icon }}
+        </v-icon>
         {{ item.category ? item.category.name : '' }}
       </template>
-      <template #item.actions="{ item }">
+      <template #[`item.actions`]="{ item }">
         <v-btn icon color="blue" @click="showEdit(item)">
           <v-icon>mdi-pencil</v-icon>
         </v-btn>
@@ -155,7 +158,15 @@
 <script lang="ts">
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
-import type { Account, InputOperation, Operation, ValueModifier } from '~/types'
+import { ECategoryType } from '~/ts/ECategoryType'
+import { toLS } from '~/ts/format'
+import type {
+  Account,
+  Category,
+  InputOperation,
+  Operation,
+  ValueModifier,
+} from '~/ts/types'
 
 export default Vue.extend({
   data: () => ({
@@ -177,7 +188,7 @@ export default Vue.extend({
     initOperation: {
       name: '',
       amount: '',
-      category: '',
+      category: null,
       modifier: -1 as ValueModifier,
     },
     operation: {} as InputOperation,
@@ -187,10 +198,24 @@ export default Vue.extend({
   computed: {
     ...mapGetters({
       account: 'account/getCurrent',
-      categories: 'categories/getCategories',
       ops: 'operations/getOperations',
     }),
-
+    /**
+     * Options for select categories
+     */
+    selectCategories(): Category[] {
+      const categs = this.$store.getters['categories/getCategories']
+      return [
+        {
+          id: null,
+          name: '',
+          balance: 0,
+          budget: 0,
+          type: ECategoryType.BUDGET,
+        },
+        ...categs,
+      ]
+    },
     /**
      * Number of pages in total
      */
@@ -219,6 +244,7 @@ export default Vue.extend({
     },
   },
   methods: {
+    toLS,
     /**
      * Create an operation
      */
@@ -271,7 +297,12 @@ export default Vue.extend({
      */
     showEdit(item: Operation) {
       this.valid = true
-      this.operation = { ...item, amount: item.amount.toString(), id: item.id }
+      this.operation = {
+        ...item,
+        amount: Math.abs(item.amount).toFixed(2),
+        modifier: item.amount > 0 ? 1 : -1,
+        id: item.id,
+      }
       this.dialog = true
     },
   },

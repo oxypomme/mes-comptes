@@ -1,4 +1,4 @@
-import type { Account } from '~/types'
+import type { Account } from '~/ts/types'
 
 /**
  * State for user's accounts

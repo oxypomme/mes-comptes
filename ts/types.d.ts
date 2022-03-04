@@ -1,4 +1,5 @@
 import type firebase from 'firebase'
+import type { ECategoryType } from './ECategoryType'
 
 interface FirestoreData {
   id?: string
@@ -22,10 +23,18 @@ interface AgendaRow extends FirestoreData {
   values: number[] // 1 element for each month (12 elements in total); float
 }
 
+interface AgendaComputed {
+  debit: number
+  credit: number
+  total: number
+}
+
 interface Category extends FirestoreData {
   name: string
+  icon?: string
   balance: number // float
   budget: number // float
+  type: ECategoryType
 }
 type InputCategory = Omit<Category, 'balance' | 'budget'> & {
   balance: string
@@ -36,12 +45,12 @@ interface Operation extends FirestoreData {
   _doc?: firebase.firestore.DocumentSnapshot<firebase.firestore.DocumentData>
   name: string
   amount: number // float
-  category: firebase.firestore.DocumentReference
+  category: firebase.firestore.DocumentReference | null
   modifier: ValueModifier
 }
 type InputOperation = Omit<Operation, 'amount' | 'category'> & {
   amount: string
-  category: string | firebase.firestore.DocumentReference
+  category: string | firebase.firestore.DocumentReference | null
 }
 
 interface User {

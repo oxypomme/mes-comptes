@@ -3,7 +3,7 @@ import type { ActionTree, Store } from 'vuex'
 import type firebase from 'firebase'
 import type { RootState } from '../state'
 import type { AgendaState } from './state'
-import type { AgendaRow, User } from '~/types'
+import type { AgendaRow, User } from '~/ts/types'
 
 /**
  * Actions for user's agenda

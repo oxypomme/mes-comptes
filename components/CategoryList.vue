@@ -15,7 +15,8 @@
 
           <v-card-text>
             <v-container>
-              <v-row>
+              <v-row class="align-center">
+                <icon-picker v-model="category.icon" class="mr-2" />
                 <v-text-field
                   v-model="category.name"
                   label="Nom de la catégorie"
@@ -24,15 +25,19 @@
                 >
                 </v-text-field>
               </v-row>
+              <v-row>
+                <v-select
+                  v-model="category.type"
+                  :items="categoryTypes"
+                  item-text="label"
+                  item-value="value"
+                  label="Type"
+                ></v-select>
+              </v-row>
               <v-row align="center">
-                <v-checkbox
-                  v-model="isWithBudget"
-                  hide-details
-                  class="shrink mr-2 mt-0"
-                ></v-checkbox>
                 <v-text-field
                   v-model="category.budget"
-                  :disabled="!isWithBudget"
+                  :disabled="category.type !== 0"
                   label="Budget par semaine de la catégorie"
                   type="number"
                   prefix="€"
@@ -74,19 +79,36 @@
     <v-card>
       <v-card-title>
         <span class="font-weight-light">Catégories</span>
-        <v-btn class="last-item" icon color="success" @click="showNew">
-          <v-icon>mdi-plus</v-icon>
-        </v-btn>
+        <span class="last-item">
+          <v-tooltip v-if="parseInt(roulement) > -1" top>
+            <template #activator="{ on, attrs }">
+              <v-chip v-bind="attrs" :small="$device.isMobile" v-on="on">
+                {{ roulement }}
+              </v-chip>
+            </template>
+            <span> Roulement </span>
+          </v-tooltip>
+          <v-btn class="last-item" icon color="success" @click="showNew">
+            <v-icon>mdi-plus</v-icon>
+          </v-btn>
+        </span>
       </v-card-title>
       <v-divider />
       <v-list :dense="$device.isMobile">
         <v-list-item-group v-model="selectedItem">
           <v-list-item v-for="(categ, i) in categories" :key="i">
+            <v-icon
+              small
+              class="mr-2"
+              :color="categ.type === 2 ? 'green' : 'red'"
+            >
+              {{ categ.icon }}
+            </v-icon>
             <v-list-item-content>
               <v-list-item-title v-text="categ.name"></v-list-item-title>
             </v-list-item-content>
             <v-list-item-icon>
-              <v-tooltip v-if="categ.budget > 0" top>
+              <v-tooltip top>
                 <template #activator="{ on, attrs }">
                   <v-chip
                     :color="getCategRatioColor(categ).color"
@@ -94,50 +116,13 @@
                     :small="$device.isMobile"
                     v-on="on"
                   >
-                    {{
-                      Math.abs(
-                        categ.balance - categ.budget * weeksCount
-                      ).toFixed(2)
-                    }}
-                    €
+                    {{ categoryUsage(categ) }}
                   </v-chip>
                 </template>
                 <span>
-                  {{ categ.balance.toFixed(2) }} /
-                  {{ (categ.budget * weeksCount).toFixed(2) }} € ({{
-                    (getCategRatioColor(categ).ratio * 100).toFixed(2)
-                  }}%)
+                  {{ categoryTooltip(categ) }}
                 </span>
               </v-tooltip>
-              <v-tooltip v-else-if="monthlyRest !== 0" top>
-                <template #activator="{ on, attrs }">
-                  <v-chip
-                    :color="
-                      getCategRatioColor(
-                        {
-                          balance: categ.balance,
-                          budget: monthlyRest / weeksCount,
-                        },
-                        true
-                      ).color
-                    "
-                    v-bind="attrs"
-                    :small="$device.isMobile"
-                    v-on="on"
-                  >
-                    {{ (monthlyRest - categ.balance).toFixed(2) }} €
-                  </v-chip>
-                </template>
-                <span>
-                  {{ categ.balance.toFixed(2) }} /
-                  {{ monthlyRest.toFixed(2) }} € ({{
-                    ((categ.balance / monthlyRest) * 100).toFixed(2)
-                  }}%)
-                </span>
-              </v-tooltip>
-              <v-chip v-else color="primary" :small="$device.isMobile">
-                {{ categ.balance.toFixed(2) }} €
-              </v-chip>
 
               <v-btn
                 icon
@@ -166,74 +151,139 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import type { Category, InputCategory } from '~/types'
+import { mapGetters } from 'vuex'
+import { ECategoryType } from '~/ts/ECategoryType'
+import type { Account, Category, InputCategory } from '~/ts/types'
+import { toLS } from '~/ts/format'
 
 export default Vue.extend({
   data: () => ({
     initCategory: {
       id: undefined,
       name: '',
+      icon: 'mdi-wallet',
       balance: '0',
       budget: '0',
+      type: ECategoryType.BUDGET,
     },
     category: {} as InputCategory,
     selectedItem: undefined,
     valid: true,
     dialog: false,
     loading: false,
-    isWithBudget: true,
   }),
   computed: {
-    /**
-     * Selected account's categories
-     */
-    categories(): Category[] {
-      return this.$store.getters['categories/getCategories']
+    ...mapGetters({
+      monthlyBudget: 'agenda/getCurrent',
+      categories: 'categories/getCategories',
+      weeksCount: 'getWeekCount',
+    }),
+    categoryTypes() {
+      const types = [
+        {
+          label: 'Budget',
+          value: ECategoryType.BUDGET,
+        },
+      ]
+      // Add option for calculated if not already present
+      if (
+        (this.categories as Category[]).findIndex(
+          ({ type }) =>
+            type === ECategoryType.CALCULATED && type !== this.category.type
+        ) < 0
+      ) {
+        types.push({
+          label: 'Calculée',
+          value: ECategoryType.CALCULATED,
+        })
+      }
+      // Add option for planned credit if not already present
+      if (
+        (this.categories as Category[]).findIndex(
+          ({ type }) =>
+            type === ECategoryType.PLANNED_CREDIT && type !== this.category.type
+        ) < 0
+      ) {
+        types.push({
+          label: 'Planifié (Crédit +)',
+          value: ECategoryType.PLANNED_CREDIT,
+        })
+      }
+      // Add option for planned debit if not already present
+      if (
+        (this.categories as Category[]).findIndex(
+          ({ type }) =>
+            type === ECategoryType.PLANNED_DEBIT && type !== this.category.type
+        ) < 0
+      ) {
+        types.push({
+          label: 'Planifié (Crédit -)',
+          value: ECategoryType.PLANNED_DEBIT,
+        })
+      }
+      return types
     },
     /**
-     * Current monthly budget from agenda
+     * Formated category rest
      */
-    monthlyBudget(): number {
-      return this.$store.getters['agenda/getMonth'](new Date().getMonth() + 1)
+    categoryUsage() {
+      return ({ balance, budget }: Category) => {
+        return toLS(budget - balance)
+      }
     },
     /**
-     * Number of weeks in current month
+     * Tooltip content of a category
      */
-    weeksCount(): number {
-      const resetDate =
-        this.$store.getters.getSettings.resetDate?.toDate() as Date
-      const prevResetDate = new Date(resetDate)
-      prevResetDate.setMonth(prevResetDate.getMonth() - 1)
-
-      const count = Math.round(
-        // W * D * m * s * ms
-        (resetDate.getTime() - prevResetDate.getTime()) /
-          (7 * 24 * 60 * 60 * 1000)
-      )
-
-      return count
+    categoryTooltip() {
+      return (categ: Category) => {
+        return `${toLS(Math.abs(categ.balance))} / ${toLS(
+          Math.abs(categ.budget)
+        )} (${toLS(this.getCategRatioColor(categ).ratio, {
+          style: 'percent',
+        })})`
+      }
     },
     /**
      * Budget for auto categories
      */
     monthlyRest(): number {
-      let budget = this.monthlyBudget
-      for (const categ of this.categories) {
-        if (categ.budget > 0) {
-          budget -= categ.budget * this.weeksCount
-        }
-      }
-      return budget
+      return (this.categories as Category[])
+        .filter(({ type }) => type === ECategoryType.BUDGET)
+        .reduce((sum, { budget }) => sum - budget, this.monthlyBudget.total)
     },
-  },
-  watch: {
     /**
-     * Update operations in state
+     * Total balance of account minus categories budget
      */
-    selectedItem() {
-      this.$store.dispatch('operations/getOperations', {
-        category: this.selectedItem,
-      })
+    roulement(): string {
+      const account = this.$store.getters['account/getCurrent'] as Account
+      if (account) {
+        let value = account.balance
+        const check = {
+          plannedCredit: false,
+          plannedDebit: false,
+        }
+        for (const { budget, balance, type } of this.categories as Category[]) {
+          switch (type) {
+            case ECategoryType.PLANNED_CREDIT:
+              value += budget - balance
+              check.plannedCredit = true
+              break
+            case ECategoryType.PLANNED_DEBIT:
+              value += balance - budget
+              check.plannedDebit = true
+              break
+            default:
+              value -= Math.max(budget - balance, 0)
+              break
+          }
+        }
+
+        if (check.plannedCredit && check.plannedDebit) {
+          return toLS(value)
+        }
+        return '-1'
+      }
+      return '-1'
     },
   },
   methods: {
@@ -247,12 +297,14 @@ export default Vue.extend({
       if (this.valid) {
         this.loading = true
         try {
-          if (!this.isWithBudget) {
-            this.category.budget = '-1'
-            const cAuto = this.categories.find((c) => c.budget < 0)
+          if (this.category.type !== ECategoryType.BUDGET) {
+            this.category.budget = '0'
+            const cAuto = (this.categories as Category[]).find(
+              (c) => c.type === this.category.type
+            )
             if (cAuto && cAuto.id !== this.category.id) {
               throw new Error(
-                "Vous ne pouvez avoir qu'une seule catégorie sans budget"
+                "Vous ne pouvez avoir qu'une seule catégorie calculée"
               )
             }
           }
@@ -324,15 +376,11 @@ export default Vue.extend({
       const categ = this.categories[i]
       this.category = {
         ...categ,
-        balance: categ.balance.toString(),
-        budget: categ.budget.toString(),
+        balance: categ.balance.toFixed(2),
+        budget: (categ.budget / this.weeksCount).toFixed(2),
         id: categ.id,
       }
       // TODO: check if id usefull
-      if (categ.budget < 0) {
-        this.isWithBudget = false
-        this.category.budget = '0'
-      }
       this.dialog = true
     },
     /**
@@ -342,7 +390,7 @@ export default Vue.extend({
      * @param isPrimary If the 'OK' color should be primary
      */
     getCategRatioColor({ balance, budget }: Category, isPrimary = false) {
-      const ratio = balance / (budget * (this.weeksCount as number))
+      const ratio = Math.abs(balance) / Math.abs(budget)
       return {
         color:
           ratio < 0.5
@@ -358,6 +406,7 @@ export default Vue.extend({
   },
 })
 </script>
+
 <style lang="scss" scoped>
 .last-item {
   margin-left: auto;

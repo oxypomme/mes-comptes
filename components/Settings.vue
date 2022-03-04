@@ -16,7 +16,7 @@
           >
             <template #activator="{ on, attrs }">
               <v-text-field
-                v-model="settings.resetDate"
+                v-model="formatedDate"
                 label="Changement de mois le"
                 hint="Utilisé pour remettre à zéro les catégories"
                 persistent-hint
@@ -27,7 +27,7 @@
               ></v-text-field>
             </template>
             <v-date-picker
-              v-model="settings.resetDate"
+              v-model="resetDate"
               :min="new Date().toISOString().substr(0, 10)"
               color="primary"
               locale="fr-FR"
@@ -62,26 +62,25 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import dayjs from 'dayjs'
 
 export default Vue.extend({
   data: () => ({
     valid: false,
     menu: false,
     loading: false,
+    resetDate: '',
   }),
   computed: {
-    /**
-     * Current user's settings
-     */
     settings() {
-      const date = this.$store.getters.getSettings.resetDate.toDate() as Date
-      return {
-        ...this.$store.getters.getSettings,
-        resetDate: `${date.getFullYear()}-${date.getMonth() + 1}-${date
-          .getDate()
-          .toLocaleString('fr-FR', { minimumIntegerDigits: 2 })}`,
-      }
+      return this.$store.getters.getSettings
     },
+    formatedDate() {
+      return dayjs(this.resetDate, 'YYYY-M-D').format('DD/MM/YYYY')
+    },
+  },
+  mounted() {
+    this.resetDate = dayjs(this.settings.resetDate.toDate()).format('YYYY-M-D')
   },
   methods: {
     /**
@@ -94,7 +93,7 @@ export default Vue.extend({
         try {
           await this.$store.dispatch('updateSettings', {
             ...this.settings,
-            resetDate: new Date(this.settings.resetDate),
+            resetDate: dayjs(this.settings.resetDate, 'YYYY-M-D').toDate(),
           })
           this.$toast.global.success('Paramètres mis à jour')
         } catch (e) {

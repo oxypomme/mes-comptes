@@ -1,4 +1,4 @@
-import type { SettingsState } from '~/types'
+import type { SettingsState } from '~/ts/types'
 
 /**
  * Root state

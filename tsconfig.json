@@ -14,8 +14,7 @@
     "baseUrl": ".",
     "importsNotUsedAsValues": "error",
     "paths": {
-      "~/*": ["./*"],
-      "@/*": ["./*"]
+      "~/*": ["./*"]
     },
     "types": [
       "vuetify",

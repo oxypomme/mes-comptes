@@ -1,7 +1,12 @@
 import type { GetterTree } from 'vuex'
 import type { RootState } from '../state'
 import type { AgendaState } from './state'
-import type { AgendaRow } from '~/types'
+import type { AgendaRow } from '~/ts/types'
+
+const agendaMonthReducer =
+  (month: number) =>
+  (sum: number, { values }: AgendaRow) =>
+    sum + values[month - 1]
 
 /**
  * Getters for user's agenda
@@ -25,13 +30,28 @@ const getters: GetterTree<AgendaState, RootState> = {
     (_, getters) =>
     (
       month: number // in range 1-12
-    ) =>
-      (getters.getAgenda as AgendaRow[])
-        .map((row) => ({
-          value: row.values[month - 1],
-          modifier: row.modifier,
-        }))
-        .reduce((sum, el) => sum + (el.value || 0) * (el.modifier || -1), 0),
+    ) => {
+      const rows: AgendaRow[] = getters.getAgenda
+      const debit = rows
+        .filter(({ modifier }) => modifier === -1)
+        .reduce(agendaMonthReducer(month), 0)
+      const credit = rows
+        .filter(({ modifier }) => modifier === 1)
+        .reduce(agendaMonthReducer(month), 0)
+      return {
+        debit,
+        credit,
+        total: credit - debit,
+      }
+    },
+  /**
+   * Get current month budget
+   *
+   * @param _ The state
+   * @param getters The other getters
+   * @returns A function to get the budget
+   */
+  getCurrent: (_, getters) => getters.getMonth(new Date().getMonth() + 1),
 }
 
 export default getters
