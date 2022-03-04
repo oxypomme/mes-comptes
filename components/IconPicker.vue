@@ -140,7 +140,7 @@ export default Vue.extend({
       this.page = 1
       this.getIcons()
     },
-    onTypeChange() {
+    onTabChange() {
       this.page = 1
       this.getIcons()
     },
