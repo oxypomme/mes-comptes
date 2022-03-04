@@ -19,9 +19,14 @@
                   label="Nom de l'icone"
                   required
                   :dense="$device.isMobile"
-                  @keydown.passive="getIcons"
+                  @keyup.passive="getIcons"
                 >
                 </v-text-field>
+              </v-row>
+              <v-row class="mb-1">
+                <v-tabs v-model="type">
+                  <v-tab v-for="(name, i) in types" :key="i">{{ name }}</v-tab>
+                </v-tabs>
               </v-row>
               <v-row v-if="!isLoading">
                 <v-btn
@@ -92,12 +97,18 @@ export default Vue.extend({
   },
   data: () => ({
     isLoading: true,
-    dialog: false,
+    dialog: true,
     icons: [] as string[],
-    type: '',
-    types: ['', 'outline'],
+    type: 0,
+    types: ['filled', 'outline'],
     search: '',
   }),
+  watch: {
+    type() {
+      this.isLoading = true
+      this.getIcons()
+    },
+  },
   mounted() {
     this.getIcons()
   },
@@ -115,7 +126,7 @@ export default Vue.extend({
      * Get icons from MDI
      */
     getIcons() {
-      fetchIcons(this.search, this.type, (data) => {
+      fetchIcons(this.search, this.types[this.type], (data) => {
         this.icons = data.map(({ name }) => name)
         this.isLoading = false
       })
