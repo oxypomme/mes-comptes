@@ -227,9 +227,10 @@ export default Vue.extend({
      * Formated category rest
      */
     categoryUsage() {
-      return ({ balance, budget, type }: Category) => {
+      return ({ balance, budget }: Category) => {
         const usage = budget - balance
-        return toLS(type === ECategoryType.PLANNED_CREDIT ? -usage : usage)
+
+        return toLS(usage)
       }
     },
     /**
@@ -258,12 +259,21 @@ export default Vue.extend({
     roulement(): string {
       const account = this.$store.getters['account/getCurrent'] as Account
       if (account) {
-        const totalBudget = (this.categories as Category[]).reduce(
-          (sum, { budget }) => sum + budget,
-          0
-        )
-
-        return toLS(account.balance + totalBudget)
+        let value = account.balance
+        for (const { budget, balance, type } of this.categories as Category[]) {
+          switch (type) {
+            case ECategoryType.PLANNED_CREDIT:
+              value += budget - balance
+              break
+            case ECategoryType.PLANNED_DEBIT:
+              value += balance - budget
+              break
+            default:
+              value -= Math.max(budget - balance, 0)
+              break
+          }
+        }
+        return toLS(value)
       }
       return '0'
     },
@@ -358,8 +368,8 @@ export default Vue.extend({
       const categ = this.categories[i]
       this.category = {
         ...categ,
-        balance: categ.balance.toString(),
-        budget: (categ.budget / this.weeksCount).toString(),
+        balance: categ.balance.toFixed(2),
+        budget: (categ.budget / this.weeksCount).toFixed(2),
         id: categ.id,
       }
       // TODO: check if id usefull

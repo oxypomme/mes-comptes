@@ -23,6 +23,7 @@ const getter: GetterTree<CategoryState, RootState> = {
     for (const { id, name, budget, balance, type, icon } of state.data) {
       let i = icon
       let b = budget
+      let ba = balance
       switch (type) {
         case ECategoryType.BUDGET:
           i = icon ?? 'mdi-chart-pie'
@@ -38,7 +39,8 @@ const getter: GetterTree<CategoryState, RootState> = {
           break
         case ECategoryType.PLANNED_CREDIT:
           i = icon ?? 'mdi-calendar'
-          b = -agenda.credit
+          ba = -balance
+          b = agenda.credit
           break
         case ECategoryType.PLANNED_DEBIT:
           i = icon ?? 'mdi-calendar'
@@ -52,7 +54,7 @@ const getter: GetterTree<CategoryState, RootState> = {
         id,
         name,
         budget: b,
-        balance,
+        balance: ba,
         type,
         icon: i,
       })

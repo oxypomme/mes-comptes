@@ -27,7 +27,7 @@
                 </v-col>
               </v-row>
               <v-row>
-                <v-col v-if="!operation.id">
+                <v-col>
                   <v-select
                     v-model="operation.modifier"
                     :items="[
@@ -130,7 +130,7 @@
         </v-chip>
       </template>
       <template #item.amount="{ item }">
-        {{ Math.abs(item.amount).toFixed(2) }} €
+        {{ toLS(Math.abs(item.amount)) }}
       </template>
       <template #item.category="{ item }">
         <v-icon v-if="item.category" small>
@@ -159,6 +159,7 @@
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
 import { ECategoryType } from '~/ts/ECategoryType'
+import { toLS } from '~/ts/format'
 import type {
   Account,
   Category,
@@ -243,6 +244,7 @@ export default Vue.extend({
     },
   },
   methods: {
+    toLS,
     /**
      * Create an operation
      */
@@ -295,7 +297,12 @@ export default Vue.extend({
      */
     showEdit(item: Operation) {
       this.valid = true
-      this.operation = { ...item, amount: item.amount.toString(), id: item.id }
+      this.operation = {
+        ...item,
+        amount: Math.abs(item.amount).toFixed(2),
+        modifier: item.amount > 0 ? 1 : -1,
+        id: item.id,
+      }
       this.dialog = true
     },
   },

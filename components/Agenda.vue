@@ -19,6 +19,9 @@
                   v-model="editedValue.value"
                   :label="editedLabel"
                   :prefix="typeof editedValue.field === 'string' ? '' : '€'"
+                  :type="
+                    typeof editedValue.field === 'number' ? 'number' : 'text'
+                  "
                   required
                   class="text-capitalize"
                   :dense="$device.isMobile"
@@ -161,7 +164,7 @@
               :class="['text-center', currMonth == i - 1 && 'activeMonth']"
             >
               <v-chip small :color="month(i).total > 0 ? 'green' : 'red'">
-                {{ month(i).total.toFixed(2) }} €
+                {{ toLS(month(i).total) }}
               </v-chip>
             </th>
           </tr>
@@ -202,7 +205,7 @@
               :class="['text-center', currMonth == j && 'activeMonth']"
             >
               <span class="hoverable" @click="open(item, j, value)">
-                {{ value > 0 ? `${value.toFixed(2)} €` : '-' }}
+                {{ value > 0 ? toLS(value) : '-' }}
               </span>
             </td>
           </tr>
@@ -215,6 +218,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
+import { toLS } from '~/ts/format'
 import type { AgendaRow } from '~/ts/types'
 
 type SortType = 'name' | 'category' | 'type'
@@ -305,6 +309,7 @@ export default Vue.extend({
     },
   },
   methods: {
+    toLS,
     /**
      * Add a row to the agenda
      */
@@ -369,11 +374,11 @@ export default Vue.extend({
       const index = items.findIndex((r) => r.id === this.editedValue.id)
       if (this.editedValue.applyToAll) {
         for (let i = 0; i < items[index].values.length; i++) {
-          items[index].values[i] = parseFloat(this.editedValue.value)
+          items[index].values[i] = parseFloat(this.editedValue.value || '0')
         }
       } else {
         items[index].values[this.editedValue.field as number] = parseFloat(
-          this.editedValue.value
+          this.editedValue.value || '0'
         )
       }
       return items[index].values
@@ -385,7 +390,11 @@ export default Vue.extend({
      * @param field The field of the row
      * @param value The current value of the row
      */
-    open({ id, name }: AgendaRow, field: string, value: string) {
+    open({ id, name }: AgendaRow, field: string, value: string | number) {
+      if (typeof value === 'number') {
+        value = value.toFixed(2)
+      }
+
       this.editedValue = { id, name, field, value, applyToAll: false }
       // this.valid = false
       this.dialog = true

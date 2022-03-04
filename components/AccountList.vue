@@ -70,7 +70,7 @@
               totalBalance > 100 ? 'green' : totalBalance > 0 ? 'orange' : 'red'
             "
           >
-            {{ totalBalance.toFixed(2) }} €
+            {{ toLS(totalBalance) }}
           </v-chip>
           <v-btn
             icon
@@ -100,7 +100,7 @@
                     : 'red'
                 "
               >
-                {{ acc.balance.toFixed(2) }} €
+                {{ toLS(acc.balance) }}
               </v-chip>
               <v-btn
                 icon
@@ -130,6 +130,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import type { Account, InputAccount } from '~/ts/types'
+import { toLS } from '~/ts/format'
 
 export default Vue.extend({
   data: () => ({
@@ -171,6 +172,7 @@ export default Vue.extend({
     },
   },
   methods: {
+    toLS,
     /**
      * Create sub account
      */
@@ -242,7 +244,7 @@ export default Vue.extend({
     showEdit(i: number) {
       this.valid = true
       const acc = this.accounts[i]
-      this.account = { ...acc, balance: acc.balance.toString(), id: acc.id }
+      this.account = { ...acc, balance: acc.balance.toFixed(2), id: acc.id }
       this.dialog = true
     },
   },

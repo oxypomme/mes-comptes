@@ -58,7 +58,7 @@ const actions: ActionTree<OperationState, RootState> = {
    */
   editOperation(
     { rootGetters },
-    { id, name, amount, category }: InputOperation
+    { id, name, amount, category, modifier }: InputOperation
   ) {
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
     if (!uid) {
@@ -71,7 +71,7 @@ const actions: ActionTree<OperationState, RootState> = {
     }
 
     // Parse amount & category
-    const amnt = parseFloat(amount)
+    const amnt = parseFloat(amount) * modifier
     if (category && typeof category !== 'string') {
       category = category.id
     }
