@@ -14,31 +14,46 @@
           <v-card-text>
             <v-container>
               <v-row>
-                <v-text-field
-                  v-model="search"
-                  label="Nom de l'icone"
-                  required
-                  :dense="$device.isMobile"
-                  @keyup.passive="getIcons"
-                >
-                </v-text-field>
+                <v-form class="search-form" @submit="onSearch">
+                  <v-text-field
+                    v-model="search"
+                    label="Nom de l'icone"
+                    required
+                    :dense="$device.isMobile"
+                  >
+                  </v-text-field>
+                  <v-btn
+                    type="submit"
+                    class="ml-2"
+                    color="primary"
+                    v-bind="attrs"
+                    :disabled="isLoading"
+                    v-on="on"
+                  >
+                    <v-icon> mdi-magnify </v-icon>
+                  </v-btn>
+                </v-form>
               </v-row>
               <v-row class="mb-1">
-                <v-tabs v-model="type">
+                <v-tabs v-model="type" @change="onTabChange">
                   <v-tab v-for="(name, i) in types" :key="i">{{ name }}</v-tab>
                 </v-tabs>
               </v-row>
               <v-row v-if="!isLoading">
-                <v-btn
-                  v-for="(icon, i) in icons"
-                  :key="i"
-                  text
-                  icon
-                  @click="onIconClick(icon)"
-                >
-                  <!-- TODO: Tooltip -->
-                  <v-icon> mdi-{{ icon }} </v-icon>
-                </v-btn>
+                <v-tooltip v-for="(icon, i) in icons" :key="i" top>
+                  <template #activator="{ on, attrs }">
+                    <v-btn
+                      v-bind="attrs"
+                      text
+                      icon
+                      v-on="on"
+                      @click="onIconClick(icon)"
+                    >
+                      <v-icon> mdi-{{ icon }} </v-icon>
+                    </v-btn>
+                  </template>
+                  <span>{{ icon }}</span>
+                </v-tooltip>
               </v-row>
               <v-row v-else>
                 <v-skeleton-loader
@@ -49,6 +64,15 @@
                   type="image"
                   class="ma-1"
                 ></v-skeleton-loader>
+              </v-row>
+              <v-row justify="center">
+                <v-pagination
+                  v-model="page"
+                  circle
+                  :disabled="isLoading"
+                  :length="maxPage"
+                  total-visible="5"
+                ></v-pagination>
               </v-row>
             </v-container>
           </v-card-text>
@@ -63,7 +87,6 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { debounce } from 'lodash'
 
 type APIIcon = {
   aliases: string[]
@@ -74,19 +97,7 @@ type APIIcon = {
   user: { id: string; name: string }
 }
 
-const fetchIcons = debounce(async function (
-  search: string,
-  type: string,
-  cb: (data: APIIcon[]) => void
-) {
-  const { data } = await (
-    await fetch(
-      `https://oxypomme.fr/mdi/icons/?limit=65&select=name&search=${search}&type=${type}`
-    )
-  ).json()
-  cb(data)
-},
-500)
+const API_LIMIT = 65
 
 export default Vue.extend({
   props: {
@@ -96,16 +107,17 @@ export default Vue.extend({
     },
   },
   data: () => ({
-    isLoading: true,
-    dialog: true,
+    isLoading: false,
+    dialog: false,
     icons: [] as string[],
     type: 0,
     types: ['filled', 'outline'],
     search: '',
+    maxPage: 0,
+    page: 1,
   }),
   watch: {
-    type() {
-      this.isLoading = true
+    page() {
       this.getIcons()
     },
   },
@@ -122,15 +134,50 @@ export default Vue.extend({
       this.dialog = false
       this.$emit('input', `mdi-${icon}`)
     },
+    onSearch(e: Event) {
+      e.preventDefault()
+      e.stopPropagation()
+      this.page = 1
+      this.getIcons()
+    },
+    onTypeChange() {
+      this.page = 1
+      this.getIcons()
+    },
     /**
      * Get icons from MDI
      */
-    getIcons() {
-      fetchIcons(this.search, this.types[this.type], (data) => {
-        this.icons = data.map(({ name }) => name)
+    async getIcons() {
+      if (!this.isLoading) {
+        this.isLoading = true
+
+        const offset = API_LIMIT * (this.page - 1)
+        const { data, total } = await (
+          await fetch(
+            'https://oxypomme.fr/mdi/icons/?' +
+              new URLSearchParams({
+                limit: API_LIMIT.toString(),
+                search: this.search,
+                type: this.types[this.type],
+                offset: offset.toString(),
+              })
+          )
+        ).json()
+
+        this.icons = (data as APIIcon[]).map(({ name }) => name)
+        this.maxPage = Math.ceil(total / API_LIMIT)
+
         this.isLoading = false
-      })
+      }
     },
   },
 })
 </script>
+
+<style scoped>
+.search-form {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+</style>
