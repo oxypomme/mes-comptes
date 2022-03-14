@@ -53,6 +53,7 @@ const actions: ActionTree<AuthState, RootState> = {
       resetDate: this.$fireModule.firestore.Timestamp.fromDate(
         new Date(date.getFullYear(), date.getMonth(), 1)
       ),
+      createdAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
     })
     return dispatch(
       'account/createAccount',

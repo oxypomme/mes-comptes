@@ -85,13 +85,42 @@
         </v-form>
       </v-card>
     </v-dialog>
+    <v-dialog v-model="historyDialog" width="500">
+      <v-card>
+        <v-toolbar elevation="0" dense>
+          <v-toolbar-title>
+            Afficher les opérations précédentes
+          </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-btn icon color="grey" small plain @click="historyDialog = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-toolbar>
+
+        <v-card-text>
+          <v-container>
+            <v-row>
+              <v-col>
+                <v-select
+                  v-model="selectedMonth"
+                  :items="availableMonths"
+                  return-object
+                  item-text="label"
+                  label="Mois"
+                  hide-details
+                ></v-select>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
     <v-data-table
       :headers="headers"
       :items="operations"
-      :items-per-page="ops.items"
+      :items-per-page="$device.isMobile ? 1 : 15"
       :loading="loading"
       class="elevation-1"
-      hide-default-footer
       :dense="$device.isMobile"
     >
       <template #top>
@@ -106,6 +135,9 @@
               Opérations
             </v-toolbar-title>
             <v-spacer></v-spacer>
+            <v-btn icon @click="historyDialog = true">
+              <v-icon>mdi-history</v-icon>
+            </v-btn>
             <v-btn icon color="success" @click="showNew">
               <v-icon>mdi-plus</v-icon>
             </v-btn>
@@ -147,12 +179,6 @@
         </v-btn>
       </template>
     </v-data-table>
-    <v-pagination
-      v-if="pageCount > 1"
-      v-model="page"
-      :length="pageCount"
-      :dense="$device.isMobile"
-    ></v-pagination>
   </div>
 </template>
 <script lang="ts">
@@ -161,7 +187,6 @@ import { mapGetters } from 'vuex'
 import { ECategoryType } from '~/ts/ECategoryType'
 import { toLS } from '~/ts/format'
 import type {
-  Account,
   Category,
   InputOperation,
   Operation,
@@ -170,8 +195,8 @@ import type {
 
 export default Vue.extend({
   data: () => ({
-    page: 1,
     loading: false,
+    selectedMonth: { label: 'Courant (1 mois)' },
     headers: [
       {
         text: 'Date',
@@ -193,10 +218,12 @@ export default Vue.extend({
     },
     operation: {} as InputOperation,
     dialog: false,
+    historyDialog: false,
     valid: true,
   }),
   computed: {
     ...mapGetters({
+      availableMonths: 'getAvailableMonths',
       account: 'account/getCurrent',
       ops: 'operations/getOperations',
     }),
@@ -217,14 +244,6 @@ export default Vue.extend({
       ]
     },
     /**
-     * Number of pages in total
-     */
-    pageCount() {
-      return Math.ceil(
-        ((this.account as Account | null)?.operationCount ?? 0) / this.ops.items
-      )
-    },
-    /**
      * Current account's operations
      */
     operations(): Operation[] {
@@ -232,15 +251,15 @@ export default Vue.extend({
     },
   },
   watch: {
-    /**
-     * Fetch more operations on page change
-     */
-    async page(newValue, lastValue) {
-      this.loading = true
-      await this.$store.dispatch('operations/getOperations', {
-        progression: newValue - lastValue,
-      })
-      this.loading = false
+    selectedMonth(newValue) {
+      this.historyDialog = false
+      this.$store.dispatch(
+        'operations/getOperations',
+        {
+          ...newValue,
+        },
+        { root: true }
+      )
     },
   },
   methods: {

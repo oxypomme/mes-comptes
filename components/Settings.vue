@@ -62,7 +62,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import dayjs from 'dayjs'
+import dayjs from '~/ts/dayjs'
 
 export default Vue.extend({
   data: () => ({

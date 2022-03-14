@@ -66,6 +66,7 @@ interface InputUser {
 
 interface SettingsState {
   resetDate: firebase.firestore.Timestamp
+  createdAt: firebase.firestore.Timestamp
   lightTheme: boolean
 }
 type Settings = Omit<SettingsState, 'resetDate'> & {

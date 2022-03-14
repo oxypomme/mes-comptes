@@ -4,6 +4,7 @@ import type firebase from 'firebase'
 import type { RootState } from '../state'
 import type { OperationState } from './state'
 import type { Account, InputOperation, Operation, User } from '~/ts/types'
+import dayjs from '~/ts/dayjs'
 
 /**
  * Actions for user's operations
@@ -124,12 +125,12 @@ const actions: ActionTree<OperationState, RootState> = {
   /**
    * Bind user's operations for the auther user in the selected account
    *
-   * @param index Index in `categories`
+   * @param date The selected date. month: 1-12
    */
   getOperations: firestoreAction(async function (
     this: Store<RootState>,
-    { rootGetters, bindFirestoreRef, state, commit },
-    { progression }: { progression: number }
+    { rootGetters, bindFirestoreRef },
+    { month, year }: { month?: number; year?: number }
   ) {
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
     if (!uid) {
@@ -149,34 +150,26 @@ const actions: ActionTree<OperationState, RootState> = {
 
     const oref = ref.collection('operations')
 
-    let docref = oref.orderBy('createdAt', 'desc')
-
-    // paginate
-    const newPage = state.page + progression
-    if (newPage > 1) {
-      let lastDoc = state.data[state.data.length - 1]
-      if (state.anchors.lasts[newPage - 1]) {
-        lastDoc = state.anchors.lasts[newPage - 1]
-      }
-      if (lastDoc) {
-        docref = docref.startAfter(lastDoc._doc)
-      }
+    let last = dayjs().add(1, 'day')
+    if (month && year) {
+      last = dayjs(`1/${month + 1}/${year}`, 'D/M/YYYY')
     }
+    const first = last.subtract(1, 'month')
 
-    const res = await bindFirestoreRef('data', docref.limit(state.items), {
-      serialize: (doc) => {
-        const data = doc.data()
-        Object.defineProperty(data, 'id', { value: doc.id })
-        Object.defineProperty(data, '_doc', { value: doc })
-        return data
-      },
-    })
+    const docref = oref
+      .where(
+        'createdAt',
+        '>',
+        this.$fireModule.firestore.Timestamp.fromDate(first.toDate())
+      )
+      .where(
+        'createdAt',
+        '<=',
+        this.$fireModule.firestore.Timestamp.fromDate(last.toDate())
+      )
+      .orderBy('createdAt', 'desc')
 
-    commit('SET_PAGE', {
-      page: !isNaN(newPage) ? newPage : 1,
-      fdoc: res[0],
-      ldoc: res[res.length - 1],
-    })
+    await bindFirestoreRef('data', docref, { wait: true })
   }),
 }
 
