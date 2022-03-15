@@ -178,7 +178,13 @@ const actions: ActionTree<OperationState, RootState> = {
       )
       .orderBy('createdAt', 'desc')
 
-    await bindFirestoreRef('data', docref, { wait: true })
+    await bindFirestoreRef('data', docref, {
+      serialize: (doc) => {
+        const data = doc.data()
+        Object.defineProperty(data, 'id', { value: doc.id })
+        return data
+      },
+    })
     commit('SET_LOADING', false)
   }),
 }
