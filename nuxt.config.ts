@@ -112,8 +112,8 @@ export default {
           synchronizeTabs: true,
         },
       },
-      performance: process.env.NODE_ENV !== 'production',
-      analytics: process.env.NODE_ENV !== 'production',
+      performance: process.env.NODE_ENV === 'production',
+      analytics: process.env.NODE_ENV === 'production',
     },
   },
 
