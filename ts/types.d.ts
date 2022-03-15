@@ -47,10 +47,14 @@ interface Operation extends FirestoreData {
   amount: number // float
   category: firebase.firestore.DocumentReference | null
   modifier: ValueModifier
+  createdAt: firebase.firestore.Timestamp
+  updatedAt?: firebase.firestore.Timestamp
+  date: firebase.firestore.Timestamp
 }
-type InputOperation = Omit<Operation, 'amount' | 'category'> & {
+type InputOperation = Omit<Operation, 'amount' | 'category' | 'date'> & {
   amount: string
   category: string | firebase.firestore.DocumentReference | null
+  date: Date
 }
 
 interface User {

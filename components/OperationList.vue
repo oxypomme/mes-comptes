@@ -32,13 +32,8 @@
           <v-divider class="d-block d-sm-none" />
         </div>
       </template>
-      <template #[`item.createdAt`]="{ item }">
-        {{
-          (item.createdAt
-            ? item.createdAt.toDate()
-            : new Date()
-          ).toLocaleDateString()
-        }}
+      <template #[`item.date`]="{ item }">
+        {{ item.date.toDate().toLocaleDateString() }}
       </template>
       <template #[`item.type`]="{ item }">
         <v-chip
@@ -84,7 +79,7 @@ export default Vue.extend({
       {
         text: 'Date',
         align: 'start',
-        value: 'createdAt',
+        value: 'date',
         sortable: false,
       },
       { text: 'Titre', value: 'name', sortable: false },
@@ -93,7 +88,7 @@ export default Vue.extend({
       { text: 'Catégorie', value: 'category', sortable: false },
       { text: 'Actions', value: 'actions', sortable: false },
     ],
-    operation: {} as InputOperation | undefined,
+    operation: null as InputOperation | null,
     historyDialog: false,
   }),
   computed: {
@@ -106,7 +101,7 @@ export default Vue.extend({
      * Current account's operations
      */
     operations(): Operation[] {
-      return [...this.ops.data]
+      return [...this.ops]
     },
   },
   methods: {
@@ -127,6 +122,7 @@ export default Vue.extend({
     showEdit(item: Operation) {
       this.operation = {
         ...item,
+        date: item.date?.toDate(),
         amount: Math.abs(item.amount).toFixed(2),
         modifier: item.amount > 0 ? 1 : -1,
         id: item.id,

@@ -7,7 +7,7 @@
             {{ operation.id ? 'Editer' : 'Créer' }} une opération
           </v-toolbar-title>
           <v-spacer></v-spacer>
-          <v-btn icon color="grey" small plain @click="dialog = false">
+          <v-btn icon color="grey" small plain @click="show = false">
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </v-toolbar>
@@ -15,6 +15,36 @@
         <v-card-text>
           <v-container>
             <v-row>
+              <v-col>
+                <v-menu
+                  ref="menu"
+                  v-model="menu"
+                  :close-on-content-click="false"
+                  transition="scale-transition"
+                  offset-y
+                  min-width="auto"
+                >
+                  <template #activator="{ on, attrs }">
+                    <v-text-field
+                      v-model="formatedDate"
+                      label="Date"
+                      persistent-hint
+                      prepend-icon="mdi-calendar"
+                      readonly
+                      v-bind="attrs"
+                      v-on="on"
+                    ></v-text-field>
+                  </template>
+                  <v-date-picker
+                    v-model="date"
+                    :max="maxDate"
+                    color="primary"
+                    locale="fr-FR"
+                    :first-day-of-week="1"
+                    @change="saveDate"
+                  ></v-date-picker>
+                </v-menu>
+              </v-col>
               <v-col>
                 <v-text-field
                   v-model="operation.name"
@@ -70,7 +100,7 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="error" text @click="dialog = false"> Annuler </v-btn>
+          <v-btn color="error" text @click="show = false"> Annuler </v-btn>
           <v-btn
             color="success"
             :loading="loading"
@@ -89,25 +119,30 @@
 <script lang="ts">
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
+import dayjs from '~/ts/dayjs'
 import { ECategoryType } from '~/ts/ECategoryType'
 import type { ValueModifier, InputOperation, Category } from '~/ts/types'
 
 export default Vue.extend({
   props: {
+    /**
+     * If val is `undefined`, a new operation is requested
+     * If val is `null`, we don't want to show the component
+     */
     // eslint-disable-next-line vue/require-prop-types
     value: {
       required: true,
     },
   },
   data: () => ({
-    show: false,
-    valid: true,
-
+    valid: true, // TODO: validation
+    menu: false,
     initOperation: {
       name: '',
       amount: '',
       category: null,
       modifier: -1 as ValueModifier,
+      date: new Date(),
     },
     operation: {} as InputOperation,
   }),
@@ -131,15 +166,44 @@ export default Vue.extend({
         ...categs,
       ]
     },
+    /**
+     * Maximal date for Date picker
+     */
+    maxDate() {
+      return dayjs().format('YYYY-MM-DD')
+    },
+    /**
+     * Operation date
+     */
+    date: {
+      get(): string {
+        return dayjs(this.operation.date).format('YYYY-M-D')
+      },
+      set(newValue: string) {
+        this.operation.date = dayjs(newValue, 'YYYY-M-D').toDate()
+      },
+    },
+    formatedDate() {
+      return this.operation?.date?.toLocaleDateString()
+    },
+    /**
+     * Dialog toggle
+     */
+    show: {
+      get(): boolean {
+        return this.value !== null
+      },
+      set(newValue: boolean) {
+        this.$emit('input', newValue ? this.operation : null)
+      },
+    },
   },
   watch: {
     /**
-     * If val is `undefined`, a new operation is requested
-     * If val is `null`, we don't want to show the component
+     * Reset edited operation
      */
     value(val) {
       this.operation = val ?? { ...this.initOperation }
-      this.show = val !== null
     },
   },
   methods: {
@@ -164,8 +228,14 @@ export default Vue.extend({
         } catch (e) {
           this.$toast.global.error((e as Error).message)
         }
-        this.$emit('input', null)
+        this.show = false
       }
+    },
+    /**
+     * Save value from DatePicker
+     */
+    saveDate(date: string) {
+      ;(this.$refs.menu as Element & { save: (data: any) => any }).save(date)
     },
   },
 })

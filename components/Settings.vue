@@ -28,7 +28,7 @@
             </template>
             <v-date-picker
               v-model="resetDate"
-              :min="new Date().toISOString().substr(0, 10)"
+              :min="minDate"
               color="primary"
               locale="fr-FR"
               :first-day-of-week="1"
@@ -69,18 +69,32 @@ export default Vue.extend({
     valid: false,
     menu: false,
     loading: false,
-    resetDate: '',
+    rawDate: new Date(),
   }),
   computed: {
     settings() {
       return this.$store.getters.getSettings
     },
+    resetDate: {
+      get(): string {
+        return dayjs(this.rawDate).format('YYYY-M-D')
+      },
+      set(newValue: string) {
+        this.rawDate = dayjs(newValue, 'YYYY-M-D').toDate()
+      },
+    },
     formatedDate() {
-      return dayjs(this.resetDate, 'YYYY-M-D').format('DD/MM/YYYY')
+      return this.rawDate.toLocaleDateString()
+    },
+    /**
+     * Minimal date for Date picker
+     */
+    minDate() {
+      return dayjs().format('YYYY-MM-DD')
     },
   },
   mounted() {
-    this.resetDate = dayjs(this.settings.resetDate.toDate()).format('YYYY-M-D')
+    this.rawDate = this.settings.resetDate.toDate()
   },
   methods: {
     /**
@@ -93,7 +107,7 @@ export default Vue.extend({
         try {
           await this.$store.dispatch('updateSettings', {
             ...this.settings,
-            resetDate: dayjs(this.settings.resetDate, 'YYYY-M-D').toDate(),
+            resetDate: this.rawDate,
           })
           this.$toast.global.success('Paramètres mis à jour')
         } catch (e) {

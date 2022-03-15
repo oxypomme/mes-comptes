@@ -19,7 +19,7 @@ const actions: ActionTree<OperationState, RootState> = {
    */
   async createOperation(
     { rootGetters, commit },
-    { name, amount, category, modifier }: InputOperation
+    { name, amount, category, modifier, date }: InputOperation
   ) {
     commit('SET_LOADING', true)
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
@@ -48,6 +48,7 @@ const actions: ActionTree<OperationState, RootState> = {
       name,
       amount: amnt,
       category: cref,
+      date: date && this.$fireModule.firestore.Timestamp.fromDate(date),
       createdAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
     } as Operation & { createdAt: firebase.firestore.FieldValue })
     commit('SET_LOADING', false)
@@ -62,7 +63,7 @@ const actions: ActionTree<OperationState, RootState> = {
    */
   async editOperation(
     { rootGetters, commit },
-    { id, name, amount, category, modifier }: InputOperation
+    { id, name, amount, category, modifier, date }: InputOperation
   ) {
     commit('SET_LOADING', true)
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
@@ -95,6 +96,7 @@ const actions: ActionTree<OperationState, RootState> = {
         name,
         amount: amnt,
         category: category ? cref.doc(category) : null,
+        date: date && this.$fireModule.firestore.Timestamp.fromDate(date),
         updatedAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
       } as Operation & { updatedAt: firebase.firestore.FieldValue })
 
@@ -167,16 +169,16 @@ const actions: ActionTree<OperationState, RootState> = {
 
     const docref = oref
       .where(
-        'createdAt',
+        'date',
         '>',
         this.$fireModule.firestore.Timestamp.fromDate(first.toDate())
       )
       .where(
-        'createdAt',
+        'date',
         '<=',
         this.$fireModule.firestore.Timestamp.fromDate(last.toDate())
       )
-      .orderBy('createdAt', 'desc')
+      .orderBy('date', 'desc')
 
     await bindFirestoreRef('data', docref, {
       serialize: (doc) => {

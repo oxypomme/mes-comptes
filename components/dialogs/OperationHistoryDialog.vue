@@ -48,10 +48,10 @@ export default Vue.extend({
       availableMonths: 'getAvailableMonths',
     }),
     show: {
-      get() {
+      get(): boolean {
         return this.value
       },
-      set(newValue) {
+      set(newValue: boolean) {
         this.$emit('input', newValue)
       },
     },
