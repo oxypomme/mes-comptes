@@ -17,10 +17,11 @@ const actions: ActionTree<OperationState, RootState> = {
    * @param param1 The operation
    * @returns The promise of creation
    */
-  createOperation(
-    { rootGetters },
+  async createOperation(
+    { rootGetters, commit },
     { name, amount, category, modifier }: InputOperation
   ) {
+    commit('SET_LOADING', true)
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
     if (!uid) {
       throw new Error('Vous devez être connecté pour effectuer cette action')
@@ -43,12 +44,14 @@ const actions: ActionTree<OperationState, RootState> = {
     if (category && typeof category === 'string')
       cref = ref.collection('categories').doc(category)
 
-    return ref.collection('operations').add({
+    const ope = await ref.collection('operations').add({
       name,
       amount: amnt,
       category: cref,
       createdAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
     } as Operation & { createdAt: firebase.firestore.FieldValue })
+    commit('SET_LOADING', false)
+    return ope
   },
   /**
    * Edit an operation for the auther user in the selected account
@@ -57,10 +60,11 @@ const actions: ActionTree<OperationState, RootState> = {
    * @param operation The operation
    * @returns The promise of edition
    */
-  editOperation(
-    { rootGetters },
+  async editOperation(
+    { rootGetters, commit },
     { id, name, amount, category, modifier }: InputOperation
   ) {
+    commit('SET_LOADING', true)
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
     if (!uid) {
       throw new Error('Vous devez être connecté pour effectuer cette action')
@@ -83,7 +87,8 @@ const actions: ActionTree<OperationState, RootState> = {
       .collection('accounts')
       .doc(aid)
     const cref = ref.collection('categories')
-    return ref
+
+    const ope = await ref
       .collection('operations')
       .doc(id)
       .update({
@@ -92,6 +97,9 @@ const actions: ActionTree<OperationState, RootState> = {
         category: category ? cref.doc(category) : null,
         updatedAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
       } as Operation & { updatedAt: firebase.firestore.FieldValue })
+
+    commit('SET_LOADING', false)
+    return ope
   },
   /**
    * Delete an operation for the auther user in the selected account
@@ -129,9 +137,10 @@ const actions: ActionTree<OperationState, RootState> = {
    */
   getOperations: firestoreAction(async function (
     this: Store<RootState>,
-    { rootGetters, bindFirestoreRef },
+    { rootGetters, bindFirestoreRef, commit },
     { month, year }: { month?: number; year?: number }
   ) {
+    commit('SET_LOADING', true)
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
     if (!uid) {
       throw new Error('Vous devez être connecté pour effectuer cette action')
@@ -170,6 +179,7 @@ const actions: ActionTree<OperationState, RootState> = {
       .orderBy('createdAt', 'desc')
 
     await bindFirestoreRef('data', docref, { wait: true })
+    commit('SET_LOADING', false)
   }),
 }
 

@@ -10,6 +10,7 @@ const state = () => ({
    * The operations for the auther user in the selected account
    */
   data: [] as Operation[],
+  loading: false,
 })
 
 export default state

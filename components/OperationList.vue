@@ -1,120 +1,7 @@
 <template>
   <div v-if="account">
-    <v-dialog v-model="dialog" width="500">
-      <v-card>
-        <v-form v-model="valid" @submit="createOperation">
-          <v-toolbar elevation="0" dense>
-            <v-toolbar-title>
-              {{ operation.id ? 'Editer' : 'Créer' }} une opération
-            </v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-btn icon color="grey" small plain @click="dialog = false">
-              <v-icon>mdi-close</v-icon>
-            </v-btn>
-          </v-toolbar>
-
-          <v-card-text>
-            <v-container>
-              <v-row>
-                <v-col>
-                  <v-text-field
-                    v-model="operation.name"
-                    label="Nom"
-                    required
-                    :dense="$device.isMobile"
-                  >
-                  </v-text-field>
-                </v-col>
-              </v-row>
-              <v-row>
-                <v-col>
-                  <v-select
-                    v-model="operation.modifier"
-                    :items="[
-                      { name: 'Crédit +', modifier: 1 },
-                      { name: 'Débit -', modifier: -1 },
-                    ]"
-                    item-text="name"
-                    item-value="modifier"
-                    required
-                    :dense="$device.isMobile"
-                    label="Type"
-                  ></v-select>
-                </v-col>
-                <v-col>
-                  <v-text-field
-                    v-model="operation.amount"
-                    label="Montant"
-                    type="number"
-                    prefix="€"
-                    :dense="$device.isMobile"
-                  >
-                  </v-text-field>
-                </v-col>
-              </v-row>
-              <v-row>
-                <v-col>
-                  <v-select
-                    v-model="operation.category"
-                    :items="selectCategories"
-                    item-text="name"
-                    item-value="id"
-                    label="Catégorie"
-                    :dense="$device.isMobile"
-                  ></v-select>
-                </v-col>
-              </v-row>
-            </v-container>
-          </v-card-text>
-
-          <v-divider></v-divider>
-
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="error" text @click="dialog = false"> Annuler </v-btn>
-            <v-btn
-              color="success"
-              :loading="loading"
-              :disabled="!valid"
-              text
-              type="submit"
-            >
-              Valider
-            </v-btn>
-          </v-card-actions>
-        </v-form>
-      </v-card>
-    </v-dialog>
-    <v-dialog v-model="historyDialog" width="500">
-      <v-card>
-        <v-toolbar elevation="0" dense>
-          <v-toolbar-title>
-            Afficher les opérations précédentes
-          </v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-btn icon color="grey" small plain @click="historyDialog = false">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </v-toolbar>
-
-        <v-card-text>
-          <v-container>
-            <v-row>
-              <v-col>
-                <v-select
-                  v-model="selectedMonth"
-                  :items="availableMonths"
-                  return-object
-                  item-text="label"
-                  label="Mois"
-                  hide-details
-                ></v-select>
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-card-text>
-      </v-card>
-    </v-dialog>
+    <OperationEditionDialog v-model="operation" />
+    <OperationHistoryDialog v-model="historyDialog" />
     <v-data-table
       :headers="headers"
       :items="operations"
@@ -138,7 +25,7 @@
             <v-btn icon @click="historyDialog = true">
               <v-icon>mdi-history</v-icon>
             </v-btn>
-            <v-btn icon color="success" @click="showNew">
+            <v-btn icon color="success" @click="operation = undefined">
               <v-icon>mdi-plus</v-icon>
             </v-btn>
           </v-toolbar>
@@ -184,18 +71,14 @@
 <script lang="ts">
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
-import { ECategoryType } from '~/ts/ECategoryType'
+import OperationEditionDialog from './dialogs/OperationEditionDialog.vue'
+import OperationHistoryDialog from './dialogs/OperationHistoryDialog.vue'
 import { toLS } from '~/ts/format'
-import type {
-  Category,
-  InputOperation,
-  Operation,
-  ValueModifier,
-} from '~/ts/types'
+import type { InputOperation, Operation } from '~/ts/types'
 
 export default Vue.extend({
+  components: { OperationEditionDialog, OperationHistoryDialog },
   data: () => ({
-    loading: false,
     selectedMonth: { label: 'Courant (1 mois)' },
     headers: [
       {
@@ -210,39 +93,15 @@ export default Vue.extend({
       { text: 'Catégorie', value: 'category', sortable: false },
       { text: 'Actions', value: 'actions', sortable: false },
     ],
-    initOperation: {
-      name: '',
-      amount: '',
-      category: null,
-      modifier: -1 as ValueModifier,
-    },
-    operation: {} as InputOperation,
-    dialog: false,
+    operation: {} as InputOperation | undefined,
     historyDialog: false,
-    valid: true,
   }),
   computed: {
     ...mapGetters({
-      availableMonths: 'getAvailableMonths',
       account: 'account/getCurrent',
       ops: 'operations/getOperations',
+      loading: 'operations/getLoadingState',
     }),
-    /**
-     * Options for select categories
-     */
-    selectCategories(): Category[] {
-      const categs = this.$store.getters['categories/getCategories']
-      return [
-        {
-          id: null,
-          name: '',
-          balance: 0,
-          budget: 0,
-          type: ECategoryType.BUDGET,
-        },
-        ...categs,
-      ]
-    },
     /**
      * Current account's operations
      */
@@ -250,79 +109,28 @@ export default Vue.extend({
       return [...this.ops.data]
     },
   },
-  watch: {
-    selectedMonth(newValue) {
-      this.historyDialog = false
-      this.$store.dispatch(
-        'operations/getOperations',
-        {
-          ...newValue,
-        },
-        { root: true }
-      )
-    },
-  },
   methods: {
     toLS,
-    /**
-     * Create an operation
-     */
-    async createOperation(e: Event) {
-      e.preventDefault()
-      if (this.valid) {
-        this.loading = true
-        try {
-          if (this.operation.id) {
-            await this.$store.dispatch('operations/editOperation', {
-              ...this.operation,
-            })
-            this.$toast.global.success('Opération editée')
-          } else {
-            await this.$store.dispatch(
-              'operations/createOperation',
-              this.operation
-            )
-            // this.$toast.global.success('Opération créée')
-          }
-        } catch (e) {
-          this.$toast.global.error((e as Error).message)
-        }
-        this.dialog = false
-        this.loading = false
-      }
-    },
     /**
      * Delete an operation
      */
     async deleteOperation(id: string) {
-      this.loading = true
       try {
         await this.$store.dispatch('operations/deleteOperation', id)
       } catch (e) {
         this.$toast.global.error((e as Error).message)
       }
-      this.loading = false
-    },
-    /**
-     * Prepare popup for new operation
-     */
-    showNew() {
-      // this.valid = false
-      this.operation = { ...this.initOperation }
-      this.dialog = true
     },
     /**
      * Prepare popup to edit a operation
      */
     showEdit(item: Operation) {
-      this.valid = true
       this.operation = {
         ...item,
         amount: Math.abs(item.amount).toFixed(2),
         modifier: item.amount > 0 ? 1 : -1,
         id: item.id,
       }
-      this.dialog = true
     },
   },
 })
