@@ -29,6 +29,7 @@
             <v-date-picker
               v-model="resetDate"
               :min="minDate"
+              :max="maxDate"
               color="primary"
               locale="fr-FR"
               :first-day-of-week="1"
@@ -63,6 +64,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import dayjs from '~/ts/dayjs'
+import type { SettingsState } from '~/ts/types'
 
 export default Vue.extend({
   data: () => ({
@@ -72,7 +74,7 @@ export default Vue.extend({
     rawDate: new Date(),
   }),
   computed: {
-    settings() {
+    settings(): SettingsState {
       return this.$store.getters.getSettings
     },
     resetDate: {
@@ -89,8 +91,16 @@ export default Vue.extend({
     /**
      * Minimal date for Date picker
      */
-    minDate() {
-      return dayjs().format('YYYY-MM-DD')
+    minDate(): string {
+      return dayjs(this.settings?.resetDate.toDate() ?? new Date())
+        .startOf('month')
+        .format('YYYY-MM-DD')
+    },
+    /**
+     * Maxmimal date for Date picker
+     */
+    maxDate(): string {
+      return dayjs(this.minDate).endOf('month').format('YYYY-MM-DD')
     },
   },
   mounted() {
