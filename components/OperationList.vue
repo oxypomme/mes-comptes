@@ -5,10 +5,10 @@
     <v-data-table
       :headers="headers"
       :items="operations"
-      :items-per-page="$device.isMobile ? 1 : 15"
+      :items-per-page="itemsPerPage"
       :loading="loading"
       class="elevation-1"
-      :dense="$device.isMobile"
+      :dense="$vuetify.breakpoint.smAndDown"
     >
       <template #top>
         <div>
@@ -16,7 +16,7 @@
             :color="$vuetify.theme.dark ? '#1E1E1E' : '#fff'"
             flat
             rounded
-            :dense="$device.isMobile"
+            :dense="$vuetify.breakpoint.smAndDown"
           >
             <v-toolbar-title class="font-weight-light">
               Opérations
@@ -37,7 +37,7 @@
       </template>
       <template #[`item.type`]="{ item }">
         <v-chip
-          :small="$device.isMobile"
+          :small="$vuetify.breakpoint.smAndDown"
           :color="item.amount > 0 ? 'green' : 'red'"
         >
           {{ item.amount > 0 ? 'Crédit (+)' : 'Débit (-)' }}
@@ -97,6 +97,15 @@ export default Vue.extend({
       ops: 'operations/getOperations',
       loading: 'operations/getLoadingState',
     }),
+    /**
+     * Max items per page
+     */
+    itemsPerPage(): number {
+      if (this.$vuetify.breakpoint.xsOnly) {
+        return 1
+      }
+      return 15
+    },
     /**
      * Current account's operations
      */

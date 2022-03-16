@@ -24,7 +24,7 @@
                   "
                   required
                   class="text-capitalize"
-                  :dense="$device.isMobile"
+                  :dense="$vuetify.breakpoint.smAndDown"
                 >
                 </v-text-field>
                 <v-select
@@ -35,7 +35,7 @@
                     { modifier: 1, label: 'Crédit (+)' },
                   ]"
                   label="Type"
-                  :dense="$device.isMobile"
+                  :dense="$vuetify.breakpoint.smAndDown"
                   item-text="label"
                   item-value="modifier"
                 ></v-select>
@@ -60,7 +60,7 @@
               :disabled="!valid"
               text
               type="submit"
-              :dense="$device.isMobile"
+              :dense="$vuetify.breakpoint.smAndDown"
             >
               Valider
             </v-btn>
@@ -68,14 +68,18 @@
         </v-form>
       </v-card>
     </v-dialog>
-    <v-simple-table :dense="$device.isMobile" fixed-header height="77vh">
+    <v-simple-table
+      :dense="$vuetify.breakpoint.smAndDown"
+      fixed-header
+      height="77vh"
+    >
       <template #top>
         <div>
           <v-toolbar
             :color="$vuetify.theme.dark ? '#1E1E1E' : '#fff'"
             flat
             rounded
-            :dense="$device.isMobile"
+            :dense="$vuetify.breakpoint.smAndDown"
           >
             <v-toolbar-title class="font-weight-light">
               Planning
@@ -88,7 +92,11 @@
           <v-progress-linear
             :indeterminate="loading"
             :color="
-              loading ? 'primary' : $device.isMobile ? 'accent' : 'transparent'
+              loading
+                ? 'primary'
+                : $vuetify.breakpoint.smAndDown
+                ? 'accent'
+                : 'transparent'
             "
           ></v-progress-linear>
         </div>
@@ -192,7 +200,7 @@
             </td>
             <td class="text-center">
               <v-chip
-                :small="$device.isMobile"
+                :small="$vuetify.breakpoint.smAndDown"
                 :color="item.modifier > 0 ? 'green' : 'red'"
                 class="hoverable"
                 @click="open(item, 'modifier', item.modifier)"

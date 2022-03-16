@@ -50,7 +50,7 @@
                   v-model="operation.name"
                   label="Nom"
                   required
-                  :dense="$device.isMobile"
+                  :dense="$vuetify.breakpoint.smAndDown"
                 >
                 </v-text-field>
               </v-col>
@@ -66,7 +66,7 @@
                   item-text="name"
                   item-value="modifier"
                   required
-                  :dense="$device.isMobile"
+                  :dense="$vuetify.breakpoint.smAndDown"
                   label="Type"
                 ></v-select>
               </v-col>
@@ -76,7 +76,7 @@
                   label="Montant"
                   type="number"
                   prefix="€"
-                  :dense="$device.isMobile"
+                  :dense="$vuetify.breakpoint.smAndDown"
                 >
                 </v-text-field>
               </v-col>
@@ -89,7 +89,7 @@
                   item-text="name"
                   item-value="id"
                   label="Catégorie"
-                  :dense="$device.isMobile"
+                  :dense="$vuetify.breakpoint.smAndDown"
                 ></v-select>
               </v-col>
             </v-row>

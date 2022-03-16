@@ -21,7 +21,7 @@
                   v-model="category.name"
                   label="Nom de la catégorie"
                   required
-                  :dense="$device.isMobile"
+                  :dense="$vuetify.breakpoint.smAndDown"
                 >
                 </v-text-field>
               </v-row>
@@ -41,7 +41,7 @@
                   label="Budget par semaine de la catégorie"
                   type="number"
                   prefix="€"
-                  :dense="$device.isMobile"
+                  :dense="$vuetify.breakpoint.smAndDown"
                 >
                 </v-text-field>
               </v-row>
@@ -51,7 +51,7 @@
                   label="Solde de la catégorie"
                   type="number"
                   prefix="€"
-                  :dense="$device.isMobile"
+                  :dense="$vuetify.breakpoint.smAndDown"
                 >
                 </v-text-field>
               </v-row>
@@ -82,7 +82,11 @@
         <span class="last-item">
           <v-tooltip v-if="parseInt(roulement) > -1" top>
             <template #activator="{ on, attrs }">
-              <v-chip v-bind="attrs" :small="$device.isMobile" v-on="on">
+              <v-chip
+                v-bind="attrs"
+                :small="$vuetify.breakpoint.smAndDown"
+                v-on="on"
+              >
                 {{ roulement }}
               </v-chip>
             </template>
@@ -94,7 +98,7 @@
         </span>
       </v-card-title>
       <v-divider />
-      <v-list :dense="$device.isMobile">
+      <v-list :dense="$vuetify.breakpoint.smAndDown">
         <v-list-item-group v-model="selectedItem">
           <v-list-item v-for="(categ, i) in categories" :key="i">
             <v-icon
@@ -113,7 +117,7 @@
                   <v-chip
                     :color="getCategRatioColor(categ).color"
                     v-bind="attrs"
-                    :small="$device.isMobile"
+                    :small="$vuetify.breakpoint.smAndDown"
                     v-on="on"
                   >
                     {{ categoryUsage(categ) }}
@@ -127,8 +131,8 @@
               <v-btn
                 icon
                 color="blue"
-                :class="[$device.isMobile && 'mx-2']"
-                :x-small="$device.isMobile"
+                :class="[$vuetify.breakpoint.smAndDown && 'mx-2']"
+                :x-small="$vuetify.breakpoint.smAndDown"
                 @click="showEdit(i)"
               >
                 <v-icon>mdi-pencil</v-icon>
@@ -136,7 +140,7 @@
               <v-btn
                 icon
                 color="error"
-                :x-small="$device.isMobile"
+                :x-small="$vuetify.breakpoint.smAndDown"
                 @click="deleteCategory(i)"
               >
                 <v-icon>mdi-delete</v-icon>
