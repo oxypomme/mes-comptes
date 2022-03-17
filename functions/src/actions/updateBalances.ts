@@ -65,7 +65,10 @@ export default (
   if (inc) {
     data.operationCount = firestore.FieldValue.increment(inc)
   }
-  batch.update(ref, data)
+
+  if (Object.keys(data).length > 0) {
+    batch.update(ref, data)
+  }
 
   return batch.commit()
 }
