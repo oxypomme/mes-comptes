@@ -119,10 +119,29 @@ export default Vue.extend({
      * Delete an operation
      */
     async deleteOperation(id: string) {
-      try {
-        await this.$store.dispatch('operations/deleteOperation', id)
-      } catch (e) {
-        this.$toast.global.error((e as Error).message)
+      const res = await this.$dialog.confirm({
+        text: `Voulez-vous supprimer l'opération "${
+          this.operations.find(({ id: oid }) => id === oid)?.name
+        }" ?`,
+        title: 'Attention',
+        actions: {
+          false: {
+            text: 'Annuler',
+            color: 'error',
+          },
+          true: {
+            text: 'Confirmer',
+            color: 'success',
+          },
+        },
+      })
+
+      if (res) {
+        try {
+          await this.$store.dispatch('operations/deleteOperation', id)
+        } catch (e) {
+          this.$toast.global.error((e as Error).message)
+        }
       }
     },
     /**

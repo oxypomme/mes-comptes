@@ -201,7 +201,7 @@ export default Vue.extend({
      */
     async deleteAccount(i: number) {
       const res = await this.$dialog.confirm({
-        text: 'Voulez vous supprimer le compte ?',
+        text: `Voulez-vous supprimer le compte "${this.accounts[i].name}" ?`,
         title: 'Attention',
         actions: {
           false: {

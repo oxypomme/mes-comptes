@@ -337,7 +337,7 @@ export default Vue.extend({
      */
     async deleteCategory(i: number) {
       const res = await this.$dialog.confirm({
-        text: 'Voulez vous supprimer la catégorie (cela ne supprimera pas les opérations liées) ?',
+        text: `Voulez-vous supprimer la catégorie "${this.categories[i].name}" ?<br/>(cela ne supprimera pas les opérations liées)`,
         title: 'Attention',
         actions: {
           false: {
