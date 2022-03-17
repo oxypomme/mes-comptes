@@ -17,7 +17,7 @@
       "~/*": ["./*"]
     },
     "types": [
-      "vuetify",
+      "@nuxtjs/vuetify",
       "@nuxt/types",
       "@nuxtjs/device",
       "@types/node",

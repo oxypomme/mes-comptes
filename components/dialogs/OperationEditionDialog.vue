@@ -1,7 +1,12 @@
 <template>
   <v-dialog v-model="show" width="500">
     <v-card>
-      <v-form v-model="valid" @submit="createOperation">
+      <v-form
+        ref="form"
+        v-model="valid"
+        lazy-validation
+        @submit="createOperation"
+      >
         <v-toolbar elevation="0" dense>
           <v-toolbar-title>
             {{ operation.id ? 'Editer' : 'Créer' }} une opération
@@ -31,6 +36,7 @@
                       persistent-hint
                       prepend-icon="mdi-calendar"
                       readonly
+                      :rules="rules.date"
                       v-bind="attrs"
                       v-on="on"
                     ></v-text-field>
@@ -51,6 +57,7 @@
                   label="Nom"
                   required
                   :dense="$vuetify.breakpoint.smAndDown"
+                  :rules="rules.name"
                 >
                 </v-text-field>
               </v-col>
@@ -77,6 +84,7 @@
                   type="number"
                   prefix="€"
                   :dense="$vuetify.breakpoint.smAndDown"
+                  :rules="rules.amount"
                 >
                 </v-text-field>
               </v-col>
@@ -122,6 +130,7 @@ import { mapGetters } from 'vuex'
 import dayjs from '~/ts/dayjs'
 import { ECategoryType } from '~/ts/ECategoryType'
 import type { ValueModifier, InputOperation, Category } from '~/ts/types'
+import type { VForm, VMenu } from '~/ts/components'
 
 export default Vue.extend({
   props: {
@@ -135,8 +144,24 @@ export default Vue.extend({
     },
   },
   data: () => ({
-    valid: true, // TODO: validation
+    valid: false,
     menu: false,
+    rules: {
+      name: [(v) => !!v || 'Un nom est requis'],
+      amount: [
+        (v) => !!v || 'Un montant est requis',
+        (v) => !isNaN(parseFloat(v)) || 'Le montant doit être un nombre',
+        (v) =>
+          (!isNaN(parseFloat(v)) && parseFloat(v) > 0) ||
+          'Le montant doit être supérieur à 0',
+      ],
+      date: [
+        (v) => !!v || 'Une date est requise',
+        (v) =>
+          dayjs(v, 'DD/MM/YYYY').isBefore(dayjs()) ||
+          'Impossible créer une opération future',
+      ],
+    } as Record<string, ((v: string) => string)[]>,
     initOperation: {
       name: '',
       amount: '',
@@ -183,7 +208,7 @@ export default Vue.extend({
         this.operation.date = dayjs(newValue, 'YYYY-M-D').toDate()
       },
     },
-    formatedDate() {
+    formatedDate(): string {
       return this.operation?.date?.toLocaleDateString()
     },
     /**
@@ -204,14 +229,22 @@ export default Vue.extend({
      */
     value(val) {
       this.operation = val ?? { ...this.initOperation }
+      this.validate()
     },
   },
   methods: {
+    /**
+     * Form validation
+     */
+    validate() {
+      ;(this.$refs.form as VForm)?.validate()
+    },
     /**
      * Create an operation
      */
     async createOperation(e: Event) {
       e.preventDefault()
+      this.validate()
       if (this.valid) {
         try {
           if (this.operation.id) {
@@ -235,7 +268,7 @@ export default Vue.extend({
      * Save value from DatePicker
      */
     saveDate(date: string) {
-      ;(this.$refs.menu as Element & { save: (data: any) => any }).save(date)
+      ;(this.$refs.menu as VMenu).save(date)
     },
   },
 })
