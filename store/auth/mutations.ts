@@ -1,6 +1,6 @@
 import type { MutationTree } from 'vuex'
-import type firebase from 'firebase'
 import type { AuthState } from './state'
+import type firebase from 'firebase'
 
 /**
  * Mutations for user

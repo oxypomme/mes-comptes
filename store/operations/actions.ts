@@ -1,8 +1,8 @@
 import { firestoreAction } from 'vuexfire'
 import type { ActionTree, Store } from 'vuex'
-import type firebase from 'firebase'
 import type { RootState } from '../state'
 import type { OperationState } from './state'
+import type firebase from 'firebase'
 import type { Account, InputOperation, Operation, User } from '~/ts/types'
 import dayjs from '~/ts/dayjs'
 

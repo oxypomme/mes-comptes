@@ -1,7 +1,7 @@
 import type { ActionTree, Store } from 'vuex'
-import type firebase from 'firebase'
 import { firestoreAction } from 'vuexfire'
 import type { RootState } from './state'
+import type firebase from 'firebase'
 import type { Settings, User } from '~/ts/types'
 
 /**

@@ -1,5 +1,5 @@
-import type firebase from 'firebase'
 import type { ECategoryType } from './ECategoryType'
+import type firebase from 'firebase'
 
 interface FirestoreData {
   id?: string

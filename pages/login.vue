@@ -5,7 +5,7 @@
         <v-row>
           <v-col cols="12" sm="6" :order="showLogin ? 1 : 2">
             <v-card>
-              <Login v-if="showLogin" />
+              <LoginForm v-if="showLogin" />
               <v-btn v-else block color="primary" @click="showLogin = true">
                 Déja inscrit ?
               </v-btn>
@@ -13,7 +13,7 @@
           </v-col>
           <v-col cols="12" sm="6" :order="showRegister ? 1 : 2">
             <v-card>
-              <Register v-if="showRegister" />
+              <RegisterForm v-if="showRegister" />
               <v-btn v-else block color="primary" @click="showRegister = true">
                 Pas encore inscrit ?
               </v-btn>
