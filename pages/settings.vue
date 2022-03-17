@@ -5,7 +5,7 @@
         <v-row>
           <v-col>
             <v-card>
-              <Settings />
+              <SettingsForm />
             </v-card>
           </v-col>
           <v-col>

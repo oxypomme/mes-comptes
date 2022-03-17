@@ -7,12 +7,19 @@ import type { OperationState } from './state'
  */
 const getters: GetterTree<OperationState, RootState> = {
   /**
-   * Get the operations for the auther user in the selected account
+   * Get the operations for the auther user in the selected account.
    *
    * @param state The state
-   * @returns The operation
+   * @returns The operations
    */
-  getOperations: (state) => state,
+  getOperations: (state) => state.data,
+  /**
+   * Get the loading state
+   *
+   * @param state The state
+   * @returns The loading state
+   */
+  getLoadingState: (state) => state.loading,
 }
 
 export default getters

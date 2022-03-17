@@ -1,8 +1,8 @@
 import { firestoreAction } from 'vuexfire'
 import type { ActionTree, Store } from 'vuex'
-import type firebase from 'firebase'
 import type { RootState } from '../state'
 import type { CategoryState } from './state'
+import type firebase from 'firebase'
 import type { User, Account, Category, InputCategory } from '~/ts/types'
 import { ECategoryType } from '~/ts/ECategoryType'
 

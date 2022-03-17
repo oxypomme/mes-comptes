@@ -2,9 +2,7 @@
   <v-container>
     <v-row justify="center">
       <v-col>
-        <!-- <v-card> -->
-        <Agenda />
-        <!-- </v-card> -->
+        <AgendaTable />
       </v-col>
     </v-row>
   </v-container>
