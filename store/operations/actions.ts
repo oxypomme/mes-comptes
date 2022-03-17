@@ -170,7 +170,7 @@ const actions: ActionTree<OperationState, RootState> = {
     const docref = oref
       .where(
         'date',
-        '>',
+        '>=',
         this.$fireModule.firestore.Timestamp.fromDate(first.toDate())
       )
       .where(
@@ -179,6 +179,7 @@ const actions: ActionTree<OperationState, RootState> = {
         this.$fireModule.firestore.Timestamp.fromDate(last.toDate())
       )
       .orderBy('date', 'desc')
+      .orderBy('createdAt', 'desc')
 
     await bindFirestoreRef('data', docref, {
       serialize: (doc) => {

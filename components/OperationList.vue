@@ -8,6 +8,11 @@
       :items-per-page="itemsPerPage"
       :loading="loading"
       class="elevation-1"
+      :footer-props="{
+        itemsPerPageOptions: itemsPerPageOptions,
+        itemsPerPageText: 'Lignes par page:',
+        itemsPerPageAll: 'Toutes',
+      }"
       :dense="$vuetify.breakpoint.smAndDown"
     >
       <template #top>
@@ -104,7 +109,19 @@ export default Vue.extend({
       if (this.$vuetify.breakpoint.xsOnly) {
         return 1
       }
+      if (this.$vuetify.breakpoint.mdAndDown) {
+        return 10
+      }
       return 15
+    },
+    /**
+     * Options items per page
+     */
+    itemsPerPageOptions(): number[] {
+      if (this.$vuetify.breakpoint.xsOnly) {
+        return [1]
+      }
+      return [5, 10, 15, -1]
     },
     /**
      * Current account's operations
