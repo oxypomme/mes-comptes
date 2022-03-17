@@ -7,45 +7,42 @@ import { Change, EventContext, firestore as firefnc } from 'firebase-functions'
  * @param changes The changes of the document
  * @param context The context of the event
  */
-export default async (
+export default (
   { after, before }: Change<firefnc.DocumentSnapshot>,
   { params }: EventContext
 ) => {
-  const promises = []
+  const dataBefore = before.data()
+  const dataAfter = after.data()
+
   const amount = {
-    old: before.data()?.amount ?? 0,
-    new: after.data()?.amount ?? 0,
+    old: dataBefore?.amount ?? 0,
+    new: dataAfter?.amount ?? 0,
   }
+
+  const batch = after.ref.firestore.batch()
+
   // Update old category balance
-  if (before.exists && (amount.old || before.data()?.category)) {
-    const ref = before.data()
-      ?.category as firestore.DocumentReference<firestore.DocumentData>
+  if (before.exists && (amount.old || dataBefore?.category)) {
+    const ref: firestore.DocumentReference<firestore.DocumentData> | null =
+      dataBefore?.category
     if (ref) {
-      promises.push(
-        ref.set(
-          {
-            balance: firestore.FieldValue.increment(amount.old),
-          },
-          { merge: true }
-        )
-      )
+      batch.update(ref, {
+        balance: firestore.FieldValue.increment(amount.old),
+      })
     }
   }
+
   // Update new category balance
-  if (after.exists && (amount.new || after.data()?.category)) {
-    const ref = after.data()
-      ?.category as firestore.DocumentReference<firestore.DocumentData>
+  if (after.exists && (amount.new || dataAfter?.category)) {
+    const ref: firestore.DocumentReference<firestore.DocumentData> | null =
+      dataAfter?.category
     if (ref) {
-      promises.push(
-        ref.set(
-          {
-            balance: firestore.FieldValue.increment(-amount.new),
-          },
-          { merge: true }
-        )
-      )
+      batch.update(ref, {
+        balance: firestore.FieldValue.increment(-amount.new),
+      })
     }
   }
+
   // Update counts & account balance
   const ref = before.ref.firestore.doc(
     `users/${params.userId}/accounts/${params.accountId}`
@@ -68,8 +65,7 @@ export default async (
   if (inc) {
     data.operationCount = firestore.FieldValue.increment(inc)
   }
-  promises.push(ref.set(data, { merge: true }))
+  batch.update(ref, data)
 
-  await Promise.all(promises)
-  return null
+  return batch.commit()
 }
