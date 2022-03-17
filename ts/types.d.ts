@@ -1,5 +1,5 @@
-import type firebase from 'firebase'
 import type { ECategoryType } from './ECategoryType'
+import type firebase from 'firebase'
 
 interface FirestoreData {
   id?: string
@@ -42,15 +42,18 @@ type InputCategory = Omit<Category, 'balance' | 'budget'> & {
 }
 
 interface Operation extends FirestoreData {
-  _doc?: firebase.firestore.DocumentSnapshot<firebase.firestore.DocumentData>
   name: string
   amount: number // float
   category: firebase.firestore.DocumentReference | null
   modifier: ValueModifier
+  createdAt: firebase.firestore.Timestamp
+  updatedAt?: firebase.firestore.Timestamp
+  date: firebase.firestore.Timestamp
 }
-type InputOperation = Omit<Operation, 'amount' | 'category'> & {
+type InputOperation = Omit<Operation, 'amount' | 'category' | 'date'> & {
   amount: string
   category: string | firebase.firestore.DocumentReference | null
+  date: Date
 }
 
 interface User {
@@ -66,6 +69,7 @@ interface InputUser {
 
 interface SettingsState {
   resetDate: firebase.firestore.Timestamp
+  createdAt: firebase.firestore.Timestamp
   lightTheme: boolean
 }
 type Settings = Omit<SettingsState, 'resetDate'> & {

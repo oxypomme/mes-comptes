@@ -21,7 +21,7 @@
                     v-model="account.name"
                     label="Nom du compte"
                     required
-                    :dense="$device.isMobile"
+                    :dense="$vuetify.breakpoint.smAndDown"
                   >
                   </v-text-field>
                 </v-col>
@@ -33,7 +33,7 @@
                     label="Solde du compte"
                     type="number"
                     prefix="€"
-                    :dense="$device.isMobile"
+                    :dense="$vuetify.breakpoint.smAndDown"
                   >
                   </v-text-field>
                 </v-col>
@@ -52,7 +52,7 @@
               :disabled="!valid"
               text
               type="submit"
-              :dense="$device.isMobile"
+              :dense="$vuetify.breakpoint.smAndDown"
             >
               Valider
             </v-btn>
@@ -65,7 +65,7 @@
         <span class="font-weight-light">Comptes</span>
         <span class="last-item">
           <v-chip
-            :small="$device.isMobile"
+            :small="$vuetify.breakpoint.smAndDown"
             :color="
               totalBalance > 100 ? 'green' : totalBalance > 0 ? 'orange' : 'red'
             "
@@ -75,7 +75,7 @@
           <v-btn
             icon
             color="success"
-            :small="$device.isMobile"
+            :small="$vuetify.breakpoint.smAndDown"
             @click="showNew"
           >
             <v-icon>mdi-plus</v-icon>
@@ -83,7 +83,7 @@
         </span>
       </v-card-title>
       <v-divider />
-      <v-list :dense="$device.isMobile">
+      <v-list :dense="$vuetify.breakpoint.smAndDown">
         <v-list-item-group v-model="selectedItem" mandatory>
           <v-list-item v-for="(acc, i) in accounts" :key="i">
             <v-list-item-content>
@@ -91,7 +91,7 @@
             </v-list-item-content>
             <v-list-item-icon>
               <v-chip
-                :small="$device.isMobile"
+                :small="$vuetify.breakpoint.smAndDown"
                 :color="
                   acc.balance > 100
                     ? 'green'
@@ -105,8 +105,8 @@
               <v-btn
                 icon
                 color="blue"
-                :class="[$device.isMobile && 'mx-2']"
-                :x-small="$device.isMobile"
+                :class="[$vuetify.breakpoint.smAndDown && 'mx-2']"
+                :x-small="$vuetify.breakpoint.smAndDown"
                 @click="showEdit(i)"
               >
                 <v-icon>mdi-pencil</v-icon>
@@ -114,7 +114,7 @@
               <v-btn
                 icon
                 color="error"
-                :x-small="$device.isMobile"
+                :x-small="$vuetify.breakpoint.smAndDown"
                 @click="deleteAccount(i)"
               >
                 <v-icon>mdi-delete</v-icon>
@@ -201,7 +201,7 @@ export default Vue.extend({
      */
     async deleteAccount(i: number) {
       const res = await this.$dialog.confirm({
-        text: 'Voulez vous supprimer le compte ?',
+        text: `Voulez-vous supprimer le compte "${this.accounts[i].name}" ?`,
         title: 'Attention',
         actions: {
           false: {

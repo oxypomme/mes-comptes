@@ -1,9 +1,10 @@
 import { firestoreAction } from 'vuexfire'
 import type { ActionTree, Store } from 'vuex'
-import type firebase from 'firebase'
 import type { RootState } from '../state'
 import type { OperationState } from './state'
+import type firebase from 'firebase'
 import type { Account, InputOperation, Operation, User } from '~/ts/types'
+import dayjs from '~/ts/dayjs'
 
 /**
  * Actions for user's operations
@@ -16,10 +17,11 @@ const actions: ActionTree<OperationState, RootState> = {
    * @param param1 The operation
    * @returns The promise of creation
    */
-  createOperation(
-    { rootGetters },
-    { name, amount, category, modifier }: InputOperation
+  async createOperation(
+    { rootGetters, commit },
+    { name, amount, category, modifier, date }: InputOperation
   ) {
+    commit('SET_LOADING', true)
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
     if (!uid) {
       throw new Error('Vous devez être connecté pour effectuer cette action')
@@ -42,12 +44,15 @@ const actions: ActionTree<OperationState, RootState> = {
     if (category && typeof category === 'string')
       cref = ref.collection('categories').doc(category)
 
-    return ref.collection('operations').add({
+    const ope = await ref.collection('operations').add({
       name,
       amount: amnt,
       category: cref,
+      date: date && this.$fireModule.firestore.Timestamp.fromDate(date),
       createdAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
     } as Operation & { createdAt: firebase.firestore.FieldValue })
+    commit('SET_LOADING', false)
+    return ope
   },
   /**
    * Edit an operation for the auther user in the selected account
@@ -56,10 +61,11 @@ const actions: ActionTree<OperationState, RootState> = {
    * @param operation The operation
    * @returns The promise of edition
    */
-  editOperation(
-    { rootGetters },
-    { id, name, amount, category, modifier }: InputOperation
+  async editOperation(
+    { rootGetters, commit },
+    { id, name, amount, category, modifier, date }: InputOperation
   ) {
+    commit('SET_LOADING', true)
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
     if (!uid) {
       throw new Error('Vous devez être connecté pour effectuer cette action')
@@ -82,15 +88,20 @@ const actions: ActionTree<OperationState, RootState> = {
       .collection('accounts')
       .doc(aid)
     const cref = ref.collection('categories')
-    return ref
+
+    const ope = await ref
       .collection('operations')
       .doc(id)
       .update({
         name,
         amount: amnt,
         category: category ? cref.doc(category) : null,
+        date: date && this.$fireModule.firestore.Timestamp.fromDate(date),
         updatedAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
       } as Operation & { updatedAt: firebase.firestore.FieldValue })
+
+    commit('SET_LOADING', false)
+    return ope
   },
   /**
    * Delete an operation for the auther user in the selected account
@@ -124,13 +135,14 @@ const actions: ActionTree<OperationState, RootState> = {
   /**
    * Bind user's operations for the auther user in the selected account
    *
-   * @param index Index in `categories`
+   * @param date The selected date. month: 1-12
    */
   getOperations: firestoreAction(async function (
     this: Store<RootState>,
-    { rootGetters, bindFirestoreRef, state, commit },
-    { progression }: { progression: number }
+    { rootGetters, bindFirestoreRef, commit },
+    { month, year }: { month?: number; year?: number }
   ) {
+    commit('SET_LOADING', true)
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
     if (!uid) {
       throw new Error('Vous devez être connecté pour effectuer cette action')
@@ -149,34 +161,34 @@ const actions: ActionTree<OperationState, RootState> = {
 
     const oref = ref.collection('operations')
 
-    let docref = oref.orderBy('createdAt', 'desc')
-
-    // paginate
-    const newPage = state.page + progression
-    if (newPage > 1) {
-      let lastDoc = state.data[state.data.length - 1]
-      if (state.anchors.lasts[newPage - 1]) {
-        lastDoc = state.anchors.lasts[newPage - 1]
-      }
-      if (lastDoc) {
-        docref = docref.startAfter(lastDoc._doc)
-      }
+    let last = dayjs().add(1, 'day')
+    if (month && year) {
+      last = dayjs(`1/${month + 1}/${year}`, 'D/M/YYYY')
     }
+    const first = last.subtract(1, 'month')
 
-    const res = await bindFirestoreRef('data', docref.limit(state.items), {
+    const docref = oref
+      .where(
+        'date',
+        '>=',
+        this.$fireModule.firestore.Timestamp.fromDate(first.toDate())
+      )
+      .where(
+        'date',
+        '<=',
+        this.$fireModule.firestore.Timestamp.fromDate(last.toDate())
+      )
+      .orderBy('date', 'desc')
+      .orderBy('createdAt', 'desc')
+
+    await bindFirestoreRef('data', docref, {
       serialize: (doc) => {
         const data = doc.data()
         Object.defineProperty(data, 'id', { value: doc.id })
-        Object.defineProperty(data, '_doc', { value: doc })
         return data
       },
     })
-
-    commit('SET_PAGE', {
-      page: !isNaN(newPage) ? newPage : 1,
-      fdoc: res[0],
-      ldoc: res[res.length - 1],
-    })
+    commit('SET_LOADING', false)
   }),
 }
 

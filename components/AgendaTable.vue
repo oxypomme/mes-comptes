@@ -24,7 +24,7 @@
                   "
                   required
                   class="text-capitalize"
-                  :dense="$device.isMobile"
+                  :dense="$vuetify.breakpoint.smAndDown"
                 >
                 </v-text-field>
                 <v-select
@@ -35,7 +35,7 @@
                     { modifier: 1, label: 'Crédit (+)' },
                   ]"
                   label="Type"
-                  :dense="$device.isMobile"
+                  :dense="$vuetify.breakpoint.smAndDown"
                   item-text="label"
                   item-value="modifier"
                 ></v-select>
@@ -60,7 +60,7 @@
               :disabled="!valid"
               text
               type="submit"
-              :dense="$device.isMobile"
+              :dense="$vuetify.breakpoint.smAndDown"
             >
               Valider
             </v-btn>
@@ -68,14 +68,18 @@
         </v-form>
       </v-card>
     </v-dialog>
-    <v-simple-table :dense="$device.isMobile" fixed-header height="77vh">
+    <v-simple-table
+      :dense="$vuetify.breakpoint.smAndDown"
+      fixed-header
+      height="77vh"
+    >
       <template #top>
         <div>
           <v-toolbar
             :color="$vuetify.theme.dark ? '#1E1E1E' : '#fff'"
             flat
             rounded
-            :dense="$device.isMobile"
+            :dense="$vuetify.breakpoint.smAndDown"
           >
             <v-toolbar-title class="font-weight-light">
               Planning
@@ -88,7 +92,11 @@
           <v-progress-linear
             :indeterminate="loading"
             :color="
-              loading ? 'primary' : $device.isMobile ? 'accent' : 'transparent'
+              loading
+                ? 'primary'
+                : $vuetify.breakpoint.smAndDown
+                ? 'accent'
+                : 'transparent'
             "
           ></v-progress-linear>
         </div>
@@ -140,37 +148,38 @@
               </v-hover>
             </th>
             <th
-              v-for="i in 12"
-              :key="'h' + i"
+              v-for="monthIndex in 12"
+              :key="'label' + monthIndex"
               :class="[
                 'text-center',
                 'text-capitalize',
-                currMonth == i - 1 && 'activeMonth',
+                isCurrentMonth(monthIndex) && 'activeMonth',
               ]"
             >
-              {{
-                new Date(
-                  2021 + (currMonth > i - 1 ? 1 : 0),
-                  i - 1
-                ).toLocaleDateString('fr', { month: 'long', year: 'numeric' })
-              }}
+              {{ monthLabel(monthIndex) }}
             </th>
           </tr>
           <tr v-if="Object.values(items).length > 0">
             <th colspan="4"></th>
             <th
-              v-for="i in 12"
-              :key="'ht' + i"
-              :class="['text-center', currMonth == i - 1 && 'activeMonth']"
+              v-for="monthIndex in 12"
+              :key="'value' + monthIndex"
+              :class="[
+                'text-center',
+                isCurrentMonth(monthIndex) && 'activeMonth',
+              ]"
             >
-              <v-chip small :color="month(i).total > 0 ? 'green' : 'red'">
-                {{ toLS(month(i).total) }}
+              <v-chip
+                small
+                :color="month(monthIndex).total > 0 ? 'green' : 'red'"
+              >
+                {{ toLS(month(monthIndex).total) }}
               </v-chip>
             </th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(item, i) in [...items].sort(sorter)" :key="'i' + i">
+          <tr v-for="item in [...items].sort(sorter)" :key="item.name">
             <td>
               <v-btn icon color="error" @click="deleteRow(item.id)">
                 <v-icon>mdi-delete</v-icon>
@@ -191,7 +200,7 @@
             </td>
             <td class="text-center">
               <v-chip
-                :small="$device.isMobile"
+                :small="$vuetify.breakpoint.smAndDown"
                 :color="item.modifier > 0 ? 'green' : 'red'"
                 class="hoverable"
                 @click="open(item, 'modifier', item.modifier)"
@@ -200,11 +209,14 @@
               </v-chip>
             </td>
             <td
-              v-for="(value, j) in item.values"
-              :key="'i' + i + 'j' + j"
-              :class="['text-center', currMonth == j && 'activeMonth']"
+              v-for="(value, monthIndex) in item.values"
+              :key="item.name + '_month' + monthIndex"
+              :class="[
+                'text-center',
+                isCurrentMonth(monthIndex + 1) && 'activeMonth',
+              ]"
             >
-              <span class="hoverable" @click="open(item, j, value)">
+              <span class="hoverable" @click="open(item, monthIndex, value)">
                 {{ value > 0 ? toLS(value) : '-' }}
               </span>
             </td>
@@ -219,7 +231,7 @@
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
 import { toLS } from '~/ts/format'
-import type { AgendaRow } from '~/ts/types'
+import type { AgendaRow, SettingsState } from '~/ts/types'
 
 type SortType = 'name' | 'category' | 'type'
 
@@ -227,7 +239,6 @@ export default Vue.extend({
   data: () => ({
     dialog: false,
     valid: false,
-    currMonth: new Date().getMonth(),
     loading: false,
     editedValue: {
       id: undefined as string | undefined,
@@ -241,6 +252,39 @@ export default Vue.extend({
   }),
   computed: {
     ...mapGetters({ month: 'agenda/getMonth' }),
+    /**
+     * Get column label
+     *
+     * @param i The month index (0-11)
+     */
+    monthLabel() {
+      return (i: number) =>
+        new Date(
+          +this.resetDate.getFullYear() + +(i < this.resetDate.getMonth()),
+          i - 1
+        ).toLocaleDateString('fr', {
+          month: 'long',
+          year: 'numeric',
+        })
+    },
+    /**
+     * Get if month is current
+     *
+     * @param i The month index (0-11)
+     */
+    isCurrentMonth() {
+      return (i: number) => this.resetDate.getMonth() === i
+    },
+    /**
+     * Get resetDate, ussefull when gtting current month and year
+     */
+    resetDate(): Date {
+      const settings = this.$store.getters.getSettings as
+        | SettingsState
+        | undefined
+
+      return settings?.resetDate.toDate() ?? new Date()
+    },
     /**
      * User's agenda
      *
@@ -298,13 +342,7 @@ export default Vue.extend({
         }
       } else {
         // Return the concerned month
-        return new Date(
-          2021 + (this.currMonth > this.editedValue.field ? 1 : 0),
-          this.editedValue.field
-        ).toLocaleDateString('fr', {
-          month: 'long',
-          year: 'numeric',
-        })
+        return this.monthLabel(this.editedValue.field + 1)
       }
     },
   },
@@ -425,7 +463,7 @@ export default Vue.extend({
 </script>
 <style scoped>
 .activeMonth {
-  background: #1976d259;
+  background: #1976d259 !important;
 }
 .hoverable {
   transition: color 0.25s;
