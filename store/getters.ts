@@ -1,5 +1,6 @@
 import type { GetterTree } from 'vuex'
 import type { RootState } from './state'
+import dayjs from '~/ts/dayjs'
 
 /**
  * Getters for root state
@@ -39,6 +40,30 @@ const getters: GetterTree<RootState, RootState> = {
     )
 
     return count
+  },
+  getAvailableMonths: (
+    state
+  ): { month?: number; year?: number; label: string }[] => {
+    const today = dayjs()
+    const months: { month: number; year: number; label: string }[] = []
+
+    let date = dayjs(state.settings.createdAt?.toDate() ?? undefined)
+    while (date.isBefore(today)) {
+      const label = date.format('MMMM YYYY')
+      months.push({
+        month: date.month() + 1,
+        year: date.year(),
+        label: label.charAt(0).toUpperCase() + label.slice(1),
+      })
+      date = date.add(1, 'month')
+    }
+
+    return [
+      {
+        label: 'Courant (1 mois)',
+      },
+      ...months.reverse(),
+    ]
   },
 }
 

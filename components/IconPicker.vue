@@ -19,7 +19,7 @@
                     v-model="search"
                     label="Nom de l'icone"
                     required
-                    :dense="$device.isMobile"
+                    :dense="$vuetify.breakpoint.smAndDown"
                   >
                   </v-text-field>
                   <v-btn
