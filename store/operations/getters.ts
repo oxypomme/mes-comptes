@@ -9,17 +9,10 @@ const getters: GetterTree<OperationState, RootState> = {
   /**
    * Get the operations for the auther user in the selected account.
    *
-   * Mapping to ensure old data.
-   *
    * @param state The state
    * @returns The operations
    */
-  getOperations: (state) =>
-    state.data.map((o) => ({
-      ...o,
-      id: o.id,
-      date: o.date || o.createdAt,
-    })),
+  getOperations: (state) => state.data,
   /**
    * Get the loading state
    *
