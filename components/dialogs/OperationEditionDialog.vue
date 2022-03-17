@@ -21,16 +21,6 @@
           <v-container>
             <v-row>
               <v-col>
-                <v-text-field
-                  v-model="operation.name"
-                  label="Nom"
-                  required
-                  :dense="$vuetify.breakpoint.smAndDown"
-                  :rules="rules.name"
-                >
-                </v-text-field>
-              </v-col>
-              <v-col>
                 <v-menu
                   ref="menu"
                   v-model="menu"
@@ -59,6 +49,16 @@
                     @change="saveDate"
                   ></v-date-picker>
                 </v-menu>
+              </v-col>
+              <v-col>
+                <v-text-field
+                  v-model="operation.name"
+                  label="Nom"
+                  required
+                  :dense="$vuetify.breakpoint.smAndDown"
+                  :rules="rules.name"
+                >
+                </v-text-field>
               </v-col>
             </v-row>
             <v-row>
