@@ -62,6 +62,13 @@ const getter: GetterTree<CategoryState, RootState> = {
 
     return categories
   },
+  /**
+   * Get the loading state
+   *
+   * @param state The state
+   * @returns The loading state
+   */
+  getLoadingState: (state) => state.loading,
 }
 
 export default getter

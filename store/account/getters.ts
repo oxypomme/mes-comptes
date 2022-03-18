@@ -20,6 +20,13 @@ const getters: GetterTree<AccountState, RootState> = {
    * @returns The account
    */
   getCurrent: (state) => state.current,
+  /**
+   * Get the loading state
+   *
+   * @param state The state
+   * @returns The loading state
+   */
+  getLoadingState: (state) => state.loading,
 }
 
 export default getters

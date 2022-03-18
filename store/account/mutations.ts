@@ -13,6 +13,15 @@ const mutations: MutationTree<AccountState> = {
   RESET_STATE: (state) => {
     state.accounts = []
     state.current = null
+    state.loading = false
+  },
+  /**
+   * Reset loading state
+   *
+   * @param state The state
+   */
+  SET_LOADING: (state, loading) => {
+    state.loading = loading
   },
 }
 

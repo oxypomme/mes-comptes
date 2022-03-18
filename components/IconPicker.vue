@@ -26,9 +26,7 @@
                     type="submit"
                     class="ml-2"
                     color="primary"
-                    v-bind="attrs"
                     :disabled="isLoading"
-                    v-on="on"
                   >
                     <v-icon> mdi-magnify </v-icon>
                   </v-btn>

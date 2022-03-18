@@ -17,36 +17,44 @@ const actions: ActionTree<CategoryState, RootState> = {
    * @param category The category
    * @returns The promise of creation
    */
-  createCategory(
-    { rootGetters },
+  async createCategory(
+    { rootGetters, commit },
     { name, budget, balance, type, icon }: InputCategory
   ) {
-    const uid = (rootGetters['auth/getUser'] as User | null)?.uid
-    if (!uid) {
-      throw new Error('Vous devez être connecté pour effectuer cette action')
+    commit('SET_LOADING', true)
+    try {
+      const uid = (rootGetters['auth/getUser'] as User | null)?.uid
+      if (!uid) {
+        throw new Error('Vous devez être connecté pour effectuer cette action')
+      }
+
+      const aid = (rootGetters['account/getCurrent'] as Account | null)?.id
+      if (!aid) {
+        throw new Error('Un compte doit être séléctionné')
+      }
+
+      const ba = parseFloat(balance)
+
+      const ref = this.$fire.firestore
+        .collection('users')
+        .doc(uid)
+        .collection('accounts')
+        .doc(aid)
+        .collection('categories')
+      const cat = await ref.add({
+        name,
+        budget: parseFloat(budget),
+        balance: type === ECategoryType.PLANNED_CREDIT ? -ba : ba,
+        type,
+        icon,
+        createdAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
+      } as Category & { createdAt: firebase.firestore.FieldValue })
+      commit('SET_LOADING', false)
+      return cat
+    } catch (error) {
+      commit('SET_LOADING', false)
+      throw error
     }
-
-    const aid = (rootGetters['account/getCurrent'] as Account | null)?.id
-    if (!aid) {
-      throw new Error('Un compte doit être séléctionné')
-    }
-
-    const ba = parseFloat(balance)
-
-    const ref = this.$fire.firestore
-      .collection('users')
-      .doc(uid)
-      .collection('accounts')
-      .doc(aid)
-      .collection('categories')
-    return ref.add({
-      name,
-      budget: parseFloat(budget),
-      balance: type === ECategoryType.PLANNED_CREDIT ? -ba : ba,
-      type,
-      icon,
-      createdAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
-    } as Category & { createdAt: firebase.firestore.FieldValue })
   },
   /**
    * Edit a category of the authed user in the selected account
@@ -55,37 +63,44 @@ const actions: ActionTree<CategoryState, RootState> = {
    * @param category The category
    * @returns The promise of edition
    */
-  editCategory(
-    { rootGetters },
+  async editCategory(
+    { rootGetters, commit },
     { id, name, budget, balance, type, icon }: InputCategory
   ) {
-    const uid = (rootGetters['auth/getUser'] as User | null)?.uid
-    if (!uid) {
-      throw new Error('Vous devez être connecté pour effectuer cette action')
+    commit('SET_LOADING', true)
+    try {
+      const uid = (rootGetters['auth/getUser'] as User | null)?.uid
+      if (!uid) {
+        throw new Error('Vous devez être connecté pour effectuer cette action')
+      }
+
+      const aid = (rootGetters['account/getCurrent'] as Account | null)?.id
+      if (!aid) {
+        throw new Error('Un compte doit être séléctionné')
+      }
+
+      const ba = parseFloat(balance)
+
+      const ref = this.$fire.firestore
+        .collection('users')
+        .doc(uid)
+        .collection('accounts')
+        .doc(aid)
+        .collection('categories')
+        .doc(id)
+      await ref.update({
+        name,
+        budget: parseFloat(budget),
+        balance: type === ECategoryType.PLANNED_CREDIT ? -ba : ba,
+        type,
+        icon,
+        updatedAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
+      } as Category & { updatedAt: firebase.firestore.FieldValue })
+      commit('SET_LOADING', false)
+    } catch (error) {
+      commit('SET_LOADING', false)
+      throw error
     }
-
-    const aid = (rootGetters['account/getCurrent'] as Account | null)?.id
-    if (!aid) {
-      throw new Error('Un compte doit être séléctionné')
-    }
-
-    const ba = parseFloat(balance)
-
-    const ref = this.$fire.firestore
-      .collection('users')
-      .doc(uid)
-      .collection('accounts')
-      .doc(aid)
-      .collection('categories')
-      .doc(id)
-    return ref.update({
-      name,
-      budget: parseFloat(budget),
-      balance: type === ECategoryType.PLANNED_CREDIT ? -ba : ba,
-      type,
-      icon,
-      updatedAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
-    } as Category & { updatedAt: firebase.firestore.FieldValue })
   },
   /**
    * Delete a category of the authed user in the selected account
@@ -94,34 +109,42 @@ const actions: ActionTree<CategoryState, RootState> = {
    * @param id The id of the category
    * @returns The promise of deletion
    */
-  deleteCategory({ rootGetters }, id) {
-    const uid = (rootGetters['auth/getUser'] as User | null)?.uid
-    if (!uid) {
-      throw new Error('Vous devez être connecté pour effectuer cette action')
+  async deleteCategory({ rootGetters, commit }, id) {
+    commit('SET_LOADING', true)
+    try {
+      const uid = (rootGetters['auth/getUser'] as User | null)?.uid
+      if (!uid) {
+        throw new Error('Vous devez être connecté pour effectuer cette action')
+      }
+
+      const aid = (rootGetters['account/getCurrent'] as Account | null)?.id
+      if (!aid) {
+        throw new Error('Un compte doit être séléctionné')
+      }
+
+      const ref = this.$fire.firestore
+        .collection('users')
+        .doc(uid)
+        .collection('accounts')
+        .doc(aid)
+        .collection('categories')
+        .doc(id)
+
+      await ref.delete()
+      commit('SET_LOADING', false)
+    } catch (error) {
+      commit('SET_LOADING', false)
+      throw error
     }
-
-    const aid = (rootGetters['account/getCurrent'] as Account | null)?.id
-    if (!aid) {
-      throw new Error('Un compte doit être séléctionné')
-    }
-
-    const ref = this.$fire.firestore
-      .collection('users')
-      .doc(uid)
-      .collection('accounts')
-      .doc(aid)
-      .collection('categories')
-      .doc(id)
-
-    return ref.delete()
   },
   /**
    * Bind user's categories of the selected account
    */
   getCategories: firestoreAction(async function (
     this: Store<RootState>,
-    { rootGetters, bindFirestoreRef }
+    { rootGetters, bindFirestoreRef, commit }
   ) {
+    commit('SET_LOADING', true)
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
     if (!uid) {
       throw new Error('Vous devez être connecté pour effectuer cette action')
@@ -140,13 +163,15 @@ const actions: ActionTree<CategoryState, RootState> = {
       .collection('categories')
       .orderBy('createdAt')
 
-    await bindFirestoreRef('data', ref, {
+    const bind = await bindFirestoreRef('data', ref, {
       serialize: (doc) => {
         const data = doc.data()
         Object.defineProperty(data, 'id', { value: doc.id })
         return data
       },
     })
+    commit('SET_LOADING', false)
+    return bind
   }),
 }
 

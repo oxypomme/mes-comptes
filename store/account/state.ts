@@ -14,6 +14,7 @@ const state = () => ({
    * Selected user's account
    */
   current: null as Account | null,
+  loading: false,
 })
 
 export default state

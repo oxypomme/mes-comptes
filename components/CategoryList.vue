@@ -1,81 +1,6 @@
 <template>
   <div>
-    <v-dialog v-model="dialog" width="500">
-      <v-card>
-        <v-form v-model="valid" @submit="createCategory">
-          <v-toolbar elevation="0" dense>
-            <v-toolbar-title>
-              {{ category.id ? 'Editer' : 'Créer' }} une catégorie
-            </v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-btn icon color="grey" small plain @click="dialog = false">
-              <v-icon>mdi-close</v-icon>
-            </v-btn>
-          </v-toolbar>
-
-          <v-card-text>
-            <v-container>
-              <v-row class="align-center">
-                <icon-picker v-model="category.icon" class="mr-2" />
-                <v-text-field
-                  v-model="category.name"
-                  label="Nom de la catégorie"
-                  required
-                  :dense="$vuetify.breakpoint.smAndDown"
-                >
-                </v-text-field>
-              </v-row>
-              <v-row>
-                <v-select
-                  v-model="category.type"
-                  :items="categoryTypes"
-                  item-text="label"
-                  item-value="value"
-                  label="Type"
-                ></v-select>
-              </v-row>
-              <v-row align="center">
-                <v-text-field
-                  v-model="category.budget"
-                  :disabled="category.type !== 0"
-                  label="Budget par semaine de la catégorie"
-                  type="number"
-                  prefix="€"
-                  :dense="$vuetify.breakpoint.smAndDown"
-                >
-                </v-text-field>
-              </v-row>
-              <v-row>
-                <v-text-field
-                  v-model="category.balance"
-                  label="Solde de la catégorie"
-                  type="number"
-                  prefix="€"
-                  :dense="$vuetify.breakpoint.smAndDown"
-                >
-                </v-text-field>
-              </v-row>
-            </v-container>
-          </v-card-text>
-
-          <v-divider></v-divider>
-
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="error" text @click="dialog = false"> Annuler </v-btn>
-            <v-btn
-              color="success"
-              :loading="loading"
-              :disabled="!valid"
-              text
-              type="submit"
-            >
-              Valider
-            </v-btn>
-          </v-card-actions>
-        </v-form>
-      </v-card>
-    </v-dialog>
+    <CategoryEditionDialog v-model="category" />
     <v-card>
       <v-card-title>
         <span class="font-weight-light">Catégories</span>
@@ -92,14 +17,19 @@
             </template>
             <span> Roulement </span>
           </v-tooltip>
-          <v-btn class="last-item" icon color="success" @click="showNew">
+          <v-btn
+            class="last-item"
+            icon
+            color="success"
+            @click="category = undefined"
+          >
             <v-icon>mdi-plus</v-icon>
           </v-btn>
         </span>
       </v-card-title>
       <v-divider />
       <v-list :dense="$vuetify.breakpoint.smAndDown">
-        <v-list-item-group v-model="selectedItem">
+        <v-list-item-group>
           <v-list-item v-for="(categ, i) in categories" :key="i">
             <v-icon
               small
@@ -156,79 +86,27 @@
 <script lang="ts">
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
+import CategoryEditionDialog from './dialogs/CategoryEditionDialog.vue'
 import { ECategoryType } from '~/ts/ECategoryType'
 import type { Account, Category, InputCategory } from '~/ts/types'
 import { toLS } from '~/ts/format'
 
 export default Vue.extend({
+  components: { CategoryEditionDialog },
   data: () => ({
-    initCategory: {
-      id: undefined,
-      name: '',
-      icon: 'mdi-wallet',
-      balance: '0',
-      budget: '0',
-      type: ECategoryType.BUDGET,
-    },
-    category: {} as InputCategory,
-    selectedItem: undefined,
-    valid: true,
-    dialog: false,
-    loading: false,
+    category: null as InputCategory | null,
   }),
   computed: {
     ...mapGetters({
+      loading: 'categories/getLoadingState',
       monthlyBudget: 'agenda/getCurrent',
       categories: 'categories/getCategories',
       weeksCount: 'getWeekCount',
     }),
-    categoryTypes() {
-      const types = [
-        {
-          label: 'Budget',
-          value: ECategoryType.BUDGET,
-        },
-      ]
-      // Add option for calculated if not already present
-      if (
-        (this.categories as Category[]).findIndex(
-          ({ type }) =>
-            type === ECategoryType.CALCULATED && type !== this.category.type
-        ) < 0
-      ) {
-        types.push({
-          label: 'Calculée',
-          value: ECategoryType.CALCULATED,
-        })
-      }
-      // Add option for planned credit if not already present
-      if (
-        (this.categories as Category[]).findIndex(
-          ({ type }) =>
-            type === ECategoryType.PLANNED_CREDIT && type !== this.category.type
-        ) < 0
-      ) {
-        types.push({
-          label: 'Planifié (Crédit +)',
-          value: ECategoryType.PLANNED_CREDIT,
-        })
-      }
-      // Add option for planned debit if not already present
-      if (
-        (this.categories as Category[]).findIndex(
-          ({ type }) =>
-            type === ECategoryType.PLANNED_DEBIT && type !== this.category.type
-        ) < 0
-      ) {
-        types.push({
-          label: 'Planifié (Crédit -)',
-          value: ECategoryType.PLANNED_DEBIT,
-        })
-      }
-      return types
-    },
     /**
      * Formated category rest
+     *
+     * TODO: Move in getter
      */
     categoryUsage() {
       return ({ balance, budget }: Category) => {
@@ -237,6 +115,8 @@ export default Vue.extend({
     },
     /**
      * Tooltip content of a category
+     *
+     * TODO: Move in getter
      */
     categoryTooltip() {
       return (categ: Category) => {
@@ -249,6 +129,8 @@ export default Vue.extend({
     },
     /**
      * Budget for auto categories
+     *
+     * TODO: Move in getter
      */
     monthlyRest(): number {
       return (this.categories as Category[])
@@ -292,45 +174,6 @@ export default Vue.extend({
   },
   methods: {
     /**
-     * Create a new category
-     *
-     * @param e The event
-     */
-    async createCategory(e: Event) {
-      e.preventDefault()
-      if (this.valid) {
-        this.loading = true
-        try {
-          if (this.category.type !== ECategoryType.BUDGET) {
-            this.category.budget = '0'
-            const cAuto = (this.categories as Category[]).find(
-              (c) => c.type === this.category.type
-            )
-            if (cAuto && cAuto.id !== this.category.id) {
-              throw new Error(
-                "Vous ne pouvez avoir qu'une seule catégorie calculée"
-              )
-            }
-          }
-
-          if (this.category.id) {
-            await this.$store.dispatch('categories/editCategory', this.category)
-            this.$toast.global.success('Catégorie éditée')
-          } else {
-            await this.$store.dispatch(
-              'categories/createCategory',
-              this.category
-            )
-            this.$toast.global.success('Catégorie créé')
-          }
-          this.dialog = false
-        } catch (e) {
-          this.$toast.global.error((e as Error).message)
-        }
-        this.loading = false
-      }
-    },
-    /**
      * Delete category
      *
      * @param i The index in `this.categories`
@@ -351,7 +194,6 @@ export default Vue.extend({
         },
       })
       if (res) {
-        this.loading = true
         try {
           await this.$store.dispatch(
             'categories/deleteCategory',
@@ -361,22 +203,12 @@ export default Vue.extend({
         } catch (e) {
           this.$toast.global.error((e as Error).message)
         }
-        this.loading = false
       }
-    },
-    /**
-     * Prepare popup for new category
-     */
-    showNew() {
-      // this.valid = false
-      this.category = { ...this.initCategory }
-      this.dialog = true
     },
     /**
      * Prepare popup for editing a category
      */
     showEdit(i: number) {
-      this.valid = true
       const categ = this.categories[i]
       this.category = {
         ...categ,
@@ -385,13 +217,14 @@ export default Vue.extend({
         id: categ.id,
       }
       // TODO: check if id usefull
-      this.dialog = true
     },
     /**
      * Calculate usage ratio of a Category
      *
      * @param categ The category
      * @param isPrimary If the 'OK' color should be primary
+     *
+     * TODO: Move in getter
      */
     getCategRatioColor({ balance, budget }: Category, isPrimary = false) {
       const ratio = Math.abs(balance) / Math.abs(budget)

@@ -256,6 +256,8 @@ export default Vue.extend({
      * Get column label
      *
      * @param i The month index (0-11)
+     *
+     * TODO: Move in getter
      */
     monthLabel() {
       return (i: number) =>
@@ -271,6 +273,8 @@ export default Vue.extend({
      * Get if month is current
      *
      * @param i The month index (0-11)
+     *
+     * TODO: Move in getter
      */
     isCurrentMonth() {
       return (i: number) => this.resetDate.getMonth() === i
