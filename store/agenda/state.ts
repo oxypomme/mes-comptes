@@ -10,6 +10,7 @@ const state = () => ({
    * The agenda
    */
   data: [] as AgendaRow[],
+  loading: false,
 })
 
 export default state

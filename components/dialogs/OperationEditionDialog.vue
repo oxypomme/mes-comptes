@@ -160,7 +160,7 @@ export default Vue.extend({
           dayjs(v, 'DD/MM/YYYY').isBefore(dayjs()) ||
           'Impossible créer une opération future',
       ],
-    } as Record<string, ((v: string) => string)[]>,
+    } as Record<string, ((v: string) => true | string)[]>,
     initOperation: {
       name: '',
       amount: '',

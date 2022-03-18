@@ -90,7 +90,7 @@ export default Vue.extend({
           (!isNaN(parseFloat(v)) && parseFloat(v) >= 0) ||
           'Le montant doit être supérieur ou égal à 0',
       ],
-    } as Record<string, ((v: string) => string)[]>,
+    } as Record<string, ((v: string) => true | string)[]>,
     initAccount: {
       id: undefined as string | undefined,
       name: '',

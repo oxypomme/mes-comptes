@@ -105,20 +105,18 @@ export default Vue.extend({
     }),
     /**
      * Formated category rest
-     *
-     * TODO: Move in getter
      */
     categoryUsage() {
+      // TODO: Move in getter
       return ({ balance, budget }: Category) => {
         return toLS(budget - balance)
       }
     },
     /**
      * Tooltip content of a category
-     *
-     * TODO: Move in getter
      */
     categoryTooltip() {
+      // TODO: Move in getter
       return (categ: Category) => {
         return `${toLS(Math.abs(categ.balance))} / ${toLS(
           Math.abs(categ.budget)
@@ -129,10 +127,9 @@ export default Vue.extend({
     },
     /**
      * Budget for auto categories
-     *
-     * TODO: Move in getter
      */
     monthlyRest(): number {
+      // TODO: Move in getter
       return (this.categories as Category[])
         .filter(({ type }) => type === ECategoryType.BUDGET)
         .reduce((sum, { budget }) => sum - budget, this.monthlyBudget.total)
@@ -224,9 +221,10 @@ export default Vue.extend({
      * @param categ The category
      * @param isPrimary If the 'OK' color should be primary
      *
-     * TODO: Move in getter
+     *
      */
     getCategRatioColor({ balance, budget }: Category, isPrimary = false) {
+      // TODO: Move in getter
       const ratio = Math.abs(balance) / Math.abs(budget)
       return {
         color:

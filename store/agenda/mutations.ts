@@ -12,6 +12,15 @@ const mutations: MutationTree<AgendaState> = {
    */
   RESET_STATE: (state) => {
     state.data = []
+    state.loading = false
+  },
+  /**
+   * Reset loading state
+   *
+   * @param state The state
+   */
+  SET_LOADING: (state, loading) => {
+    state.loading = loading
   },
 }
 

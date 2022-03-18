@@ -52,6 +52,13 @@ const getters: GetterTree<AgendaState, RootState> = {
    * @returns A function to get the budget
    */
   getCurrent: (_, getters) => getters.getMonth(new Date().getMonth() + 1),
+  /**
+   * Get the loading state
+   *
+   * @param state The state
+   * @returns The loading state
+   */
+  getLoadingState: (state) => state.loading,
 }
 
 export default getters
