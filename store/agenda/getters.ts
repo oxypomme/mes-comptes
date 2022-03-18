@@ -32,6 +32,9 @@ const getters: GetterTree<AgendaState, RootState> = {
       month: number // in range 1-12
     ) => {
       const rows: AgendaRow[] = getters.getAgenda
+      const resetDate: Date =
+        getters.getSettings?.resetDate.toDate() ?? new Date()
+
       const debit = rows
         .filter(({ modifier }) => modifier === -1)
         .reduce(agendaMonthReducer(month), 0)
@@ -42,6 +45,13 @@ const getters: GetterTree<AgendaState, RootState> = {
         debit,
         credit,
         total: credit - debit,
+        label: new Date(
+          +resetDate.getFullYear() + +(month < resetDate.getMonth()),
+          month - 1
+        ).toLocaleDateString('fr', {
+          month: 'long',
+          year: 'numeric',
+        }),
       }
     },
   /**

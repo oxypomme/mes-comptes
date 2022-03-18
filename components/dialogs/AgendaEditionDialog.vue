@@ -17,7 +17,7 @@
                 v-if="editedValue.field !== 'modifier'"
                 v-model="editedValue.value"
                 :rules="editedRules"
-                :label="editedLabel"
+                :label="editedValue.label"
                 :prefix="typeof editedValue.field === 'string' ? '' : '€'"
                 :type="
                   typeof editedValue.field === 'number' ? 'number' : 'text'
@@ -73,7 +73,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
-import type { AgendaRow, SettingsState } from '~/ts/types'
+import type { AgendaRow } from '~/ts/types'
 import type { VForm } from '~/ts/components'
 
 export type EditedValue = {
@@ -82,6 +82,7 @@ export type EditedValue = {
   field: string | number
   value: string
   applyToAll: boolean
+  label: string
 }
 
 export default Vue.extend({
@@ -103,6 +104,7 @@ export default Vue.extend({
       field: 0,
       value: '0.00',
       applyToAll: false,
+      label: '',
     } as EditedValue,
     editedValue: {} as EditedValue,
   }),
@@ -135,55 +137,6 @@ export default Vue.extend({
             'Le montant doit être supérieur ou égal à 0',
         ]
       }
-    },
-    /**
-     * Get the current label edited
-     *
-     * @returns The label
-     */
-    editedLabel(): string {
-      if (typeof this.editedValue.field === 'string') {
-        // Return the correct label
-        switch (this.editedValue.field) {
-          case 'name':
-            return 'Nom'
-          case 'category':
-            return 'Catégorie'
-          default:
-            return 'Valeur'
-        }
-      } else {
-        // Return the concerned month
-        return this.monthLabel(this.editedValue.field + 1)
-      }
-    },
-    /**
-     * Get column label
-     *
-     * @param i The month index (0-11)
-     */
-    monthLabel() {
-      // TODO: Move in getter
-      // TODO: Duplication of AgendaTable
-      return (i: number) =>
-        new Date(
-          +this.resetDate.getFullYear() + +(i < this.resetDate.getMonth()),
-          i - 1
-        ).toLocaleDateString('fr', {
-          month: 'long',
-          year: 'numeric',
-        })
-    },
-    /**
-     * Get resetDate, ussefull when gtting current month and year
-     */
-    resetDate(): Date {
-      // TODO: Duplication of AgendaTable
-      const settings = this.$store.getters.getSettings as
-        | SettingsState
-        | undefined
-
-      return settings?.resetDate.toDate() ?? new Date()
     },
   },
   watch: {

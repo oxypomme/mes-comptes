@@ -86,10 +86,10 @@
               :class="[
                 'text-center',
                 'text-capitalize',
-                isCurrentMonth(monthIndex) && 'activeMonth',
+                currentMonth === monthIndex && 'activeMonth',
               ]"
             >
-              {{ monthLabel(monthIndex) }}
+              {{ month(monthIndex).label }}
             </th>
           </tr>
           <tr v-if="Object.values(items).length > 0">
@@ -99,7 +99,7 @@
               :key="'value' + monthIndex"
               :class="[
                 'text-center',
-                isCurrentMonth(monthIndex) && 'activeMonth',
+                currentMonth === monthIndex && 'activeMonth',
               ]"
             >
               <v-chip
@@ -146,7 +146,7 @@
               :key="item.name + '_month' + monthIndex"
               :class="[
                 'text-center',
-                isCurrentMonth(monthIndex + 1) && 'activeMonth',
+                currentMonth === monthIndex + 1 && 'activeMonth',
               ]"
             >
               <span class="hoverable" @click="open(item, monthIndex, value)">
@@ -167,7 +167,7 @@ import AgendaEditionDialog, {
   EditedValue,
 } from './dialogs/AgendaEditionDialog.vue'
 import { toLS } from '~/ts/format'
-import type { AgendaRow, SettingsState } from '~/ts/types'
+import type { AgendaRow } from '~/ts/types'
 
 type SortType = 'name' | 'category' | 'type'
 
@@ -184,39 +184,11 @@ export default Vue.extend({
       loading: 'agenda/getLoadingState',
     }),
     /**
-     * Get column label
-     *
-     * @param i The month index (0-11)
+     * Get current month
      */
-    monthLabel() {
-      // TODO: Move in getter
-      return (i: number) =>
-        new Date(
-          +this.resetDate.getFullYear() + +(i < this.resetDate.getMonth()),
-          i - 1
-        ).toLocaleDateString('fr', {
-          month: 'long',
-          year: 'numeric',
-        })
-    },
-    /**
-     * Get if month is current
-     *
-     * @param i The month index (0-11)
-     */
-    isCurrentMonth() {
-      // TODO: Move in getter
-      return (i: number) => this.resetDate.getMonth() === i
-    },
-    /**
-     * Get resetDate, ussefull when gtting current month and year
-     */
-    resetDate(): Date {
-      const settings = this.$store.getters.getSettings as
-        | SettingsState
-        | undefined
-
-      return settings?.resetDate.toDate() ?? new Date()
+    currentMonth(): number {
+      const { resetDate } = this.$store.getters.getSettings
+      return resetDate?.toDate().getMonth() ?? new Date().getMonth()
     },
     /**
      * User's agenda
@@ -294,7 +266,26 @@ export default Vue.extend({
         value = value.toFixed(2)
       }
 
-      this.editedValue = { id, name, field, value, applyToAll: false }
+      let label = ''
+      if (typeof field === 'string') {
+        // Return the correct label
+        switch (field) {
+          case 'name':
+            label = 'Nom'
+            break
+          case 'category':
+            label = 'Catégorie'
+            break
+          default:
+            label = 'Valeur'
+            break
+        }
+      } else {
+        // Return the concerned month
+        label = this.month(field + 1).label
+      }
+
+      this.editedValue = { id, name, field, value, applyToAll: false, label }
     },
     /**
      * Edit sort type
