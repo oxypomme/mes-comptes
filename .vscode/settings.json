@@ -1,3 +1,9 @@
 {
-  "conventionalCommits.scopes": ["agenda", "icon-picker", "operations", "cloud-fnc"]
+  "conventionalCommits.scopes": [
+    "agenda",
+    "icon-picker",
+    "operations",
+    "cloud-fnc",
+    "categories"
+  ]
 }

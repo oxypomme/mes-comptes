@@ -45,16 +45,16 @@
               <v-tooltip top>
                 <template #activator="{ on, attrs }">
                   <v-chip
-                    :color="getCategRatioColor(categ).color"
+                    :color="categ.computed.ratio.color"
                     v-bind="attrs"
                     :small="$vuetify.breakpoint.smAndDown"
                     v-on="on"
                   >
-                    {{ categoryUsage(categ) }}
+                    {{ categ.computed.usage }}
                   </v-chip>
                 </template>
                 <span>
-                  {{ categoryTooltip(categ) }}
+                  {{ categ.computed.tooltip }}
                 </span>
               </v-tooltip>
 
@@ -87,9 +87,7 @@
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
 import CategoryEditionDialog from './dialogs/CategoryEditionDialog.vue'
-import { ECategoryType } from '~/ts/ECategoryType'
-import type { Account, Category, InputCategory } from '~/ts/types'
-import { toLS } from '~/ts/format'
+import type { InputCategory } from '~/ts/types'
 
 export default Vue.extend({
   components: { CategoryEditionDialog },
@@ -99,75 +97,10 @@ export default Vue.extend({
   computed: {
     ...mapGetters({
       loading: 'categories/getLoadingState',
-      monthlyBudget: 'agenda/getCurrent',
       categories: 'categories/getCategories',
+      roulement: 'categories/getRoulement',
       weeksCount: 'getWeekCount',
     }),
-    /**
-     * Formated category rest
-     */
-    categoryUsage() {
-      // TODO: Move in getter
-      return ({ balance, budget }: Category) => {
-        return toLS(budget - balance)
-      }
-    },
-    /**
-     * Tooltip content of a category
-     */
-    categoryTooltip() {
-      // TODO: Move in getter
-      return (categ: Category) => {
-        return `${toLS(Math.abs(categ.balance))} / ${toLS(
-          Math.abs(categ.budget)
-        )} (${toLS(this.getCategRatioColor(categ).ratio, {
-          style: 'percent',
-        })})`
-      }
-    },
-    /**
-     * Budget for auto categories
-     */
-    monthlyRest(): number {
-      // TODO: Move in getter
-      return (this.categories as Category[])
-        .filter(({ type }) => type === ECategoryType.BUDGET)
-        .reduce((sum, { budget }) => sum - budget, this.monthlyBudget.total)
-    },
-    /**
-     * Total balance of account minus categories budget
-     */
-    roulement(): string {
-      const account = this.$store.getters['account/getCurrent'] as Account
-      if (account) {
-        let value = account.balance
-        const check = {
-          plannedCredit: false,
-          plannedDebit: false,
-        }
-        for (const { budget, balance, type } of this.categories as Category[]) {
-          switch (type) {
-            case ECategoryType.PLANNED_CREDIT:
-              value += budget - balance
-              check.plannedCredit = true
-              break
-            case ECategoryType.PLANNED_DEBIT:
-              value += balance - budget
-              check.plannedDebit = true
-              break
-            default:
-              value -= Math.max(budget - balance, 0)
-              break
-          }
-        }
-
-        if (check.plannedCredit && check.plannedDebit) {
-          return toLS(value)
-        }
-        return '-1'
-      }
-      return '-1'
-    },
   },
   methods: {
     /**
@@ -214,29 +147,6 @@ export default Vue.extend({
         id: categ.id,
       }
       // TODO: check if id usefull
-    },
-    /**
-     * Calculate usage ratio of a Category
-     *
-     * @param categ The category
-     * @param isPrimary If the 'OK' color should be primary
-     *
-     *
-     */
-    getCategRatioColor({ balance, budget }: Category, isPrimary = false) {
-      // TODO: Move in getter
-      const ratio = Math.abs(balance) / Math.abs(budget)
-      return {
-        color:
-          ratio < 0.5
-            ? isPrimary
-              ? 'primary'
-              : 'green'
-            : ratio <= 0.75
-            ? 'orange'
-            : 'red',
-        ratio,
-      }
     },
   },
 })

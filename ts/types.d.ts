@@ -35,8 +35,16 @@ interface Category extends FirestoreData {
   balance: number // float
   budget: number // float
   type: ECategoryType
+  computed: {
+    tooltip: string
+    usage: string
+    ratio: {
+      color: string
+      value: number
+    }
+  }
 }
-type InputCategory = Omit<Category, 'balance' | 'budget'> & {
+type InputCategory = Omit<Category, 'balance' | 'budget' | 'computed'> & {
   balance: string
   budget: string
 }
