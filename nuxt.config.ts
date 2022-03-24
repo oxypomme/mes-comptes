@@ -97,6 +97,7 @@ export default {
 
   firebase: {
     config: fireconfig,
+    onFirebaseHosting: process.env.NODE_ENV === 'production',
     services: {
       auth: {
         persistence: 'session',
