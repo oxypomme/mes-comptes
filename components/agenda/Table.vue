@@ -1,6 +1,6 @@
 <template>
   <div>
-    <AgendaEditionDialog v-model="editedValue" />
+    <AgendaDialogEdition v-model="editedValue" />
     <v-simple-table
       :dense="$vuetify.breakpoint.smAndDown"
       fixed-header
@@ -163,16 +163,13 @@
 <script lang="ts">
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
-import AgendaEditionDialog, {
-  EditedValue,
-} from './dialogs/AgendaEditionDialog.vue'
+import type { EditedValue } from './dialog/Edition.vue'
 import { toLS } from '~/ts/format'
 import type { AgendaRow } from '~/ts/types'
 
 type SortType = 'name' | 'category' | 'type'
 
 export default Vue.extend({
-  components: { AgendaEditionDialog },
   data: () => ({
     editedValue: null as EditedValue | null,
     sortType: 'type' as SortType,

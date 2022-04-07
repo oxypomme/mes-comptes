@@ -19,7 +19,6 @@
     "types": [
       "@nuxtjs/vuetify",
       "@nuxt/types",
-      "@nuxtjs/device",
       "@types/node",
       "@nuxtjs/firebase",
       "@nuxtjs/toast",

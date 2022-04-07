@@ -1,7 +1,7 @@
 <template>
   <div v-if="account">
-    <OperationEditionDialog v-model="operation" />
-    <OperationHistoryDialog v-model="historyDialog" />
+    <OperationDialogEdition v-model="operation" />
+    <OperationDialogHistory v-model="historyDialog" />
     <v-data-table
       :headers="headers"
       :items="operations"
@@ -71,13 +71,10 @@
 <script lang="ts">
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
-import OperationEditionDialog from './dialogs/OperationEditionDialog.vue'
-import OperationHistoryDialog from './dialogs/OperationHistoryDialog.vue'
 import { toLS } from '~/ts/format'
 import type { InputOperation, Operation } from '~/ts/types'
 
 export default Vue.extend({
-  components: { OperationEditionDialog, OperationHistoryDialog },
   data: () => ({
     selectedMonth: { label: 'Courant (1 mois)' },
     headers: [

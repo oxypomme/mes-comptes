@@ -1,6 +1,6 @@
 <template>
   <div>
-    <CategoryEditionDialog v-model="category" />
+    <CategoryDialogEdition v-model="category" />
     <v-card>
       <v-card-title>
         <span class="font-weight-light">Catégories</span>
@@ -86,11 +86,9 @@
 <script lang="ts">
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
-import CategoryEditionDialog from './dialogs/CategoryEditionDialog.vue'
 import type { InputCategory } from '~/ts/types'
 
 export default Vue.extend({
-  components: { CategoryEditionDialog },
   data: () => ({
     category: null as InputCategory | null,
   }),

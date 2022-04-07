@@ -1,6 +1,6 @@
 <template>
   <div>
-    <AccountEditionDialog v-model="account" />
+    <AccountDialogEdition v-model="account" />
     <v-card>
       <v-card-title>
         <span class="font-weight-light">Comptes</span>
@@ -71,12 +71,10 @@
 <script lang="ts">
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
-import AccountEditionDialog from './dialogs/AccountEditionDialog.vue'
 import type { Account, InputAccount } from '~/ts/types'
 import { toLS } from '~/ts/format'
 
 export default Vue.extend({
-  components: { AccountEditionDialog },
   data: () => ({
     selectedItem: undefined,
     account: null as InputAccount | null,

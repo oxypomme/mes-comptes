@@ -10,7 +10,7 @@
           </v-col>
           <v-col>
             <v-card>
-              <AuthSettings />
+              <SettingsAuth />
             </v-card>
           </v-col>
         </v-row>
