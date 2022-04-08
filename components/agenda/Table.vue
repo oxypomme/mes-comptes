@@ -82,7 +82,7 @@
               :class="[
                 'text-center',
                 'text-capitalize',
-                currentMonth === monthIndex && 'activeMonth',
+                currentMonth.value === monthIndex - 1 && 'activeMonth',
               ]"
             >
               {{ month(monthIndex).label }}
@@ -95,7 +95,7 @@
               :key="'value' + monthIndex"
               :class="[
                 'text-center',
-                currentMonth === monthIndex && 'activeMonth',
+                currentMonth.value === monthIndex - 1 && 'activeMonth',
               ]"
             >
               <v-chip
@@ -142,7 +142,7 @@
               :key="item.name + '_month' + monthIndex"
               :class="[
                 'text-center',
-                currentMonth === monthIndex + 1 && 'activeMonth',
+                currentMonth.value === monthIndex && 'activeMonth',
               ]"
             >
               <span class="hoverable" @click="open(item, monthIndex, value)">
@@ -175,14 +175,8 @@ export default Vue.extend({
     ...mapGetters({
       month: 'agenda/getMonth',
       loading: 'agenda/getLoadingState',
+      currentMonth: 'getCurrentMonth',
     }),
-    /**
-     * Get current month
-     */
-    currentMonth(): number {
-      const { resetDate } = this.$store.getters.getSettings
-      return resetDate?.toDate().getMonth() ?? new Date().getMonth()
-    },
     /**
      * User's agenda
      *

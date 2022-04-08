@@ -46,13 +46,13 @@ const actions: ActionTree<OperationState, RootState> = {
         cref = ref.collection('categories').doc(category)
 
       // Setting date at 00:00 to avoid weird sort
-      date.setHours(0, 0, 0, 0)
+      date.startOf('day')
 
       const ope = await ref.collection('operations').add({
         name,
         amount: amnt,
         category: cref,
-        date: date && this.$fireModule.firestore.Timestamp.fromDate(date),
+        date: date && date.toFire(),
         createdAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
       } as Operation & { createdAt: firebase.firestore.FieldValue })
 
@@ -106,7 +106,7 @@ const actions: ActionTree<OperationState, RootState> = {
           name,
           amount: amnt,
           category: category ? cref.doc(category) : null,
-          date: date && this.$fireModule.firestore.Timestamp.fromDate(date),
+          date: date && date.toFire(),
           updatedAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
         } as Operation & { updatedAt: firebase.firestore.FieldValue })
 
@@ -159,7 +159,7 @@ const actions: ActionTree<OperationState, RootState> = {
   getOperations: firestoreAction(async function (
     this: Store<RootState>,
     { rootGetters, bindFirestoreRef, commit },
-    { month, year }: { month?: number; year?: number }
+    { value: date }: { value?: dayjs.Dayjs }
   ) {
     commit('SET_LOADING', true)
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
@@ -180,11 +180,8 @@ const actions: ActionTree<OperationState, RootState> = {
 
     const oref = ref.collection('operations')
 
-    let last = dayjs().add(1, 'day')
-    if (month && year) {
-      last = dayjs(`1/${month + 1}/${year}`, 'D/M/YYYY')
-    }
-    const first = last.subtract(1, 'month')
+    const last = date ? date.add(1, 'month') : dayjs()
+    const first = date ?? last.subtract(1, 'month')
 
     const docref = oref
       .where(

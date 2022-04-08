@@ -1,4 +1,5 @@
 import type { ActionTree } from 'vuex'
+import dayjs from 'dayjs'
 import type { RootState } from '../state'
 import type { AuthState } from './state'
 import type firebase from 'firebase'
@@ -46,13 +47,11 @@ const actions: ActionTree<AuthState, RootState> = {
       throw new Error('Une erreur est survenue lors de la création du compte')
     }
 
-    const date = new Date()
+    const date = dayjs().startOf('month')
 
     const ref = this.$fire.firestore.collection('users').doc(user.uid)
     await ref.set({
-      resetDate: this.$fireModule.firestore.Timestamp.fromDate(
-        new Date(date.getFullYear(), date.getMonth(), 1)
-      ),
+      resetDate: date.toFire(),
       createdAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
     })
     return dispatch(

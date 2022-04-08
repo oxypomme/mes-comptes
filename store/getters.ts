@@ -24,36 +24,29 @@ const getters: GetterTree<RootState, RootState> = {
    * Number of weeks in current month
    */
   getWeekCount: (state) => {
-    let resetDate = new Date()
+    let resetDate = dayjs()
     if (state.settings.resetDate) {
-      resetDate = state.settings.resetDate.toDate()
+      resetDate = dayjs(state.settings.resetDate.toDate())
     } else {
-      resetDate.setMonth(resetDate.getMonth() + 1)
+      resetDate = resetDate.add(1, 'month')
     }
-    const prevResetDate = new Date(resetDate)
-    prevResetDate.setMonth(prevResetDate.getMonth() - 1)
-
-    const count = Math.round(
-      // W * D * m * s * ms
-      (resetDate.getTime() - prevResetDate.getTime()) /
-        (7 * 24 * 60 * 60 * 1000)
-    )
-
-    return count
+    return resetDate.diff(resetDate.subtract(1, 'month'), 'week')
   },
-  getAvailableMonths: (
-    state
-  ): { month?: number; year?: number; label: string }[] => {
+  /**
+   * Get months since account creations
+   *
+   * @param state The state
+   * @returns The months
+   */
+  getAvailableMonths: (state): { value?: dayjs.Dayjs; label: string }[] => {
     const today = dayjs()
-    const months: { month: number; year: number; label: string }[] = []
+    const months: { value: dayjs.Dayjs; label: string }[] = []
 
     let date = dayjs(state.settings.createdAt?.toDate() ?? undefined)
     while (date.isBefore(today)) {
-      const label = date.format('MMMM YYYY')
       months.push({
-        month: date.month() + 1,
-        year: date.year(),
-        label: label.charAt(0).toUpperCase() + label.slice(1),
+        value: date,
+        label: date.format('MMMM YYYY'),
       })
       date = date.add(1, 'month')
     }
@@ -64,6 +57,20 @@ const getters: GetterTree<RootState, RootState> = {
       },
       ...months.reverse(),
     ]
+  },
+  /**
+   * Return the current month based on resetDate
+   *
+   * @param state The state
+   * @returns The month label and value (month id, 0-11)
+   */
+  getCurrentMonth: (state) => {
+    const resetDate = state.settings.resetDate?.toDate()
+    const date = resetDate ? dayjs(resetDate).subtract(1, 'month') : dayjs()
+    return {
+      label: date.format('MMMM'),
+      value: date.month(),
+    }
   },
 }
 

@@ -1,4 +1,5 @@
 import type { GetterTree } from 'vuex'
+import dayjs from 'dayjs'
 import type { RootState } from '../state'
 import type { AgendaState } from './state'
 import type { AgendaRow } from '~/ts/types'
@@ -32,8 +33,9 @@ const getters: GetterTree<AgendaState, RootState> = {
       month: number // in range 1-12
     ) => {
       const rows: AgendaRow[] = getters.getAgenda
-      const resetDate: Date =
-        getters.getSettings?.resetDate.toDate() ?? new Date()
+      let resetDate = dayjs(
+        getters.getSettings?.resetDate.toDate() ?? undefined
+      )
 
       const debit = rows
         .filter(({ modifier }) => modifier === -1)
@@ -41,17 +43,16 @@ const getters: GetterTree<AgendaState, RootState> = {
       const credit = rows
         .filter(({ modifier }) => modifier === 1)
         .reduce(agendaMonthReducer(month), 0)
+
+      if (month < resetDate.month()) {
+        resetDate = resetDate.add(1, 'year')
+      }
+
       return {
         debit,
         credit,
         total: credit - debit,
-        label: new Date(
-          +resetDate.getFullYear() + +(month < resetDate.getMonth()),
-          month - 1
-        ).toLocaleDateString('fr', {
-          month: 'long',
-          year: 'numeric',
-        }),
+        label: resetDate.set('month', month - 1).format('MMMM YYYY'),
       }
     },
   /**
@@ -62,10 +63,11 @@ const getters: GetterTree<AgendaState, RootState> = {
    * @returns A function to get the budget
    */
   getCurrent: (_, getters) => {
-    const resetDate: Date =
-      getters.getSettings?.resetDate.toDate() ?? new Date()
+    const resetDate = dayjs(
+      getters.getSettings?.resetDate.toDate() ?? undefined
+    )
 
-    return getters.getMonth(resetDate.getMonth() + 1)
+    return getters.getMonth(resetDate.month())
   },
   /**
    * Get the loading state

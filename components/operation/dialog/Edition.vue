@@ -166,7 +166,7 @@ export default Vue.extend({
       amount: '',
       category: null,
       modifier: -1 as ValueModifier,
-      date: new Date(),
+      date: dayjs(),
     },
     operation: {} as InputOperation,
   }),
@@ -201,14 +201,15 @@ export default Vue.extend({
      */
     date: {
       get(): string {
-        return dayjs(this.operation.date).format('YYYY-M-D')
+        const date = this.operation.date ?? dayjs()
+        return date.format('YYYY-M-D')
       },
       set(newValue: string) {
-        this.operation.date = dayjs(newValue, 'YYYY-M-D').toDate()
+        this.operation.date = dayjs(newValue, 'YYYY-M-D')
       },
     },
     formatedDate(): string {
-      return this.operation?.date?.toLocaleDateString()
+      return (this.operation?.date ?? dayjs()).format('DD/MM/YYYY')
     },
     /**
      * Dialog toggle

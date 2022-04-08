@@ -7,7 +7,6 @@
       :items="operations"
       :items-per-page="itemsPerPage"
       :loading="loading"
-      :search="search"
       class="elevation-1"
       :footer-props="{
         itemsPerPageOptions: itemsPerPageOptions,
@@ -27,7 +26,7 @@
             :dense="$vuetify.breakpoint.smAndDown"
           >
             <v-toolbar-title class="font-weight-light">
-              Opérations
+              Opérations - {{ currentMonth.label }}
             </v-toolbar-title>
             <v-spacer></v-spacer>
             <v-btn icon @click="historyDialog = true">
@@ -74,6 +73,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
+import dayjs from '~/ts/dayjs'
 import { toLS } from '~/ts/format'
 import type { InputOperation, Operation } from '~/ts/types'
 
@@ -100,6 +100,7 @@ export default Vue.extend({
       account: 'account/getCurrent',
       ops: 'operations/getOperations',
       loading: 'operations/getLoadingState',
+      currentMonth: 'getCurrentMonth',
     }),
     /**
      * Max items per page
@@ -166,7 +167,7 @@ export default Vue.extend({
     showEdit(item: Operation) {
       this.operation = {
         ...item,
-        date: item.date?.toDate(),
+        date: dayjs(item.date?.toMillis()),
         amount: Math.abs(item.amount).toFixed(2),
         modifier: item.amount > 0 ? 1 : -1,
         id: item.id,

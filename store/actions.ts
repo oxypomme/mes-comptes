@@ -24,8 +24,8 @@ const actions: ActionTree<RootState, RootState> = {
     const ref = this.$fire.firestore.collection('users').doc(uid)
     return ref.set(
       {
-        resetDate: this.$fireModule.firestore.Timestamp.fromDate(resetDate),
-        lightTheme,
+        resetDate: resetDate.toFire(),
+        lightTheme: lightTheme ?? false,
       },
       { merge: true }
     )
