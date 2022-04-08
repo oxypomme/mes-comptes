@@ -60,7 +60,7 @@ const getters: GetterTree<AgendaState, RootState> = {
    *
    * @param _ The state
    * @param getters The other getters
-   * @returns A function to get the budget
+   * @returns The current month data
    */
   getCurrent: (_, getters) => {
     const resetDate = dayjs(
@@ -68,6 +68,21 @@ const getters: GetterTree<AgendaState, RootState> = {
     )
 
     return getters.getMonth(resetDate.month())
+  },
+  /**
+   * Get the row names. Used for autocompletion.
+   *
+   * @param _state The state
+   * @param getters The other getters
+   * @param _rootState The root state
+   * @param rootGetters The root getters
+   * @returns The row names
+   */
+  getAgendaRowNames: (_state, getters, _rootState, rootGetters) => {
+    const { label: currentMonth } = rootGetters.getCurrentMonth
+    return (getters.getAgenda as AgendaRow[]).map(
+      ({ name }) => `${name} - ${currentMonth}`
+    )
   },
   /**
    * Get the loading state

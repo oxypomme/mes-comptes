@@ -180,7 +180,7 @@ const actions: ActionTree<OperationState, RootState> = {
 
     const oref = ref.collection('operations')
 
-    const last = date ? date.add(1, 'month') : dayjs()
+    const last = (date ? date.add(1, 'month') : dayjs()).add(1, 'day')
     const first = date ?? last.subtract(1, 'month')
 
     const docref = oref

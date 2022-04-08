@@ -36,6 +36,7 @@
                       persistent-hint
                       readonly
                       :rules="rules.date"
+                      :dense="$vuetify.breakpoint.smAndDown"
                       v-bind="attrs"
                       v-on="on"
                     ></v-text-field>
@@ -51,14 +52,16 @@
                 </v-menu>
               </v-col>
               <v-col>
-                <v-text-field
+                <v-combobox
                   v-model="operation.name"
+                  hide-no-data
                   label="Nom"
+                  :items="agendaRowNames"
                   required
                   :dense="$vuetify.breakpoint.smAndDown"
                   :rules="rules.name"
                 >
-                </v-text-field>
+                </v-combobox>
               </v-col>
             </v-row>
             <v-row>
@@ -173,6 +176,7 @@ export default Vue.extend({
   computed: {
     ...mapGetters({
       loading: 'operations/getLoadingState',
+      agendaRowNames: 'agenda/getAgendaRowNames',
     }),
     /**
      * Options for select categories

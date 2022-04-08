@@ -7,9 +7,7 @@
         <span class="last-item">
           <v-chip
             :small="$vuetify.breakpoint.smAndDown"
-            :color="
-              totalBalance > 100 ? 'green' : totalBalance > 0 ? 'orange' : 'red'
-            "
+            :color="totalBalanceColor"
           >
             {{ toLS(totalBalance) }}
           </v-chip>
@@ -33,13 +31,7 @@
             <v-list-item-icon>
               <v-chip
                 :small="$vuetify.breakpoint.smAndDown"
-                :color="
-                  acc.balance > 100
-                    ? 'green'
-                    : acc.balance > 0
-                    ? 'orange'
-                    : 'red'
-                "
+                :color="accountColor(acc)"
               >
                 {{ toLS(acc.balance) }}
               </v-chip>
@@ -83,6 +75,16 @@ export default Vue.extend({
     ...mapGetters({
       loading: 'account/getLoadingState',
     }),
+    /**
+     *
+     */
+    totalBalanceColor(): string {
+      return this.totalBalance > 100
+        ? 'green'
+        : this.totalBalance > 0
+        ? 'orange'
+        : 'red'
+    },
     /**
      * The sub-accounts of the user
      */
@@ -149,6 +151,9 @@ export default Vue.extend({
     showEdit(i: number) {
       const acc = this.accounts[i]
       this.account = { ...acc, balance: acc.balance.toFixed(2), id: acc.id }
+    },
+    accountColor({ balance }: Account): string {
+      return balance > 100 ? 'green' : balance > 0 ? 'orange' : 'red'
     },
   },
 })
