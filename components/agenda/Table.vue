@@ -1,11 +1,7 @@
 <template>
   <div>
     <AgendaDialogEdition v-model="editedValue" />
-    <v-simple-table
-      :dense="$vuetify.breakpoint.smAndDown"
-      fixed-header
-      height="77vh"
-    >
+    <v-simple-table :dense="$vuetify.breakpoint.smAndDown">
       <template #top>
         <div>
           <v-toolbar

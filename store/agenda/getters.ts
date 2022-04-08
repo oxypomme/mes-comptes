@@ -61,7 +61,12 @@ const getters: GetterTree<AgendaState, RootState> = {
    * @param getters The other getters
    * @returns A function to get the budget
    */
-  getCurrent: (_, getters) => getters.getMonth(new Date().getMonth() + 1),
+  getCurrent: (_, getters) => {
+    const resetDate: Date =
+      getters.getSettings?.resetDate.toDate() ?? new Date()
+
+    return getters.getMonth(resetDate.getMonth() + 1)
+  },
   /**
    * Get the loading state
    *

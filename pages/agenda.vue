@@ -1,10 +1,6 @@
 <template>
   <v-container>
-    <v-row justify="center">
-      <v-col>
-        <AgendaTable />
-      </v-col>
-    </v-row>
+    <AgendaTable />
   </v-container>
 </template>
 

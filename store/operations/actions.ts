@@ -45,6 +45,9 @@ const actions: ActionTree<OperationState, RootState> = {
       if (category && typeof category === 'string')
         cref = ref.collection('categories').doc(category)
 
+      // Setting date at 00:00 to avoid weird sort
+      date.setHours(0, 0, 0, 0)
+
       const ope = await ref.collection('operations').add({
         name,
         amount: amnt,
@@ -194,8 +197,6 @@ const actions: ActionTree<OperationState, RootState> = {
         '<=',
         this.$fireModule.firestore.Timestamp.fromDate(last.toDate())
       )
-      .orderBy('date', 'desc')
-      .orderBy('createdAt', 'desc')
 
     const bind = await bindFirestoreRef('data', docref, {
       serialize: (doc) => {

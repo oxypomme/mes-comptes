@@ -7,12 +7,15 @@
       :items="operations"
       :items-per-page="itemsPerPage"
       :loading="loading"
+      :search="search"
       class="elevation-1"
       :footer-props="{
         itemsPerPageOptions: itemsPerPageOptions,
         itemsPerPageText: 'Lignes par page:',
         itemsPerPageAll: 'Toutes',
       }"
+      :sort-by="['date', 'createdAt']"
+      :sort-desc="[true, true]"
       :dense="$vuetify.breakpoint.smAndDown"
     >
       <template #top>
@@ -82,7 +85,6 @@ export default Vue.extend({
         text: 'Date',
         align: 'start',
         value: 'date',
-        sortable: false,
       },
       { text: 'Titre', value: 'name', sortable: false },
       { text: 'Type', value: 'type', sortable: false },
