@@ -86,6 +86,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
+import { escapeHTML } from '~/ts/format'
 import type { InputCategory } from '~/ts/types'
 
 export default Vue.extend({
@@ -108,7 +109,9 @@ export default Vue.extend({
      */
     async deleteCategory(i: number) {
       const res = await this.$dialog.confirm({
-        text: `Voulez-vous supprimer la catégorie "${this.categories[i].name}" ?<br/>(cela ne supprimera pas les opérations liées)`,
+        text: `Voulez-vous supprimer la catégorie "${escapeHTML(
+          this.categories[i].name
+        )}" ?<br/>(cela ne supprimera pas les opérations liées)`,
         title: 'Attention',
         actions: {
           false: {

@@ -64,7 +64,7 @@
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
 import type { Account, InputAccount } from '~/ts/types'
-import { toLS } from '~/ts/format'
+import { toLS, escapeHTML } from '~/ts/format'
 
 export default Vue.extend({
   data: () => ({
@@ -118,7 +118,9 @@ export default Vue.extend({
      */
     async deleteAccount(i: number) {
       const res = await this.$dialog.confirm({
-        text: `Voulez-vous supprimer le compte "${this.accounts[i].name}" ?`,
+        text: `Voulez-vous supprimer le compte "${escapeHTML(
+          this.accounts[i].name
+        )}" ?`,
         title: 'Attention',
         actions: {
           false: {

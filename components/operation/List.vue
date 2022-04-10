@@ -74,7 +74,7 @@
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
 import dayjs from '~/ts/dayjs'
-import { toLS } from '~/ts/format'
+import { escapeHTML, toLS } from '~/ts/format'
 import type { InputOperation, Operation } from '~/ts/types'
 
 export default Vue.extend({
@@ -137,9 +137,9 @@ export default Vue.extend({
      */
     async deleteOperation(id: string) {
       const res = await this.$dialog.confirm({
-        text: `Voulez-vous supprimer l'opération "${
+        text: `Voulez-vous supprimer l'opération "${escapeHTML(
           this.operations.find(({ id: oid }) => id === oid)?.name
-        }" ?`,
+        )}" ?`,
         title: 'Attention',
         actions: {
           false: {

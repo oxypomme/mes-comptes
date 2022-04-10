@@ -16,3 +16,17 @@ export const toLS = (
     currency: 'EUR',
     ...options,
   })
+
+const tagsToReplace: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+}
+export const escapeHTML = (value?: string) => {
+  if (value) {
+    return value.replace(/[&<>]/g, (tag) => {
+      return tagsToReplace[tag] || tag
+    })
+  }
+  return value
+}
