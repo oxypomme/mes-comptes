@@ -23,7 +23,6 @@
                   typeof editedValue.field === 'number' ? 'number' : 'text'
                 "
                 required
-                class="text-capitalize"
                 :dense="$vuetify.breakpoint.smAndDown"
               >
               </v-text-field>
@@ -44,6 +43,7 @@
               <v-checkbox
                 v-model="editedValue.applyToAll"
                 label="Appliquer à tous"
+                :dense="$vuetify.breakpoint.smAndDown"
               ></v-checkbox>
             </v-row>
           </v-container>
@@ -113,6 +113,14 @@ export default Vue.extend({
       loading: 'agenda/getLoadingState',
     }),
     /**
+     * Current row names
+     */
+    rowNames(): { id: AgendaRow['id']; name: AgendaRow['name'] }[] {
+      return (this.$store.getters['agenda/getAgenda'] as AgendaRow[]).map(
+        ({ id, name }) => ({ id, name })
+      )
+    },
+    /**
      * Dialog toggle
      */
     show: {
@@ -128,7 +136,17 @@ export default Vue.extend({
      */
     editedRules(): ((v: string) => true | string)[] {
       if (typeof this.editedValue.field === 'string') {
-        return [(v) => !!v || 'Une valeur est requise']
+        const rules = [(v: string) => !!v || 'Une valeur est requise']
+        if (this.editedValue.field === 'name') {
+          return [
+            ...rules,
+            (v) =>
+              this.rowNames.find(
+                ({ id, name }) => id !== this.editedValue.id && v === name
+              ) === undefined || 'Ce nom est déjà utilisé par une autre ligne',
+          ]
+        }
+        return rules
       } else {
         return [
           (v) => !!v || 'Un montant est requis',

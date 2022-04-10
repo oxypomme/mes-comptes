@@ -60,6 +60,7 @@
                   required
                   :dense="$vuetify.breakpoint.smAndDown"
                   :rules="rules.name"
+                  @change="onAutocompleteSelection"
                 >
                 </v-combobox>
               </v-col>
@@ -131,7 +132,12 @@ import Vue from 'vue'
 import { mapGetters } from 'vuex'
 import dayjs from '~/ts/dayjs'
 import { ECategoryType } from '~/ts/ECategoryType'
-import type { ValueModifier, InputOperation, Category } from '~/ts/types'
+import type {
+  ValueModifier,
+  InputOperation,
+  Category,
+  AgendaRow,
+} from '~/ts/types'
 import type { VForm, VMenu } from '~/ts/components'
 
 export default Vue.extend({
@@ -237,6 +243,33 @@ export default Vue.extend({
     },
   },
   methods: {
+    /**
+     * Set type and category by searching in autocompletion data
+     */
+    onAutocompleteSelection(value: string) {
+      // If value is an agenda row
+      const agendaRowNames = this.agendaRowNames as string[]
+      if (agendaRowNames.includes(value)) {
+        // Getting agenda row
+        const rowIndex = agendaRowNames.findIndex((s) => s === value)
+        const agendaRow = {
+          ...this.$store.getters['agenda/getAgenda'][rowIndex],
+        } as AgendaRow
+        // Setting modifier
+        this.operation.modifier = agendaRow.modifier
+        // Setting category
+        const categType =
+          agendaRow.modifier > 0
+            ? ECategoryType.PLANNED_CREDIT
+            : ECategoryType.PLANNED_DEBIT
+        this.operation.category =
+          this.selectCategories.find(({ type }) => type === categType)?.id ??
+          null
+        // Setting value
+        const currentMonth = this.$store.getters.getCurrentMonth.value as number
+        this.operation.amount = agendaRow.values[currentMonth].toString()
+      }
+    },
     /**
      * Form validation
      */
