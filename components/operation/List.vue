@@ -1,7 +1,7 @@
 <template>
   <div v-if="account">
-    <OperationEditionDialog v-model="operation" />
-    <OperationHistoryDialog v-model="historyDialog" />
+    <OperationDialogEdition v-model="operation" />
+    <OperationDialogHistory v-model="historyDialog" />
     <v-data-table
       :headers="headers"
       :items="operations"
@@ -13,6 +13,8 @@
         itemsPerPageText: 'Lignes par page:',
         itemsPerPageAll: 'Toutes',
       }"
+      :sort-by="['date', 'createdAt']"
+      :sort-desc="[true, true]"
       :dense="$vuetify.breakpoint.smAndDown"
     >
       <template #top>
@@ -24,7 +26,7 @@
             :dense="$vuetify.breakpoint.smAndDown"
           >
             <v-toolbar-title class="font-weight-light">
-              Opérations
+              Opérations - {{ currentMonth.label }}
             </v-toolbar-title>
             <v-spacer></v-spacer>
             <v-btn icon @click="historyDialog = true">
@@ -71,13 +73,11 @@
 <script lang="ts">
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
-import OperationEditionDialog from './dialogs/OperationEditionDialog.vue'
-import OperationHistoryDialog from './dialogs/OperationHistoryDialog.vue'
-import { toLS } from '~/ts/format'
+import dayjs from '~/ts/dayjs'
+import { escapeHTML, toLS } from '~/ts/format'
 import type { InputOperation, Operation } from '~/ts/types'
 
 export default Vue.extend({
-  components: { OperationEditionDialog, OperationHistoryDialog },
   data: () => ({
     selectedMonth: { label: 'Courant (1 mois)' },
     headers: [
@@ -85,7 +85,6 @@ export default Vue.extend({
         text: 'Date',
         align: 'start',
         value: 'date',
-        sortable: false,
       },
       { text: 'Titre', value: 'name', sortable: false },
       { text: 'Type', value: 'type', sortable: false },
@@ -101,6 +100,7 @@ export default Vue.extend({
       account: 'account/getCurrent',
       ops: 'operations/getOperations',
       loading: 'operations/getLoadingState',
+      currentMonth: 'getCurrentMonth',
     }),
     /**
      * Max items per page
@@ -137,9 +137,9 @@ export default Vue.extend({
      */
     async deleteOperation(id: string) {
       const res = await this.$dialog.confirm({
-        text: `Voulez-vous supprimer l'opération "${
+        text: `Voulez-vous supprimer l'opération "${escapeHTML(
           this.operations.find(({ id: oid }) => id === oid)?.name
-        }" ?`,
+        )}" ?`,
         title: 'Attention',
         actions: {
           false: {
@@ -167,7 +167,7 @@ export default Vue.extend({
     showEdit(item: Operation) {
       this.operation = {
         ...item,
-        date: item.date?.toDate(),
+        date: dayjs(item.date?.toMillis()),
         amount: Math.abs(item.amount).toFixed(2),
         modifier: item.amount > 0 ? 1 : -1,
         id: item.id,

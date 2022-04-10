@@ -71,7 +71,7 @@ export default Vue.extend({
     valid: false,
     menu: false,
     loading: false,
-    rawDate: new Date(),
+    rawDate: dayjs(),
   }),
   computed: {
     settings(): SettingsState {
@@ -82,17 +82,17 @@ export default Vue.extend({
         return dayjs(this.rawDate).format('YYYY-M-D')
       },
       set(newValue: string) {
-        this.rawDate = dayjs(newValue, 'YYYY-M-D').toDate()
+        this.rawDate = dayjs(newValue, 'YYYY-M-D')
       },
     },
-    formatedDate() {
-      return this.rawDate.toLocaleDateString()
+    formatedDate(): string {
+      return this.rawDate.format('DD/MM/YYYY')
     },
     /**
      * Minimal date for Date picker
      */
     minDate(): string {
-      return dayjs(this.settings?.resetDate.toDate() ?? new Date())
+      return dayjs(this.settings?.resetDate.toDate() ?? undefined)
         .startOf('month')
         .format('YYYY-MM-DD')
     },
@@ -104,7 +104,7 @@ export default Vue.extend({
     },
   },
   mounted() {
-    this.rawDate = this.settings.resetDate.toDate()
+    this.rawDate = dayjs(this.settings.resetDate.toDate())
   },
   methods: {
     /**

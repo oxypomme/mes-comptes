@@ -1,74 +1,13 @@
 <template>
   <div>
-    <v-dialog v-model="dialog" width="500">
-      <v-card>
-        <v-form v-model="valid" @submit="createAccount">
-          <v-toolbar elevation="0" dense>
-            <v-toolbar-title>
-              {{ account.id ? 'Editer' : 'Créer' }} un compte
-            </v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-btn icon color="grey" small plain @click="dialog = false">
-              <v-icon>mdi-close</v-icon>
-            </v-btn>
-          </v-toolbar>
-
-          <v-card-text>
-            <v-container>
-              <v-row>
-                <v-col>
-                  <v-text-field
-                    v-model="account.name"
-                    label="Nom du compte"
-                    required
-                    :dense="$vuetify.breakpoint.smAndDown"
-                  >
-                  </v-text-field>
-                </v-col>
-              </v-row>
-              <v-row>
-                <v-col>
-                  <v-text-field
-                    v-model="account.balance"
-                    label="Solde du compte"
-                    type="number"
-                    prefix="€"
-                    :dense="$vuetify.breakpoint.smAndDown"
-                  >
-                  </v-text-field>
-                </v-col>
-              </v-row>
-            </v-container>
-          </v-card-text>
-
-          <v-divider></v-divider>
-
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="error" text @click="dialog = false"> Annuler </v-btn>
-            <v-btn
-              color="success"
-              :loading="loading"
-              :disabled="!valid"
-              text
-              type="submit"
-              :dense="$vuetify.breakpoint.smAndDown"
-            >
-              Valider
-            </v-btn>
-          </v-card-actions>
-        </v-form>
-      </v-card>
-    </v-dialog>
+    <AccountDialogEdition v-model="account" />
     <v-card>
       <v-card-title>
         <span class="font-weight-light">Comptes</span>
         <span class="last-item">
           <v-chip
             :small="$vuetify.breakpoint.smAndDown"
-            :color="
-              totalBalance > 100 ? 'green' : totalBalance > 0 ? 'orange' : 'red'
-            "
+            :color="totalBalanceColor"
           >
             {{ toLS(totalBalance) }}
           </v-chip>
@@ -76,7 +15,7 @@
             icon
             color="success"
             :small="$vuetify.breakpoint.smAndDown"
-            @click="showNew"
+            @click="account = undefined"
           >
             <v-icon>mdi-plus</v-icon>
           </v-btn>
@@ -92,13 +31,7 @@
             <v-list-item-icon>
               <v-chip
                 :small="$vuetify.breakpoint.smAndDown"
-                :color="
-                  acc.balance > 100
-                    ? 'green'
-                    : acc.balance > 0
-                    ? 'orange'
-                    : 'red'
-                "
+                :color="accountColor(acc)"
               >
                 {{ toLS(acc.balance) }}
               </v-chip>
@@ -129,23 +62,29 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import { mapGetters } from 'vuex'
 import type { Account, InputAccount } from '~/ts/types'
-import { toLS } from '~/ts/format'
+import { toLS, escapeHTML } from '~/ts/format'
 
 export default Vue.extend({
   data: () => ({
     selectedItem: undefined,
-    initAccount: {
-      id: undefined as string | undefined,
-      name: '',
-      balance: '0',
-    },
-    account: {} as InputAccount,
-    valid: true,
-    dialog: false,
-    loading: false,
+    account: null as InputAccount | null,
   }),
   computed: {
+    ...mapGetters({
+      loading: 'account/getLoadingState',
+    }),
+    /**
+     *
+     */
+    totalBalanceColor(): string {
+      return this.totalBalance > 100
+        ? 'green'
+        : this.totalBalance > 0
+        ? 'orange'
+        : 'red'
+    },
     /**
      * The sub-accounts of the user
      */
@@ -174,34 +113,14 @@ export default Vue.extend({
   methods: {
     toLS,
     /**
-     * Create sub account
-     */
-    async createAccount(e: Event) {
-      e.preventDefault()
-      if (this.valid) {
-        this.loading = true
-        try {
-          if (this.account.id) {
-            await this.$store.dispatch('account/editAccount', this.account)
-            this.$toast.global.success('Compte edité')
-          } else {
-            await this.$store.dispatch('account/createAccount', this.account)
-            this.$toast.global.success('Compte créé')
-          }
-        } catch (e) {
-          this.$toast.global.error((e as Error).message)
-        }
-        this.dialog = false
-        this.loading = false
-      }
-    },
-    /**
      * Delete sub account
      * @param i The index in `this.accounts`
      */
     async deleteAccount(i: number) {
       const res = await this.$dialog.confirm({
-        text: `Voulez-vous supprimer le compte "${this.accounts[i].name}" ?`,
+        text: `Voulez-vous supprimer le compte "${escapeHTML(
+          this.accounts[i].name
+        )}" ?`,
         title: 'Attention',
         actions: {
           false: {
@@ -216,7 +135,6 @@ export default Vue.extend({
       })
 
       if (res) {
-        this.loading = true
         try {
           await this.$store.dispatch(
             'account/deleteAccount',
@@ -226,26 +144,18 @@ export default Vue.extend({
         } catch (e) {
           this.$toast.global.error((e as Error).message)
         }
-        this.loading = false
       }
-    },
-    /**
-     * Show popup for adding a new sub account
-     */
-    showNew() {
-      // this.valid = false
-      this.account = { ...this.initAccount }
-      this.dialog = true
     },
     /**
      * Show popup for editing a sub account
      * @param i The index in `this.accounts`
      */
     showEdit(i: number) {
-      this.valid = true
       const acc = this.accounts[i]
       this.account = { ...acc, balance: acc.balance.toFixed(2), id: acc.id }
-      this.dialog = true
+    },
+    accountColor({ balance }: Account): string {
+      return balance > 100 ? 'green' : balance > 0 ? 'orange' : 'red'
     },
   },
 })

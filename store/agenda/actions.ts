@@ -15,23 +15,31 @@ const actions: ActionTree<AgendaState, RootState> = {
    * @param context Vuex context
    * @returns The promise of creation
    */
-  createEntry({ rootGetters }) {
-    const uid = (rootGetters['auth/getUser'] as User | null)?.uid
-    if (!uid) {
-      throw new Error('Vous devez être connecté pour effectuer cette action')
-    }
+  async createEntry({ rootGetters, commit }) {
+    commit('SET_LOADING', true)
+    try {
+      const uid = (rootGetters['auth/getUser'] as User | null)?.uid
+      if (!uid) {
+        throw new Error('Vous devez être connecté pour effectuer cette action')
+      }
 
-    const ref = this.$fire.firestore
-      .collection('users')
-      .doc(uid)
-      .collection('agenda')
-    return ref.add({
-      name: 'Nom',
-      category: 'Catégorie',
-      modifier: -1,
-      values: Array(12).fill(0),
-      createdAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
-    } as AgendaRow & { createdAt: firebase.firestore.FieldValue })
+      const ref = this.$fire.firestore
+        .collection('users')
+        .doc(uid)
+        .collection('agenda')
+      const row = await ref.add({
+        name: 'Nom',
+        category: 'Catégorie',
+        modifier: -1,
+        values: Array(12).fill(0),
+        createdAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
+      } as AgendaRow & { createdAt: firebase.firestore.FieldValue })
+      commit('SET_LOADING', false)
+      return row
+    } catch (error) {
+      commit('SET_LOADING', false)
+      throw error
+    }
   },
   /**
    * Update a row for the authed user
@@ -40,8 +48,8 @@ const actions: ActionTree<AgendaState, RootState> = {
    * @param row The representation of a row
    * @returns The promise of edition
    */
-  updateEntry(
-    { rootGetters },
+  async updateEntry(
+    { rootGetters, commit },
     {
       id,
       property,
@@ -52,20 +60,27 @@ const actions: ActionTree<AgendaState, RootState> = {
       value: AgendaRow[keyof AgendaRow]
     }
   ) {
-    const uid = (rootGetters['auth/getUser'] as User | null)?.uid
-    if (!uid) {
-      throw new Error('Vous devez être connecté pour effectuer cette action')
-    }
+    commit('SET_LOADING', true)
+    try {
+      const uid = (rootGetters['auth/getUser'] as User | null)?.uid
+      if (!uid) {
+        throw new Error('Vous devez être connecté pour effectuer cette action')
+      }
 
-    const ref = this.$fire.firestore
-      .collection('users')
-      .doc(uid)
-      .collection('agenda')
-      .doc(id)
-    return ref.update({
-      [property]: value,
-      updatedAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
-    } as Partial<AgendaRow> & { updatedAt: firebase.firestore.FieldValue })
+      const ref = this.$fire.firestore
+        .collection('users')
+        .doc(uid)
+        .collection('agenda')
+        .doc(id)
+      await ref.update({
+        [property]: value,
+        updatedAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
+      } as Partial<AgendaRow> & { updatedAt: firebase.firestore.FieldValue })
+      commit('SET_LOADING', false)
+    } catch (error) {
+      commit('SET_LOADING', false)
+      throw error
+    }
   },
   /**
    * Delete a row for the authed user
@@ -74,32 +89,42 @@ const actions: ActionTree<AgendaState, RootState> = {
    * @param id The id of the row
    * @returns The promise of deletion
    */
-  deleteEntry({ rootGetters }, id: string) {
-    const uid = (rootGetters['auth/getUser'] as User | null)?.uid
-    if (!uid) {
-      throw new Error('Vous devez être connecté pour effectuer cette action')
-    }
+  async deleteEntry({ rootGetters, commit }, id: string) {
+    commit('SET_LOADING', true)
+    try {
+      const uid = (rootGetters['auth/getUser'] as User | null)?.uid
+      if (!uid) {
+        throw new Error('Vous devez être connecté pour effectuer cette action')
+      }
 
-    const ref = this.$fire.firestore
-      .collection('users')
-      .doc(uid)
-      .collection('agenda')
-      .doc(id)
-    return ref.delete()
+      const ref = this.$fire.firestore
+        .collection('users')
+        .doc(uid)
+        .collection('agenda')
+        .doc(id)
+      await ref.delete()
+      commit('SET_LOADING', false)
+    } catch (error) {
+      commit('SET_LOADING', false)
+      throw error
+    }
   },
   /**
    * Bind user's agenda to the state
    */
-  bindAgenda: firestoreAction(function (
+  bindAgenda: firestoreAction(async function (
     this: Store<RootState>,
-    { bindFirestoreRef },
+    { bindFirestoreRef, commit },
     { uid }: firebase.User
   ) {
+    commit('SET_LOADING', true)
     const ref = this.$fire.firestore
       .collection('users')
       .doc(uid)
       .collection('agenda')
-    return bindFirestoreRef('data', ref, { wait: true })
+    const bind = await bindFirestoreRef('data', ref, { wait: true })
+    commit('SET_LOADING', false)
+    return bind
   }),
   /**
    * Unbind user's agenda to the state

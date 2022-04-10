@@ -2,7 +2,7 @@
   <div>
     <v-dialog v-model="dialog" persistent width="500">
       <v-card>
-        <v-form v-model="valid" @submit="register">
+        <v-form ref="form" v-model="valid" lazy-validation @submit="register">
           <v-toolbar elevation="0" dense>
             <v-toolbar-title>Initialisation</v-toolbar-title>
             <v-spacer></v-spacer>
@@ -52,18 +52,20 @@
           <v-row>
             <v-text-field
               v-model="email"
-              :rules="emailRules"
+              :rules="rules.email"
               label="E-mail"
               type="email"
+              autocomplete="email"
               required
             ></v-text-field>
           </v-row>
           <v-row>
             <v-text-field
               v-model="password"
-              :rules="passwordRules"
+              :rules="rules.password"
               label="Mot de passe"
               :type="showPassword ? 'text' : 'password'"
+              autocomplete="new-password"
               :loading="password.length > 0"
               required
             >
@@ -106,6 +108,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import passStrength from 'zxcvbn'
+import type { VForm } from '~/ts/components'
 
 export default Vue.extend({
   data: () => ({
@@ -115,16 +118,18 @@ export default Vue.extend({
     dialog: false,
     showPassword: false,
     email: '',
-    emailRules: [
-      (v: string) => !!v || 'Un e-mail est requis',
-      (v: string) => /.+@.+/.test(v) || "L'e-mail doit être valide",
-    ],
     password: '',
-    passwordRules: [
-      (v: string) => !!v || 'Un mot de passe est requis',
-      (v: string) =>
-        passStrength(v).score >= 2 || "Le mot de passe n'est pas assez fort",
-    ],
+    rules: {
+      email: [
+        (v: string) => !!v || 'Un e-mail est requis',
+        (v: string) => /.+@.+/.test(v) || "L'e-mail doit être valide",
+      ],
+      password: [
+        (v: string) => !!v || 'Un mot de passe est requis',
+        (v: string) =>
+          passStrength(v).score >= 2 || "Le mot de passe n'est pas assez fort",
+      ],
+    },
     balance: '0',
   }),
   computed: {
@@ -163,6 +168,12 @@ export default Vue.extend({
   },
   methods: {
     /**
+     * Form validation
+     */
+    validate() {
+      ;(this.$refs.form as VForm)?.validate()
+    },
+    /**
      * Open dialog for additonal fields
      */
     openInit(e: Event) {
@@ -177,6 +188,7 @@ export default Vue.extend({
     async register(e: Event) {
       e.preventDefault()
       try {
+        this.validate()
         if (this.valid) {
           this.loading = true
           await this.$store.dispatch('auth/createUser', {

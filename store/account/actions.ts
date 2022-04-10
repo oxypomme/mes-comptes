@@ -16,22 +16,33 @@ const actions: ActionTree<AccountState, RootState> = {
    * @param account The account
    * @returns The promise of creation
    */
-  createAccount({ rootGetters }, { name, balance }: InputAccount) {
-    const uid = (rootGetters['auth/getUser'] as User | null)?.uid
-    if (!uid) {
-      throw new Error('Vous devez être connecté pour effectuer cette action')
-    }
+  async createAccount(
+    { rootGetters, commit },
+    { name, balance }: InputAccount
+  ) {
+    commit('SET_LOADING', true)
+    try {
+      const uid = (rootGetters['auth/getUser'] as User | null)?.uid
+      if (!uid) {
+        throw new Error('Vous devez être connecté pour effectuer cette action')
+      }
 
-    const ref = this.$fire.firestore
-      .collection('users')
-      .doc(uid)
-      .collection('accounts')
-    return ref.add({
-      name,
-      balance: parseFloat(balance),
-      operationCount: 0,
-      createdAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
-    } as Account & { createdAt: firebase.firestore.FieldValue })
+      const ref = this.$fire.firestore
+        .collection('users')
+        .doc(uid)
+        .collection('accounts')
+      const acc = await ref.add({
+        name,
+        balance: parseFloat(balance),
+        operationCount: 0,
+        createdAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
+      } as Account & { createdAt: firebase.firestore.FieldValue })
+      commit('SET_LOADING', false)
+      return acc
+    } catch (error) {
+      commit('SET_LOADING', false)
+      throw error
+    }
   },
   /**
    * Edit an account of the authed user
@@ -40,22 +51,32 @@ const actions: ActionTree<AccountState, RootState> = {
    * @param account The account
    * @returns The promise of edition
    */
-  editAccount({ rootGetters }, { id, name, balance }: InputAccount) {
-    const uid = (rootGetters['auth/getUser'] as User | null)?.uid
-    if (!uid) {
-      throw new Error('Vous devez être connecté pour effectuer cette action')
-    }
+  async editAccount(
+    { rootGetters, commit },
+    { id, name, balance }: InputAccount
+  ) {
+    commit('SET_LOADING', true)
+    try {
+      const uid = (rootGetters['auth/getUser'] as User | null)?.uid
+      if (!uid) {
+        throw new Error('Vous devez être connecté pour effectuer cette action')
+      }
 
-    const ref = this.$fire.firestore
-      .collection('users')
-      .doc(uid)
-      .collection('accounts')
-      .doc(id)
-    return ref.update({
-      name,
-      balance: parseFloat(balance),
-      updatedAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
-    } as Account & { updatedAt: firebase.firestore.FieldValue })
+      const ref = this.$fire.firestore
+        .collection('users')
+        .doc(uid)
+        .collection('accounts')
+        .doc(id)
+      await ref.update({
+        name,
+        balance: parseFloat(balance),
+        updatedAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
+      } as Account & { updatedAt: firebase.firestore.FieldValue })
+      commit('SET_LOADING', false)
+    } catch (error) {
+      commit('SET_LOADING', false)
+      throw error
+    }
   },
   /**
    * Delete an account of the authed user
@@ -64,33 +85,43 @@ const actions: ActionTree<AccountState, RootState> = {
    * @param id The id of the account
    * @returns The promise of deletion
    */
-  deleteAccount({ rootGetters }, id: string) {
-    const uid = (rootGetters['auth/getUser'] as User | null)?.uid
-    if (!uid) {
-      throw new Error('Vous devez être connecté pour effectuer cette action')
-    }
+  async deleteAccount({ rootGetters, commit }, id: string) {
+    commit('SET_LOADING', true)
+    try {
+      const uid = (rootGetters['auth/getUser'] as User | null)?.uid
+      if (!uid) {
+        throw new Error('Vous devez être connecté pour effectuer cette action')
+      }
 
-    const ref = this.$fire.firestore
-      .collection('users')
-      .doc(uid)
-      .collection('accounts')
-      .doc(id)
-    return ref.delete()
+      const ref = this.$fire.firestore
+        .collection('users')
+        .doc(uid)
+        .collection('accounts')
+        .doc(id)
+      await ref.delete()
+      commit('SET_LOADING', false)
+    } catch (error) {
+      commit('SET_LOADING', false)
+      throw error
+    }
   },
   /**
    * Bind user's accounts to the state
    */
-  bindAccounts: firestoreAction(function (
+  bindAccounts: firestoreAction(async function (
     this: Store<RootState>,
-    { bindFirestoreRef },
+    { bindFirestoreRef, commit },
     { uid }: firebase.User
   ) {
+    commit('SET_LOADING', true)
     const ref = this.$fire.firestore
       .collection('users')
       .doc(uid)
       .collection('accounts')
       .orderBy('createdAt')
-    return bindFirestoreRef('accounts', ref, { wait: true })
+    const bind = await bindFirestoreRef('accounts', ref, { wait: true })
+    commit('SET_LOADING', false)
+    return bind
   }),
   /**
    * Unbind user's accounts to the state
@@ -104,9 +135,10 @@ const actions: ActionTree<AccountState, RootState> = {
    */
   selectAccount: firestoreAction(async function (
     this: Store<RootState>,
-    { rootGetters, getters, dispatch, bindFirestoreRef },
+    { rootGetters, getters, dispatch, bindFirestoreRef, commit },
     index
   ) {
+    commit('SET_LOADING', true)
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
     if (!uid) {
       throw new Error('Vous devez être connecté pour effectuer cette action')
@@ -124,10 +156,11 @@ const actions: ActionTree<AccountState, RootState> = {
       .doc(uid)
       .collection('accounts')
       .doc(aid)
-    await bindFirestoreRef('current', ref, { wait: true })
-    // TODO?: No await ?
-    dispatch('operations/getOperations', {}, { root: true })
-    return dispatch('categories/getCategories', null, { root: true })
+    const bind = await bindFirestoreRef('current', ref, { wait: true })
+    await dispatch('operations/getOperations', {}, { root: true })
+    await dispatch('categories/getCategories', null, { root: true })
+    commit('SET_LOADING', false)
+    return bind
   }),
 }
 

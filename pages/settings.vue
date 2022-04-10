@@ -10,7 +10,7 @@
           </v-col>
           <v-col>
             <v-card>
-              <AuthSettings />
+              <SettingsAuth />
             </v-card>
           </v-col>
         </v-row>
@@ -22,15 +22,11 @@
 <script lang="ts">
 import Vue from 'vue'
 export default Vue.extend({
+  middleware: ['auth'],
   head: {
     title: 'Paramètres - ',
   },
   mounted() {
-    // Check if connected
-    if (!this.$store.getters['auth/getUser']) {
-      this.$router.push('/login')
-      return
-    }
     // Update title
     this.$store.commit('SET_TITLE', 'Paramètres')
   },

@@ -26,9 +26,7 @@
                     type="submit"
                     class="ml-2"
                     color="primary"
-                    v-bind="attrs"
                     :disabled="isLoading"
-                    v-on="on"
                   >
                     <v-icon> mdi-magnify </v-icon>
                   </v-btn>
@@ -117,11 +115,15 @@ export default Vue.extend({
     page: 1,
   }),
   watch: {
+    /**
+     * Handler when a page is changed
+     */
     page() {
       this.getIcons()
     },
   },
   mounted() {
+    // Fetch firsts icons
     this.getIcons()
   },
   methods: {
@@ -134,12 +136,20 @@ export default Vue.extend({
       this.dialog = false
       this.$emit('input', `mdi-${icon}`)
     },
+    /**
+     * Handler when search form is submitted
+     *
+     * @param e The event
+     */
     onSearch(e: Event) {
       e.preventDefault()
       e.stopPropagation()
       this.page = 1
       this.getIcons()
     },
+    /**
+     * Handler when a tab is changed
+     */
     onTabChange() {
       this.page = 1
       this.getIcons()

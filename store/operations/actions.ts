@@ -22,37 +22,46 @@ const actions: ActionTree<OperationState, RootState> = {
     { name, amount, category, modifier, date }: InputOperation
   ) {
     commit('SET_LOADING', true)
-    const uid = (rootGetters['auth/getUser'] as User | null)?.uid
-    if (!uid) {
-      throw new Error('Vous devez être connecté pour effectuer cette action')
+    try {
+      const uid = (rootGetters['auth/getUser'] as User | null)?.uid
+      if (!uid) {
+        throw new Error('Vous devez être connecté pour effectuer cette action')
+      }
+
+      const aid = (rootGetters['account/getCurrent'] as Account | null)?.id
+      if (!aid) {
+        throw new Error('Un compte doit être séléctionné')
+      }
+
+      const amnt = parseFloat(amount) * modifier
+      const ref = this.$fire.firestore
+        .collection('users')
+        .doc(uid)
+        .collection('accounts')
+        .doc(aid)
+
+      // Get category reference
+      let cref = null
+      if (category && typeof category === 'string')
+        cref = ref.collection('categories').doc(category)
+
+      // Setting date at 00:00 to avoid weird sort
+      date.startOf('day')
+
+      const ope = await ref.collection('operations').add({
+        name,
+        amount: amnt,
+        category: cref,
+        date: date && date.toFire(),
+        createdAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
+      } as Operation & { createdAt: firebase.firestore.FieldValue })
+
+      commit('SET_LOADING', false)
+      return ope
+    } catch (error) {
+      commit('SET_LOADING', false)
+      throw error
     }
-
-    const aid = (rootGetters['account/getCurrent'] as Account | null)?.id
-    if (!aid) {
-      throw new Error('Un compte doit être séléctionné')
-    }
-
-    const amnt = parseFloat(amount) * modifier
-    const ref = this.$fire.firestore
-      .collection('users')
-      .doc(uid)
-      .collection('accounts')
-      .doc(aid)
-
-    // Get category reference
-    let cref = null
-    if (category && typeof category === 'string')
-      cref = ref.collection('categories').doc(category)
-
-    const ope = await ref.collection('operations').add({
-      name,
-      amount: amnt,
-      category: cref,
-      date: date && this.$fireModule.firestore.Timestamp.fromDate(date),
-      createdAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
-    } as Operation & { createdAt: firebase.firestore.FieldValue })
-    commit('SET_LOADING', false)
-    return ope
   },
   /**
    * Edit an operation for the auther user in the selected account
@@ -66,42 +75,46 @@ const actions: ActionTree<OperationState, RootState> = {
     { id, name, amount, category, modifier, date }: InputOperation
   ) {
     commit('SET_LOADING', true)
-    const uid = (rootGetters['auth/getUser'] as User | null)?.uid
-    if (!uid) {
-      throw new Error('Vous devez être connecté pour effectuer cette action')
+    try {
+      const uid = (rootGetters['auth/getUser'] as User | null)?.uid
+      if (!uid) {
+        throw new Error('Vous devez être connecté pour effectuer cette action')
+      }
+
+      const aid = (rootGetters['account/getCurrent'] as Account | null)?.id
+      if (!aid) {
+        throw new Error('Un compte doit être séléctionné')
+      }
+
+      // Parse amount & category
+      const amnt = parseFloat(amount) * modifier
+      if (category && typeof category !== 'string') {
+        category = category.id
+      }
+
+      const ref = this.$fire.firestore
+        .collection('users')
+        .doc(uid)
+        .collection('accounts')
+        .doc(aid)
+      const cref = ref.collection('categories')
+
+      await ref
+        .collection('operations')
+        .doc(id)
+        .update({
+          name,
+          amount: amnt,
+          category: category ? cref.doc(category) : null,
+          date: date && date.toFire(),
+          updatedAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
+        } as Operation & { updatedAt: firebase.firestore.FieldValue })
+
+      commit('SET_LOADING', false)
+    } catch (error) {
+      commit('SET_LOADING', false)
+      throw error
     }
-
-    const aid = (rootGetters['account/getCurrent'] as Account | null)?.id
-    if (!aid) {
-      throw new Error('Un compte doit être séléctionné')
-    }
-
-    // Parse amount & category
-    const amnt = parseFloat(amount) * modifier
-    if (category && typeof category !== 'string') {
-      category = category.id
-    }
-
-    const ref = this.$fire.firestore
-      .collection('users')
-      .doc(uid)
-      .collection('accounts')
-      .doc(aid)
-    const cref = ref.collection('categories')
-
-    const ope = await ref
-      .collection('operations')
-      .doc(id)
-      .update({
-        name,
-        amount: amnt,
-        category: category ? cref.doc(category) : null,
-        date: date && this.$fireModule.firestore.Timestamp.fromDate(date),
-        updatedAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
-      } as Operation & { updatedAt: firebase.firestore.FieldValue })
-
-    commit('SET_LOADING', false)
-    return ope
   },
   /**
    * Delete an operation for the auther user in the selected account
@@ -110,27 +123,33 @@ const actions: ActionTree<OperationState, RootState> = {
    * @param id The id of the operation
    * @returns The promise of deletion
    */
-  deleteOperation({ rootGetters }, id) {
-    // const amnt = parseFloat(amount)
-    const uid = (rootGetters['auth/getUser'] as User | null)?.uid
-    if (!uid) {
-      throw new Error('Vous devez être connecté pour effectuer cette action')
+  async deleteOperation({ rootGetters, commit }, id) {
+    commit('SET_LOADING', true)
+    try {
+      const uid = (rootGetters['auth/getUser'] as User | null)?.uid
+      if (!uid) {
+        throw new Error('Vous devez être connecté pour effectuer cette action')
+      }
+
+      const aid = (rootGetters['account/getCurrent'] as Account | null)?.id
+      if (!aid) {
+        throw new Error('Un compte doit être séléctionné')
+      }
+
+      const ref = this.$fire.firestore
+        .collection('users')
+        .doc(uid)
+        .collection('accounts')
+        .doc(aid)
+        .collection('operations')
+        .doc(id)
+
+      await ref.delete()
+      commit('SET_LOADING', false)
+    } catch (error) {
+      commit('SET_LOADING', false)
+      throw error
     }
-
-    const aid = (rootGetters['account/getCurrent'] as Account | null)?.id
-    if (!aid) {
-      throw new Error('Un compte doit être séléctionné')
-    }
-
-    const ref = this.$fire.firestore
-      .collection('users')
-      .doc(uid)
-      .collection('accounts')
-      .doc(aid)
-      .collection('operations')
-      .doc(id)
-
-    return ref.delete()
   },
   /**
    * Bind user's operations for the auther user in the selected account
@@ -140,7 +159,7 @@ const actions: ActionTree<OperationState, RootState> = {
   getOperations: firestoreAction(async function (
     this: Store<RootState>,
     { rootGetters, bindFirestoreRef, commit },
-    { month, year }: { month?: number; year?: number }
+    { value: date }: { value?: dayjs.Dayjs }
   ) {
     commit('SET_LOADING', true)
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
@@ -161,11 +180,8 @@ const actions: ActionTree<OperationState, RootState> = {
 
     const oref = ref.collection('operations')
 
-    let last = dayjs().add(1, 'day')
-    if (month && year) {
-      last = dayjs(`1/${month + 1}/${year}`, 'D/M/YYYY')
-    }
-    const first = last.subtract(1, 'month')
+    const last = (date ? date.add(1, 'month') : dayjs()).add(1, 'day')
+    const first = date ?? last.subtract(1, 'month')
 
     const docref = oref
       .where(
@@ -178,10 +194,8 @@ const actions: ActionTree<OperationState, RootState> = {
         '<=',
         this.$fireModule.firestore.Timestamp.fromDate(last.toDate())
       )
-      .orderBy('date', 'desc')
-      .orderBy('createdAt', 'desc')
 
-    await bindFirestoreRef('data', docref, {
+    const bind = await bindFirestoreRef('data', docref, {
       serialize: (doc) => {
         const data = doc.data()
         Object.defineProperty(data, 'id', { value: doc.id })
@@ -189,6 +203,7 @@ const actions: ActionTree<OperationState, RootState> = {
       },
     })
     commit('SET_LOADING', false)
+    return bind
   }),
 }
 

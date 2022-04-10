@@ -1,78 +1,7 @@
 <template>
   <div>
-    <v-dialog v-model="dialog" width="500">
-      <v-card>
-        <v-form v-model="valid" @submit="save">
-          <v-toolbar elevation="0" dense>
-            <v-toolbar-title> Éditer {{ editedValue.name }} </v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-btn icon color="grey" small plain @click="dialog = false">
-              <v-icon>mdi-close</v-icon>
-            </v-btn>
-          </v-toolbar>
-
-          <v-card-text>
-            <v-container>
-              <v-row>
-                <v-text-field
-                  v-if="editedValue.field !== 'modifier'"
-                  v-model="editedValue.value"
-                  :label="editedLabel"
-                  :prefix="typeof editedValue.field === 'string' ? '' : '€'"
-                  :type="
-                    typeof editedValue.field === 'number' ? 'number' : 'text'
-                  "
-                  required
-                  class="text-capitalize"
-                  :dense="$vuetify.breakpoint.smAndDown"
-                >
-                </v-text-field>
-                <v-select
-                  v-else
-                  v-model="editedValue.value"
-                  :items="[
-                    { modifier: -1, label: 'Débit (-)' },
-                    { modifier: 1, label: 'Crédit (+)' },
-                  ]"
-                  label="Type"
-                  :dense="$vuetify.breakpoint.smAndDown"
-                  item-text="label"
-                  item-value="modifier"
-                ></v-select>
-              </v-row>
-              <v-row v-if="(typeof editedValue.field || '') !== 'string'">
-                <v-checkbox
-                  v-model="editedValue.applyToAll"
-                  label="Appliquer à tous"
-                ></v-checkbox>
-              </v-row>
-            </v-container>
-          </v-card-text>
-
-          <v-divider></v-divider>
-
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="error" text @click="dialog = false"> Annuler </v-btn>
-            <v-btn
-              color="success"
-              :loading="loading"
-              :disabled="!valid"
-              text
-              type="submit"
-              :dense="$vuetify.breakpoint.smAndDown"
-            >
-              Valider
-            </v-btn>
-          </v-card-actions>
-        </v-form>
-      </v-card>
-    </v-dialog>
-    <v-simple-table
-      :dense="$vuetify.breakpoint.smAndDown"
-      fixed-header
-      height="77vh"
-    >
+    <AgendaDialogEdition v-model="editedValue" />
+    <v-simple-table :dense="$vuetify.breakpoint.smAndDown">
       <template #top>
         <div>
           <v-toolbar
@@ -153,10 +82,10 @@
               :class="[
                 'text-center',
                 'text-capitalize',
-                isCurrentMonth(monthIndex) && 'activeMonth',
+                currentMonth.value === monthIndex - 1 && 'activeMonth',
               ]"
             >
-              {{ monthLabel(monthIndex) }}
+              {{ month(monthIndex).label }}
             </th>
           </tr>
           <tr v-if="Object.values(items).length > 0">
@@ -166,7 +95,7 @@
               :key="'value' + monthIndex"
               :class="[
                 'text-center',
-                isCurrentMonth(monthIndex) && 'activeMonth',
+                currentMonth.value === monthIndex - 1 && 'activeMonth',
               ]"
             >
               <v-chip
@@ -213,7 +142,7 @@
               :key="item.name + '_month' + monthIndex"
               :class="[
                 'text-center',
-                isCurrentMonth(monthIndex + 1) && 'activeMonth',
+                currentMonth.value === monthIndex && 'activeMonth',
               ]"
             >
               <span class="hoverable" @click="open(item, monthIndex, value)">
@@ -230,61 +159,24 @@
 <script lang="ts">
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
+import type { EditedValue } from './dialog/Edition.vue'
 import { toLS } from '~/ts/format'
-import type { AgendaRow, SettingsState } from '~/ts/types'
+import type { AgendaRow } from '~/ts/types'
 
 type SortType = 'name' | 'category' | 'type'
 
 export default Vue.extend({
   data: () => ({
-    dialog: false,
-    valid: false,
-    loading: false,
-    editedValue: {
-      id: undefined as string | undefined,
-      name: '',
-      field: 0 as string | number,
-      value: '0.00',
-      applyToAll: false,
-    },
+    editedValue: null as EditedValue | null,
     sortType: 'type' as SortType,
     reverseSort: false,
   }),
   computed: {
-    ...mapGetters({ month: 'agenda/getMonth' }),
-    /**
-     * Get column label
-     *
-     * @param i The month index (0-11)
-     */
-    monthLabel() {
-      return (i: number) =>
-        new Date(
-          +this.resetDate.getFullYear() + +(i < this.resetDate.getMonth()),
-          i - 1
-        ).toLocaleDateString('fr', {
-          month: 'long',
-          year: 'numeric',
-        })
-    },
-    /**
-     * Get if month is current
-     *
-     * @param i The month index (0-11)
-     */
-    isCurrentMonth() {
-      return (i: number) => this.resetDate.getMonth() === i
-    },
-    /**
-     * Get resetDate, ussefull when gtting current month and year
-     */
-    resetDate(): Date {
-      const settings = this.$store.getters.getSettings as
-        | SettingsState
-        | undefined
-
-      return settings?.resetDate.toDate() ?? new Date()
-    },
+    ...mapGetters({
+      month: 'agenda/getMonth',
+      loading: 'agenda/getLoadingState',
+      currentMonth: 'getCurrentMonth',
+    }),
     /**
      * User's agenda
      *
@@ -324,27 +216,6 @@ export default Vue.extend({
         return this.reverseSort ? -res : res
       }
     },
-    /**
-     * Get the current label edited
-     *
-     * @returns The label
-     */
-    editedLabel(): string {
-      if (typeof this.editedValue.field === 'string') {
-        // Return the correct label
-        switch (this.editedValue.field) {
-          case 'name':
-            return 'Nom'
-          case 'category':
-            return 'Catégorie'
-          default:
-            return 'Valeur'
-        }
-      } else {
-        // Return the concerned month
-        return this.monthLabel(this.editedValue.field + 1)
-      }
-    },
   },
   methods: {
     toLS,
@@ -352,13 +223,11 @@ export default Vue.extend({
      * Add a row to the agenda
      */
     async addRow() {
-      this.loading = true
       try {
         await this.$store.dispatch('agenda/createEntry')
       } catch (e) {
         this.$toast.global.error((e as Error).message)
       }
-      this.loading = false
     },
     /**
      * Delete a row from the agenda
@@ -366,60 +235,11 @@ export default Vue.extend({
      * @param id The id of the row
      */
     async deleteRow(id: string) {
-      this.loading = true
       try {
         await this.$store.dispatch('agenda/deleteEntry', id)
       } catch (e) {
         this.$toast.global.error((e as Error).message)
       }
-      this.loading = false
-    },
-    /**
-     * Edit a value in a row from the agenda
-     *
-     * @param e The event
-     */
-    async save(e: Event) {
-      e.preventDefault()
-      this.loading = true
-
-      let value = this.editedValue.value as AgendaRow[keyof AgendaRow]
-      let property = this.editedValue.field
-      if (typeof this.editedValue.field !== 'string') {
-        property = 'values'
-        value = this.editValue()
-      }
-
-      try {
-        await this.$store.dispatch('agenda/updateEntry', {
-          id: this.editedValue.id,
-          property,
-          value,
-        })
-      } catch (e) {
-        this.$toast.global.error((e as Error).message)
-      }
-      this.loading = false
-      this.dialog = false
-    },
-    /**
-     * Edit a value in a row at a specific month from the agenda
-     *
-     * @returns The values of the row
-     */
-    editValue(): number[] {
-      const items = [...this.items]
-      const index = items.findIndex((r) => r.id === this.editedValue.id)
-      if (this.editedValue.applyToAll) {
-        for (let i = 0; i < items[index].values.length; i++) {
-          items[index].values[i] = parseFloat(this.editedValue.value || '0')
-        }
-      } else {
-        items[index].values[this.editedValue.field as number] = parseFloat(
-          this.editedValue.value || '0'
-        )
-      }
-      return items[index].values
     },
     /**
      * Prepare dialog to open
@@ -433,9 +253,26 @@ export default Vue.extend({
         value = value.toFixed(2)
       }
 
-      this.editedValue = { id, name, field, value, applyToAll: false }
-      // this.valid = false
-      this.dialog = true
+      let label = ''
+      if (typeof field === 'string') {
+        // Return the correct label
+        switch (field) {
+          case 'name':
+            label = 'Nom'
+            break
+          case 'category':
+            label = 'Catégorie'
+            break
+          default:
+            label = 'Valeur'
+            break
+        }
+      } else {
+        // Return the concerned month
+        label = this.month(field + 1).label
+      }
+
+      this.editedValue = { id, name, field, value, applyToAll: false, label }
     },
     /**
      * Edit sort type

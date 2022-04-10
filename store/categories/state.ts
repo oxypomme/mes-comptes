@@ -10,6 +10,7 @@ const state = () => ({
    * List of categories of the authed user in the selected account
    */
   data: [] as Category[],
+  loading: false,
 })
 
 export default state

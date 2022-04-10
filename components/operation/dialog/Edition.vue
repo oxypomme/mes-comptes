@@ -36,6 +36,7 @@
                       persistent-hint
                       readonly
                       :rules="rules.date"
+                      :dense="$vuetify.breakpoint.smAndDown"
                       v-bind="attrs"
                       v-on="on"
                     ></v-text-field>
@@ -51,14 +52,17 @@
                 </v-menu>
               </v-col>
               <v-col>
-                <v-text-field
+                <v-combobox
                   v-model="operation.name"
+                  hide-no-data
                   label="Nom"
+                  :items="agendaRowNames"
                   required
                   :dense="$vuetify.breakpoint.smAndDown"
                   :rules="rules.name"
+                  @change="onAutocompleteSelection"
                 >
-                </v-text-field>
+                </v-combobox>
               </v-col>
             </v-row>
             <v-row>
@@ -128,7 +132,12 @@ import Vue from 'vue'
 import { mapGetters } from 'vuex'
 import dayjs from '~/ts/dayjs'
 import { ECategoryType } from '~/ts/ECategoryType'
-import type { ValueModifier, InputOperation, Category } from '~/ts/types'
+import type {
+  ValueModifier,
+  InputOperation,
+  Category,
+  AgendaRow,
+} from '~/ts/types'
 import type { VForm, VMenu } from '~/ts/components'
 
 export default Vue.extend({
@@ -160,19 +169,20 @@ export default Vue.extend({
           dayjs(v, 'DD/MM/YYYY').isBefore(dayjs()) ||
           'Impossible créer une opération future',
       ],
-    } as Record<string, ((v: string) => string)[]>,
+    } as Record<string, ((v: string) => true | string)[]>,
     initOperation: {
       name: '',
       amount: '',
       category: null,
       modifier: -1 as ValueModifier,
-      date: new Date(),
+      date: dayjs(),
     },
     operation: {} as InputOperation,
   }),
   computed: {
     ...mapGetters({
       loading: 'operations/getLoadingState',
+      agendaRowNames: 'agenda/getAgendaRowNames',
     }),
     /**
      * Options for select categories
@@ -201,14 +211,15 @@ export default Vue.extend({
      */
     date: {
       get(): string {
-        return dayjs(this.operation.date).format('YYYY-M-D')
+        const date = this.operation.date ?? dayjs()
+        return date.format('YYYY-M-D')
       },
       set(newValue: string) {
-        this.operation.date = dayjs(newValue, 'YYYY-M-D').toDate()
+        this.operation.date = dayjs(newValue, 'YYYY-M-D')
       },
     },
     formatedDate(): string {
-      return this.operation?.date?.toLocaleDateString()
+      return (this.operation?.date ?? dayjs()).format('DD/MM/YYYY')
     },
     /**
      * Dialog toggle
@@ -232,6 +243,33 @@ export default Vue.extend({
     },
   },
   methods: {
+    /**
+     * Set type and category by searching in autocompletion data
+     */
+    onAutocompleteSelection(value: string) {
+      // If value is an agenda row
+      const agendaRowNames = this.agendaRowNames as string[]
+      if (agendaRowNames.includes(value)) {
+        // Getting agenda row
+        const rowIndex = agendaRowNames.findIndex((s) => s === value)
+        const agendaRow = {
+          ...this.$store.getters['agenda/getAgenda'][rowIndex],
+        } as AgendaRow
+        // Setting modifier
+        this.operation.modifier = agendaRow.modifier
+        // Setting category
+        const categType =
+          agendaRow.modifier > 0
+            ? ECategoryType.PLANNED_CREDIT
+            : ECategoryType.PLANNED_DEBIT
+        this.operation.category =
+          this.selectCategories.find(({ type }) => type === categType)?.id ??
+          null
+        // Setting value
+        const currentMonth = this.$store.getters.getCurrentMonth.value as number
+        this.operation.amount = agendaRow.values[currentMonth].toString()
+      }
+    },
     /**
      * Form validation
      */

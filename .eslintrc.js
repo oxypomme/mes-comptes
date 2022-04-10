@@ -10,13 +10,21 @@ module.exports = {
     'prettier',
   ],
   plugins: [],
+  reportUnusedDisableDirectives: true,
   // add your custom rules here
-  rules: {
-    'vue/valid-v-slot': [
-      'error',
-      {
-        allowModifiers: true,
+  overrides: [
+    {
+      files: ['components/**/*.vue'],
+      rules: {
+        'vue/multi-word-component-names': 'off',
       },
-    ],
-  },
+    },
+    {
+      files: ['components/*.vue'],
+      rules: {
+        'vue/multi-word-component-names': 'error',
+      },
+    },
+  ],
+  rules: {},
 }

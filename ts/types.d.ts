@@ -1,3 +1,4 @@
+import type dayjs from 'dayjs'
 import type { ECategoryType } from './ECategoryType'
 import type firebase from 'firebase'
 
@@ -35,8 +36,16 @@ interface Category extends FirestoreData {
   balance: number // float
   budget: number // float
   type: ECategoryType
+  computed: {
+    tooltip: string
+    usage: string
+    ratio: {
+      color: string
+      value: number
+    }
+  }
 }
-type InputCategory = Omit<Category, 'balance' | 'budget'> & {
+type InputCategory = Omit<Category, 'balance' | 'budget' | 'computed'> & {
   balance: string
   budget: string
 }
@@ -53,7 +62,7 @@ interface Operation extends FirestoreData {
 type InputOperation = Omit<Operation, 'amount' | 'category' | 'date'> & {
   amount: string
   category: string | firebase.firestore.DocumentReference | null
-  date: Date
+  date: dayjs.Dayjs
 }
 
 interface User {
@@ -73,5 +82,5 @@ interface SettingsState {
   lightTheme: boolean
 }
 type Settings = Omit<SettingsState, 'resetDate'> & {
-  resetDate: Date
+  resetDate: dayjs.Dayjs
 }
