@@ -4,6 +4,7 @@
     "icon-picker",
     "operations",
     "cloud-fnc",
-    "categories"
+    "categories",
+    "auth"
   ]
 }
