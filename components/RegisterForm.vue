@@ -96,8 +96,9 @@
               :loading="loading || dialog"
               :disabled="!firstvalid"
               type="submit"
-              >S'inscrire</v-btn
             >
+              S'inscrire
+            </v-btn>
           </v-row>
         </v-col>
       </v-container>

@@ -18,6 +18,7 @@
             v-model="password"
             :rules="passwordRules"
             label="Mot de passe"
+            autocomplete="new-password"
             :type="showPassword ? 'text' : 'password'"
             :loading="password.length > 0"
             required
