@@ -1,4 +1,5 @@
 import { store } from '../firebase'
+import resetAgendaRows from './resetAgendaRows'
 import resetCategoriesBalance from './resetCategoriesBalance'
 
 /**
@@ -11,6 +12,7 @@ export default async () => {
   return Promise.all([
     ...users.map(async (ref) => {
       await resetCategoriesBalance(ref, d)
+      await resetAgendaRows(ref, d)
     }),
   ])
 }

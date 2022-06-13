@@ -67,7 +67,10 @@ export default (
   }
 
   if (Object.keys(data).length > 0) {
-    batch.update(ref, data)
+    batch.update(ref, {
+      ...data,
+      updatedAt: firestore.FieldValue.serverTimestamp(),
+    })
   }
 
   return batch.commit()
