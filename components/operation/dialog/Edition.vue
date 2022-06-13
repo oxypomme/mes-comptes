@@ -178,6 +178,7 @@ export default Vue.extend({
       date: dayjs(),
     },
     operation: {} as InputOperation,
+    agendaRowIndex: undefined as number | undefined,
   }),
   computed: {
     ...mapGetters({
@@ -268,6 +269,8 @@ export default Vue.extend({
         // Setting value
         const currentMonth = this.$store.getters.getCurrentMonth.value as number
         this.operation.amount = agendaRow.values[currentMonth].toString()
+        // Prepare for updating agenda row
+        this.agendaRowIndex = rowIndex
       }
     },
     /**
@@ -294,6 +297,18 @@ export default Vue.extend({
               'operations/createOperation',
               this.operation
             )
+
+            if (this.agendaRowIndex !== undefined) {
+              this.$store.dispatch('agenda/updateStatus', {
+                id: (
+                  this.$store.getters['agenda/getAgenda'][
+                    this.agendaRowIndex
+                  ] as AgendaRow
+                ).id,
+                status: true,
+              })
+              this.agendaRowIndex = undefined
+            }
           }
         } catch (e) {
           this.$toast.global.error((e as Error).message)

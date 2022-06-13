@@ -109,10 +109,16 @@
         </thead>
         <tbody>
           <tr v-for="item in [...items].sort(sorter)" :key="item.name">
-            <td>
+            <td class="d-flex align-center">
               <v-btn icon color="error" @click="deleteRow(item.id)">
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
+              <v-simple-checkbox
+                :value="item.status"
+                :ripple="false"
+                @input="updateStatus(item.id, $event)"
+              ></v-simple-checkbox>
+            </td>
             </td>
             <td>
               <span class="hoverable" @click="open(item, 'name', item.name)">
@@ -288,12 +294,14 @@ export default Vue.extend({
       }
     },
     /**
-     * Wrapper to `Event.preventDefault`
-     *
-     * @param e The event
+     * Update status of a row
      */
-    preventDefault(e: Event) {
-      e.preventDefault()
+    async updateStatus(id: string, status: boolean) {
+      try {
+        await this.$store.dispatch('agenda/updateStatus', { id, status })
+      } catch (e) {
+        this.$toast.global.error((e as Error).message)
+      }
     },
   },
 })
