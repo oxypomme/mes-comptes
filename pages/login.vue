@@ -32,7 +32,7 @@ export default Vue.extend({
     rawShowRegister: false,
   }),
   head: {
-    title: 'Connexion - ',
+    title: 'Connexion',
   },
   computed: {
     showRegister: {

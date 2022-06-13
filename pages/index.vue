@@ -1,10 +1,6 @@
 <template>
   <div>
-    <v-parallax
-      src="https://picsum.photos/id/160/1700/950"
-      height="750"
-      class="header-bg"
-    >
+    <v-parallax :src="images.cover" height="750" class="header-bg">
       <v-container justify="center">
         <v-row justify="center" class="text-center">
           <v-col cols="12" lg="7">
@@ -15,17 +11,29 @@
                   <h4 class="font-weight-light">
                     Surveillez vos économies de façon simple et efficace
                   </h4>
-                  <v-btn to="login" x-large rounded color="primary mt-4">
-                    S'inscrire
+                  <v-btn
+                    x-large
+                    color="primary mt-4"
+                    @click="$vuetify.goTo('#pricing')"
+                  >
+                    Voir les tarifs
                   </v-btn>
                 </div>
               </v-col>
               <v-col order="2" order-sm="1">
-                <v-img
-                  src="https://preview.colorlib.com/theme/appy/images/xheader-mobile.png.pagespeed.ic.TC6bxBlXPg.webp"
-                  max-height="375"
-                  contain
-                >
+                <v-img :src="images.presentation" max-height="375" contain>
+                  <template #placeholder>
+                    <v-row
+                      class="fill-height ma-0"
+                      align="center"
+                      justify="center"
+                    >
+                      <v-progress-circular
+                        indeterminate
+                        color="grey lighten-5"
+                      ></v-progress-circular>
+                    </v-row>
+                  </template>
                 </v-img>
               </v-col>
               <v-col order="3" class="d-sm-none pb-5">
@@ -46,21 +54,30 @@
       <v-row justify="center" class="my-4">
         <v-col cols="12" lg="9" xl="7">
           <v-row v-for="(item, i) in features" :key="i" align="center">
-            <v-col :order-sm="i % 2 === 0 ? 1 : 2">
-              <v-img
-                :src="item.image || 'https://picsum.photos/600/300?random=' + i"
-                width="600"
-                height="300"
-              ></v-img>
+            <v-col :order-sm="i % 2">
+              <v-img :src="item.image" width="400" height="300" contain>
+                <template #placeholder>
+                  <v-row
+                    class="fill-height ma-0"
+                    align="center"
+                    justify="center"
+                  >
+                    <v-progress-circular
+                      indeterminate
+                      color="grey lighten-5"
+                    ></v-progress-circular>
+                  </v-row>
+                </template>
+              </v-img>
             </v-col>
-            <v-col :order-sm="i % 2 === 0 ? 2 : 1">
+            <v-col :order-sm="1 - (i % 2)" :class="[i % 2 && 'text-right']">
               <h3>{{ item.name }}</h3>
               {{ item.desc }}
             </v-col>
           </v-row>
         </v-col>
       </v-row>
-      <v-row justify="center" class="mt-8 mb-2">
+      <v-row id="pricing" justify="center" class="mt-8 mb-2">
         <v-col cols="12" lg="9" xl="7">
           <v-row justify="center">
             <h2 class="display-2">Tarification</h2>
@@ -73,13 +90,20 @@
                   :elevation="hover ? 12 : 1"
                   max-width="350"
                 >
-                  <v-img
-                    height="150"
-                    :src="
-                      item.image ||
-                      'https://picsum.photos/350/150?random=' + (i + 10)
-                    "
-                  ></v-img>
+                  <v-img width="350" height="150" :src="item.image" contain>
+                    <template #placeholder>
+                      <v-row
+                        class="fill-height ma-0"
+                        align="center"
+                        justify="center"
+                      >
+                        <v-progress-circular
+                          indeterminate
+                          color="grey lighten-5"
+                        ></v-progress-circular>
+                      </v-row>
+                    </template>
+                  </v-img>
                   <v-card-text class="my-4 text-center">
                     <span class="text-overline">{{ item.name }}</span>
                     <v-list v-for="(feat, j) in item.features" :key="j" dense>
@@ -123,6 +147,7 @@
                       large
                       rounded
                       color="primary"
+                      :disabled="item.price !== 0"
                     >
                       S'abonner
                     </v-btn>
@@ -142,18 +167,30 @@ import Vue from 'vue'
 export default Vue.extend({
   layout: 'landing',
   data: () => ({
+    images: {
+      cover: 'banner.webp',
+      presentation: 'logo.webp',
+    },
     features: [
       {
+        image: 'accounts.webp',
         name: 'Plusieurs comptes, en un seul',
-        desc: `Parler des sous-comptes pour représenter plusieurs comptes ou diviser son compte.`,
+        desc: `Créez des sous comptes vrituels de façon dynamique pour pouvoir répartir vos économies.`,
       },
       {
+        image: 'categories.webp',
         name: 'Catégorisez vos dépenses',
-        desc: `Un budget max par catégorie, par semaine, catégories par sous-compte.`,
+        desc: `Divisez vos dépenses et/ou revenus dans divers budgets, avec ou sans plafond.`,
       },
       {
+        image: 'agenda.webp',
         name: 'Prévoyez vos budgets',
-        desc: `Renseigner vos charges, budgets calculés automatiquement.`,
+        desc: `Prévoyez vos dépenses récurrentes et vos revenus pour définir des plafond dynamiques.`,
+      },
+      {
+        image: 'iphone.webp',
+        name: 'Avec vous, partout',
+        desc: `Pensée pour une utilisation nomade, l'application est disponible pour votre mobile.`,
       },
     ],
     pricing: [
@@ -161,6 +198,7 @@ export default Vue.extend({
         name: 'Starter',
         price: 0,
         icon: 'rocket',
+        image: 'macos.webp',
         features: [
           {
             name: 'Comptes secondaires',
@@ -170,6 +208,31 @@ export default Vue.extend({
           },
           {
             name: 'Planning',
+          },
+          {
+            name: 'Application Mobile',
+          },
+        ],
+      },
+      {
+        name: 'Dummy',
+        price: 0.99,
+        icon: 'rocket',
+        image: 'win.webp',
+        features: [
+          {
+            name: 'Dummy',
+          },
+          {
+            name: 'Dummy',
+            status: false,
+          },
+          {
+            name: 'Dummy',
+            status: false,
+          },
+          {
+            name: 'Dummy',
             status: false,
           },
         ],
@@ -181,6 +244,33 @@ export default Vue.extend({
     if (this.$store.getters['auth/getUser']) {
       this.$router.push('/dashboard')
     }
+
+    const images = this.images
+    for (const [k, value] of Object.entries(images)) {
+      const key = k as keyof typeof images
+      this.images[key] = ''
+      this.fetchImg(value).then((url) => {
+        this.images[key] = url
+      })
+    }
+    for (const item of [...this.features, ...this.pricing]) {
+      if (item.image) {
+        const image = item.image
+        item.image = ''
+        this.fetchImg(image).then((url) => {
+          item.image = url
+        })
+      }
+    }
+  },
+  methods: {
+    fetchImg(name: string): Promise<string> {
+      try {
+        return this.$fire.storage.ref(`/landing/${name}`).getDownloadURL()
+      } catch (e: any) {
+        return Promise.resolve(name)
+      }
+    },
   },
 })
 </script>

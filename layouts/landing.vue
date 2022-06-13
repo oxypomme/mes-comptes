@@ -2,6 +2,7 @@
   <v-app dark>
     <v-btn
       class="d-lg-none"
+      style="bottom: 45px"
       fab
       small
       fixed
@@ -17,7 +18,7 @@
     <v-main>
       <Nuxt />
     </v-main>
-    <v-footer absolute app>
+    <v-footer fixed app>
       <span>&copy; {{ new Date().getFullYear() }}</span>
     </v-footer>
   </v-app>

@@ -1,6 +1,6 @@
 # mes-comptes
 
-[![screenshot](https://oxypomme.fr/files/comptes_d453680797.png)](https://comptes-oxy.web.app/)
+[![screenshot](https://firebasestorage.googleapis.com/v0/b/comptes-oxy.appspot.com/o/landing%2Fbanner_logo.webp?alt=media&token=1edde85f-b8a9-4c3c-a06c-c10440363a0b)](https://comptes-oxy.web.app/)
 
 > Only available in French for now, sorry guys.
 

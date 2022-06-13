@@ -24,7 +24,7 @@ import Vue from 'vue'
 export default Vue.extend({
   middleware: ['auth'],
   head: {
-    title: 'Paramètres - ',
+    title: 'Paramètres',
   },
   mounted() {
     // Update title

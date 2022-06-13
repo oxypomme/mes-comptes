@@ -11,12 +11,28 @@ export default {
 
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
-    titleTemplate: '%s Mes Comptes',
-    title: '',
+    titleTemplate: (titleChunk: string) =>
+      titleChunk === 'Mes Comptes' ? titleChunk : `${titleChunk} - Mes Comptes`,
+    title: 'Mes Comptes',
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { name: 'format-detection', content: 'telephone=no' },
+      {
+        property: 'og:title',
+        content: 'Mes Comptes',
+        vmid: 'og:title',
+      },
+      {
+        property: 'og:description',
+        content: 'Application simple pour surveiller ses budgets',
+        vmid: 'og:description',
+      },
+      {
+        hid: 'description',
+        name: 'description',
+        content: 'Application simple pour surveiller ses budgets',
+      },
     ],
     link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
   },
@@ -99,6 +115,7 @@ export default {
     config: fireconfig,
     onFirebaseHosting: process.env.NODE_ENV === 'production',
     services: {
+      storage: true,
       auth: {
         persistence: 'session',
         initialize: {

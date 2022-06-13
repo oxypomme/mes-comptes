@@ -9,7 +9,7 @@ import Vue from 'vue'
 export default Vue.extend({
   middleware: ['auth'],
   head: {
-    title: 'Planificateur - ',
+    title: 'Planificateur',
   },
   mounted() {
     // Update title
