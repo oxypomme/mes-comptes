@@ -32,6 +32,7 @@ const actions: ActionTree<AgendaState, RootState> = {
         category: 'Catégorie',
         modifier: -1,
         values: Array(12).fill(0),
+        date: this.$fireModule.firestore.FieldValue.serverTimestamp(),
         createdAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
       } as AgendaRow & { createdAt: firebase.firestore.FieldValue })
       commit('SET_LOADING', false)

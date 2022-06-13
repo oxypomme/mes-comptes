@@ -23,6 +23,7 @@ interface AgendaRow extends FirestoreData {
   category: string
   modifier: ValueModifier
   values: number[] // 1 element for each month (12 elements in total); float
+  date: firebase.firestore.Timestamp
 }
 
 interface AgendaComputed {
