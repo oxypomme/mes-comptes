@@ -18,6 +18,8 @@ const getter: GetterTree<CategoryState, RootState> = {
    */
   getCategories: (state, _getters, _rootState, rootGetters) => {
     const agenda = rootGetters['agenda/getCurrent'] as AgendaComputed
+    console.log(agenda)
+
     const weekcount = rootGetters.getWeekCount
 
     const categories: Category[] = []

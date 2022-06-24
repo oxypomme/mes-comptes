@@ -96,7 +96,7 @@
               :class="[
                 'text-center',
                 'text-capitalize',
-                currentMonth.value === monthIndex - 1 && 'activeMonth',
+                currentMonth.value === monthIndex && 'activeMonth',
               ]"
             >
               {{ month(monthIndex).label }}
@@ -109,15 +109,25 @@
               :key="'value' + monthIndex"
               :class="[
                 'text-center',
-                currentMonth.value === monthIndex - 1 && 'activeMonth',
+                currentMonth.value === monthIndex && 'activeMonth',
               ]"
             >
-              <v-chip
-                small
-                :color="month(monthIndex).total > 0 ? 'green' : 'red'"
-              >
-                {{ toLS(month(monthIndex).total) }}
-              </v-chip>
+              <v-tooltip bottom>
+                <template #activator="{ on, attrs }">
+                  <v-chip
+                    small
+                    :color="month(monthIndex).total > 0 ? 'green' : 'red'"
+                    v-bind="attrs"
+                    v-on="on"
+                  >
+                    {{ toLS(month(monthIndex).total) }}
+                  </v-chip>
+                </template>
+                <span>
+                  {{ toLS(month(monthIndex).credit) }}
+                  - {{ toLS(month(monthIndex).debit) }}
+                </span>
+              </v-tooltip>
             </th>
           </tr>
         </thead>
@@ -168,7 +178,7 @@
               :key="item.name + '_month' + monthIndex"
               :class="[
                 'text-center',
-                currentMonth.value === monthIndex && 'activeMonth',
+                currentMonth.value === monthIndex + 1 && 'activeMonth',
               ]"
             >
               <span class="hoverable" @click="open(item, monthIndex, value)">
