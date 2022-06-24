@@ -32,6 +32,7 @@ const actions: ActionTree<AgendaState, RootState> = {
         category: 'Catégorie',
         modifier: -1,
         values: Array(12).fill(0),
+        date: this.$fireModule.firestore.FieldValue.serverTimestamp(),
         createdAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
       } as AgendaRow & { createdAt: firebase.firestore.FieldValue })
       commit('SET_LOADING', false)
@@ -103,6 +104,32 @@ const actions: ActionTree<AgendaState, RootState> = {
         .collection('agenda')
         .doc(id)
       await ref.delete()
+      commit('SET_LOADING', false)
+    } catch (error) {
+      commit('SET_LOADING', false)
+      throw error
+    }
+  },
+  /**
+   * Update the status of a row for the authed user
+   */
+  async updateStatus({ rootGetters, commit }, { id, status }) {
+    commit('SET_LOADING', true)
+    try {
+      const uid = (rootGetters['auth/getUser'] as User | null)?.uid
+      if (!uid) {
+        throw new Error('Vous devez être connecté pour effectuer cette action')
+      }
+
+      const ref = this.$fire.firestore
+        .collection('users')
+        .doc(uid)
+        .collection('agenda')
+        .doc(id)
+      await ref.update({
+        status,
+        updatedAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
+      } as Partial<AgendaRow> & { updatedAt: firebase.firestore.FieldValue })
       commit('SET_LOADING', false)
     } catch (error) {
       commit('SET_LOADING', false)

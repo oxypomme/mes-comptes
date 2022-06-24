@@ -13,8 +13,21 @@
         <v-card-text>
           <v-container>
             <v-row>
+              <v-date-picker
+                v-if="editedValue.field === 'date'"
+                v-model="dateValue"
+                :min="minDate"
+                :max="maxDate"
+                color="primary"
+                locale="fr-FR"
+                :first-day-of-week="1"
+                :events="rowDates"
+                event-color="primary"
+                show-current
+                show-adjacent-months
+              ></v-date-picker>
               <v-text-field
-                v-if="editedValue.field !== 'modifier'"
+                v-else-if="editedValue.field !== 'modifier'"
                 v-model="editedValue.value"
                 :rules="editedRules"
                 :label="editedValue.label"
@@ -73,14 +86,16 @@
 <script lang="ts">
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
-import type { AgendaRow } from '~/ts/types'
+import type { AgendaRow, Settings } from '~/ts/types'
 import type { VForm } from '~/ts/components'
+import dayjs from '~/ts/dayjs'
+import type firebase from 'firebase'
 
 export type EditedValue = {
   id: string | undefined
   name: string
   field: string | number
-  value: string
+  value: string | number | firebase.firestore.Timestamp
   applyToAll: boolean
   label: string
 }
@@ -121,6 +136,14 @@ export default Vue.extend({
       )
     },
     /**
+     * Current row dates
+     */
+    rowDates(): string[] {
+      return (this.$store.getters['agenda/getAgenda'] as AgendaRow[])
+        .filter(({ date, id }) => date && id !== this.editedValue.id)
+        .map(({ date }) => date && dayjs(date.toDate()).format('YYYY-MM-DD'))
+    },
+    /**
      * Dialog toggle
      */
     show: {
@@ -156,6 +179,36 @@ export default Vue.extend({
         ]
       }
     },
+    /**
+     * The value for DatePicker
+     */
+    dateValue: {
+      get(): string {
+        return typeof this.editedValue.value === 'object'
+          ? dayjs(this.editedValue.value.toDate()).format('YYYY-MM-DD')
+          : ''
+      },
+      set(value: string) {
+        if (this.editedValue.field === 'date') {
+          this.editedValue.value = dayjs(value, 'YYYY-MM-DD').toFire()
+        }
+      },
+    },
+    /**
+     * Minimal date for Date picker
+     */
+    minDate(): string {
+      const settings = this.$store.getters.getSettings as Settings
+      return dayjs(settings?.resetDate.toDate() ?? undefined)
+        .startOf('month')
+        .format('YYYY-MM-DD')
+    },
+    /**
+     * Maxmimal date for Date picker
+     */
+    maxDate(): string {
+      return dayjs(this.minDate).endOf('month').format('YYYY-MM-DD')
+    },
   },
   watch: {
     /**
@@ -181,7 +234,7 @@ export default Vue.extend({
     async save(e: Event) {
       e.preventDefault()
 
-      let value: AgendaRow[keyof AgendaRow] = this.editedValue.value
+      let value: AgendaRow[keyof AgendaRow] | number = this.editedValue.value
       let property = this.editedValue.field
       if (typeof this.editedValue.field !== 'string') {
         property = 'values'
@@ -208,14 +261,18 @@ export default Vue.extend({
       const items = [...this.$store.getters['agenda/getAgenda']]
 
       const index = items.findIndex((r) => r.id === (this.value as any).id)
-      if (this.editedValue.applyToAll) {
-        for (let i = 0; i < items[index].values.length; i++) {
-          items[index].values[i] = parseFloat(this.editedValue.value || '0')
+      if (typeof this.editedValue.value !== 'object') {
+        if (this.editedValue.applyToAll) {
+          for (let i = 0; i < items[index].values.length; i++) {
+            items[index].values[i] = parseFloat(
+              this.editedValue.value.toString() || '0'
+            )
+          }
+        } else {
+          items[index].values[this.editedValue.field as number] = parseFloat(
+            this.editedValue.value.toString() || '0'
+          )
         }
-      } else {
-        items[index].values[this.editedValue.field as number] = parseFloat(
-          this.editedValue.value || '0'
-        )
       }
       return items[index].values
     },

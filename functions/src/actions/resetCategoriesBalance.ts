@@ -24,6 +24,7 @@ export default async (
       for (const cref of await aref.collection('categories').listDocuments()) {
         batch.update(cref, {
           balance: 0,
+          updatedAt: firestore.FieldValue.serverTimestamp(),
         })
       }
     }

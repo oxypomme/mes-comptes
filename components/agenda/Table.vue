@@ -33,7 +33,21 @@
       <template #default>
         <thead>
           <tr>
-            <th></th>
+            <th colspan="1"></th>
+            <th>
+              <v-hover v-slot="{ hover }" class="hoverable">
+                <span @click="changeSort('date')">
+                  Date
+                  <v-icon
+                    v-if="hover || sortType === 'date'"
+                    small
+                    color="grey"
+                  >
+                    mdi-{{ reverseSort ? 'arrow-up' : 'arrow-down' }}
+                  </v-icon>
+                </span>
+              </v-hover>
+            </th>
             <th>
               <v-hover v-slot="{ hover }" class="hoverable">
                 <span @click="changeSort('name')">
@@ -89,7 +103,7 @@
             </th>
           </tr>
           <tr v-if="Object.values(items).length > 0">
-            <th colspan="4"></th>
+            <th colspan="5"></th>
             <th
               v-for="monthIndex in 12"
               :key="'value' + monthIndex"
@@ -110,9 +124,21 @@
         <tbody>
           <tr v-for="item in [...items].sort(sorter)" :key="item.name">
             <td>
-              <v-btn icon color="error" @click="deleteRow(item.id)">
-                <v-icon>mdi-delete</v-icon>
-              </v-btn>
+              <div class="d-flex align-center">
+                <v-btn icon color="error" @click="deleteRow(item.id)">
+                  <v-icon>mdi-delete</v-icon>
+                </v-btn>
+                <v-simple-checkbox
+                  :value="item.status"
+                  :ripple="false"
+                  @input="updateStatus(item.id, $event)"
+                ></v-simple-checkbox>
+              </div>
+            </td>
+            <td>
+              <span class="hoverable" @click="open(item, 'date', item.date)">
+                {{ item.date ? formatDate(item.date) : '-' }}
+              </span>
             </td>
             <td>
               <span class="hoverable" @click="open(item, 'name', item.name)">
@@ -162,8 +188,10 @@ import { mapGetters } from 'vuex'
 import type { EditedValue } from './dialog/Edition.vue'
 import { toLS } from '~/ts/format'
 import type { AgendaRow } from '~/ts/types'
+import dayjs from '~/ts/dayjs'
+import type firebase from 'firebase'
 
-type SortType = 'name' | 'category' | 'type'
+type SortType = 'name' | 'category' | 'type' | 'date'
 
 export default Vue.extend({
   data: () => ({
@@ -191,17 +219,20 @@ export default Vue.extend({
      * @returns The function
      */
     sorter(): (a: AgendaRow, b: AgendaRow) => number {
-      let priority: (keyof Omit<AgendaRow, 'values' | 'id'>)[] = []
+      let priority: (keyof Omit<AgendaRow, 'values' | 'id' | 'status'>)[] = []
       switch (this.sortType) {
         case 'name':
-          priority = ['name', 'category', 'modifier']
+          priority = ['name', 'category', 'modifier', 'date']
           break
         case 'category':
-          priority = ['category', 'name', 'modifier']
+          priority = ['category', 'name', 'modifier', 'date']
+          break
+        case 'date':
+          priority = ['date', 'name', 'category', 'modifier']
           break
         case 'type':
         default:
-          priority = ['modifier', 'category', 'name']
+          priority = ['modifier', 'category', 'name', 'date']
           break
       }
       return (a, b) => {
@@ -209,8 +240,13 @@ export default Vue.extend({
         let i = 0
         while (res === 0 && i < priority.length) {
           const key = priority[i]
-          res =
-            key === 'modifier' ? a[key] - b[key] : a[key].localeCompare(b[key])
+          if (key === 'date') {
+            res = dayjs(a[key].toDate()).diff(dayjs(b[key].toDate()))
+          } else if (key === 'modifier') {
+            res = a[key] - b[key]
+          } else {
+            res = a[key].localeCompare(b[key])
+          }
           i++
         }
         return this.reverseSort ? -res : res
@@ -219,6 +255,12 @@ export default Vue.extend({
   },
   methods: {
     toLS,
+    /**
+     * Format item date
+     */
+    formatDate(timestamp: firebase.firestore.Timestamp): string {
+      return dayjs(timestamp.toDate()).format('DD/MM/YYYY')
+    },
     /**
      * Add a row to the agenda
      */
@@ -248,7 +290,7 @@ export default Vue.extend({
      * @param field The field of the row
      * @param value The current value of the row
      */
-    open({ id, name }: AgendaRow, field: string, value: string | number) {
+    open({ id, name }: AgendaRow, field: string, value: EditedValue['value']) {
       if (typeof value === 'number') {
         value = value.toFixed(2)
       }
@@ -288,12 +330,14 @@ export default Vue.extend({
       }
     },
     /**
-     * Wrapper to `Event.preventDefault`
-     *
-     * @param e The event
+     * Update status of a row
      */
-    preventDefault(e: Event) {
-      e.preventDefault()
+    async updateStatus(id: string, status: boolean) {
+      try {
+        await this.$store.dispatch('agenda/updateStatus', { id, status })
+      } catch (e) {
+        this.$toast.global.error((e as Error).message)
+      }
     },
   },
 })
