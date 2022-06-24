@@ -123,15 +123,17 @@
         </thead>
         <tbody>
           <tr v-for="item in [...items].sort(sorter)" :key="item.name">
-            <td class="d-flex align-center">
-              <v-btn icon color="error" @click="deleteRow(item.id)">
-                <v-icon>mdi-delete</v-icon>
-              </v-btn>
-              <v-simple-checkbox
-                :value="item.status"
-                :ripple="false"
-                @input="updateStatus(item.id, $event)"
-              ></v-simple-checkbox>
+            <td>
+              <div class="d-flex align-center">
+                <v-btn icon color="error" @click="deleteRow(item.id)">
+                  <v-icon>mdi-delete</v-icon>
+                </v-btn>
+                <v-simple-checkbox
+                  :value="item.status"
+                  :ripple="false"
+                  @input="updateStatus(item.id, $event)"
+                ></v-simple-checkbox>
+              </div>
             </td>
             <td>
               <span class="hoverable" @click="open(item, 'date', item.date)">
