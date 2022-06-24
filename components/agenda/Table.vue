@@ -98,12 +98,22 @@
                 currentMonth.value === monthIndex - 1 && 'activeMonth',
               ]"
             >
-              <v-chip
-                small
-                :color="month(monthIndex).total > 0 ? 'green' : 'red'"
-              >
-                {{ toLS(month(monthIndex).total) }}
-              </v-chip>
+              <v-tooltip bottom>
+                <template #activator="{ on, attrs }">
+                  <v-chip
+                    small
+                    :color="month(monthIndex).total > 0 ? 'green' : 'red'"
+                    v-bind="attrs"
+                    v-on="on"
+                  >
+                    {{ toLS(month(monthIndex).total) }}
+                  </v-chip>
+                </template>
+                <span>
+                  {{ toLS(month(monthIndex).credit) }}
+                  - {{ toLS(month(monthIndex).debit) }}
+                </span>
+              </v-tooltip>
             </th>
           </tr>
         </thead>
