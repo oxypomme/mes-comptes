@@ -60,14 +60,12 @@ const getters: GetterTree<AgendaState, RootState> = {
    *
    * @param _ The state
    * @param getters The other getters
+   * @param _r The root state
+   * @param rootGetters The root getters
    * @returns The current month data
    */
-  getCurrent: (_, getters) => {
-    const resetDate = dayjs(
-      getters.getSettings?.resetDate.toDate() ?? undefined
-    )
-
-    return getters.getMonth(resetDate.month())
+  getCurrent: (_, getters, _r, rootGetters) => {
+    return getters.getMonth(rootGetters.getCurrentMonth.value)
   },
   /**
    * Get the row names. Used for autocompletion.

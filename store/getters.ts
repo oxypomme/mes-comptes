@@ -69,7 +69,7 @@ const getters: GetterTree<RootState, RootState> = {
     const date = resetDate ? dayjs(resetDate).subtract(1, 'month') : dayjs()
     return {
       label: date.format('MMMM'),
-      value: date.month(),
+      value: date.month() + 1,
     }
   },
 }
