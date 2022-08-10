@@ -36,7 +36,7 @@ interface Category extends FirestoreData {
   name: string
   icon?: string
   balance: number // float
-  budget: number // float
+  budget: string // float or expression
   type: ECategoryType
   computed: {
     tooltip: string

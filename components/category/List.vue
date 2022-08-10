@@ -98,7 +98,6 @@ export default Vue.extend({
       loading: 'categories/getLoadingState',
       categories: 'categories/getCategories',
       roulement: 'categories/getRoulement',
-      weeksCount: 'getWeekCount',
     }),
   },
   methods: {
@@ -144,7 +143,6 @@ export default Vue.extend({
       this.category = {
         ...categ,
         balance: categ.balance.toFixed(2),
-        budget: (categ.budget / this.weeksCount).toFixed(2),
         id: categ.id,
       }
       // TODO: check if id usefull

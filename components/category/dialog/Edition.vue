@@ -35,16 +35,29 @@
               ></v-select>
             </v-row>
             <v-row align="center">
-              <v-text-field
+              <div>
+                <label
+                  for=""
+                  class="v-label theme--dark v-label--active d-block"
+                  style="transform: scale(0.75); transform-origin: top left"
+                >
+                  Budget de la catégorie
+                </label>
+                <v-chip
+                  class="mb-5"
+                  :disabled="category.type !== 0"
+                  :dense="$vuetify.breakpoint.smAndDown"
+                  @click="showBudgetDialog = true"
+                >
+                  {{ parsedBudget ? toLS(parsedBudget) : '--,-- €' }}
+                </v-chip>
+              </div>
+              <CategoryDialogBudgetEdition
                 v-model="category.budget"
-                :rules="rules.budget"
-                :disabled="category.type !== 0"
-                label="Budget par semaine de la catégorie"
-                type="number"
-                prefix="€"
-                :dense="$vuetify.breakpoint.smAndDown"
+                :show="showBudgetDialog"
+                @close="showBudgetDialog = false"
               >
-              </v-text-field>
+              </CategoryDialogBudgetEdition>
             </v-row>
             <v-row>
               <v-text-field
@@ -87,6 +100,7 @@ import type { PropType } from 'vue'
 import type { Category, InputCategory } from '~/ts/types'
 import type { VForm } from '~/ts/components'
 import { ECategoryType } from '~/ts/ECategoryType'
+import { parseBudget, toLS } from '~/ts/format'
 
 export default Vue.extend({
   props: {
@@ -101,22 +115,8 @@ export default Vue.extend({
     },
   },
   data: () => ({
+    showBudgetDialog: false,
     valid: false,
-    rules: {
-      name: [(v) => !!v || 'Un nom est requis'],
-      balance: [
-        (v) => !!v || 'Un montant est requis',
-        (v) =>
-          (!isNaN(parseFloat(v)) && parseFloat(v) >= 0) ||
-          'Le montant doit être supérieur ou égal à 0',
-      ],
-      budget: [
-        (v) => !!v || 'Un montant est requis',
-        (v) =>
-          (!isNaN(parseFloat(v)) && parseFloat(v) >= 0) ||
-          'Le montant doit être supérieur ou égal à 0',
-      ],
-    } as Record<string, ((v: string) => true | string)[]>,
     initCategory: {
       id: undefined,
       name: '',
@@ -131,7 +131,33 @@ export default Vue.extend({
     ...mapGetters({
       loading: 'categories/getLoadingState',
       categories: 'categories/getCategories',
+      nbResetDayInMonth: 'getResetWeekCount',
+      nbWeekInMonth: 'getWeekCount',
     }),
+    /**
+     * Parsed budget
+     */
+    parsedBudget(): number {
+      return parseBudget(
+        this.category.budget,
+        this.nbResetDayInMonth,
+        this.nbWeekInMonth
+      )
+    },
+    /**
+     * Field rules
+     */
+    rules(): Record<string, ((v: string) => true | string)[]> {
+      return {
+        name: [(v) => !!v || 'Un nom est requis'],
+        balance: [
+          (v) => !!v || 'Un montant est requis',
+          (v) =>
+            (!isNaN(parseFloat(v)) && parseFloat(v) >= 0) ||
+            'Le montant doit être supérieur ou égal à 0',
+        ],
+      }
+    },
     /**
      * Category types available
      */
@@ -202,6 +228,7 @@ export default Vue.extend({
     },
   },
   methods: {
+    toLS,
     /**
      * Form validation
      */

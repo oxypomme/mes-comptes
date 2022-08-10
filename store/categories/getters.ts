@@ -3,7 +3,9 @@ import type { RootState } from '../state'
 import type { CategoryState } from './state'
 import { ECategoryType } from '~/ts/ECategoryType'
 import type { Account, AgendaComputed, Category } from '~/ts/types'
-import { toLS } from '~/ts/format'
+import { parseBudget, toLS } from '~/ts/format'
+
+export type ComputedCategory = Category & { compBudget: number }
 
 /**
  * Getters for user's categories
@@ -18,60 +20,63 @@ const getter: GetterTree<CategoryState, RootState> = {
    */
   getCategories: (state, _getters, _rootState, rootGetters) => {
     const agenda = rootGetters['agenda/getCurrent'] as AgendaComputed
-    console.log(agenda)
 
-    const weekcount = rootGetters.getWeekCount
+    const calcBudget = (exp: string) =>
+      parseBudget(exp, rootGetters.getResetWeekCount, rootGetters.getWeekCount)
 
-    const categories: Category[] = []
+    const categories: ComputedCategory[] = []
     for (const { id, name, budget, balance, type, icon } of state.data) {
       let i = icon
-      let b = budget
+      let b = budget // Here, it's an expression
       let ba = balance
       switch (type) {
         case ECategoryType.BUDGET:
           i = icon ?? 'mdi-chart-pie'
-          b = budget * weekcount
+          b = calcBudget(budget).toString()
           break
         case ECategoryType.CALCULATED:
           i = icon ?? 'mdi-calculator'
-          b =
+          b = (
             agenda.total -
             state.data
               .filter(({ type }) => type === ECategoryType.BUDGET)
-              .reduce((sum, { budget }) => sum + budget * weekcount, 0)
+              .reduce((sum, { budget }) => sum + calcBudget(budget), 0)
+          ).toString()
           break
         case ECategoryType.PLANNED_CREDIT:
           i = icon ?? 'mdi-calendar'
           ba = -balance
-          b = agenda.credit
+          b = agenda.credit.toString()
           break
         case ECategoryType.PLANNED_DEBIT:
           i = icon ?? 'mdi-calendar'
-          b = agenda.debit
+          b = agenda.debit.toString()
           break
         default:
           break
       }
 
-      const ratio = Math.abs(ba) / Math.abs(b)
+      const fb = parseFloat(b)
+      const ratio = Math.abs(ba) / Math.abs(fb)
 
       categories.push({
         id,
         name,
-        budget: b,
+        budget,
+        compBudget: fb,
         balance: ba,
         type,
         icon: i,
         computed: {
           // Tooltip for detailed usage of a Category
-          tooltip: `${toLS(Math.abs(ba))} / ${toLS(Math.abs(b))} (${toLS(
+          tooltip: `${toLS(Math.abs(ba))} / ${toLS(Math.abs(fb))} (${toLS(
             ratio,
             {
               style: 'percent',
             }
           )})`,
           // Calculate usage of a Category and format it
-          usage: toLS(b - ba),
+          usage: toLS(fb - ba),
           // Calculate usage ratio of a Category
           ratio: {
             color: ratio < 0.5 ? 'green' : ratio <= 0.75 ? 'orange' : 'red',
@@ -95,21 +100,21 @@ const getter: GetterTree<CategoryState, RootState> = {
         plannedDebit: false,
       }
       for (const {
-        budget,
+        compBudget,
         balance,
         type,
-      } of getters.getCategories as Category[]) {
+      } of getters.getCategories as ComputedCategory[]) {
         switch (type) {
           case ECategoryType.PLANNED_CREDIT:
-            value += budget - balance
+            value += compBudget - balance
             check.plannedCredit = true
             break
           case ECategoryType.PLANNED_DEBIT:
-            value += balance - budget
+            value += balance - compBudget
             check.plannedDebit = true
             break
           default:
-            value -= Math.max(budget - balance, 0)
+            value -= Math.max(compBudget - balance, 0)
             break
         }
       }
