@@ -104,11 +104,15 @@ export default {
         initialize: {
           onAuthStateChangedAction: 'auth/onAuth',
         },
+        emulatorPort: process.env.NODE_ENV === 'production' ? undefined : 9099,
+        emulatorHost: 'http://localhost',
       },
       firestore: {
         enablePersistence: {
           synchronizeTabs: true,
         },
+        emulatorPort: process.env.NODE_ENV === 'production' ? undefined : 8080,
+        emulatorHost: 'localhost',
       },
       performance: process.env.NODE_ENV === 'production',
       analytics: process.env.NODE_ENV === 'production',
