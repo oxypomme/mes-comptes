@@ -268,7 +268,7 @@ export default Vue.extend({
           null
         // Setting value
         const currentMonth = this.$store.getters.getCurrentMonth.value as number
-        this.operation.amount = agendaRow.values[currentMonth].toString()
+        this.operation.amount = agendaRow.values[currentMonth - 1].toString()
         // Prepare for updating agenda row
         this.agendaRowIndex = rowIndex
       }
