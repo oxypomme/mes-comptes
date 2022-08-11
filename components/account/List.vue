@@ -15,7 +15,7 @@
             icon
             color="success"
             :small="$vuetify.breakpoint.smAndDown"
-            @click="account = undefined"
+            @click="account = false"
           >
             <v-icon>mdi-plus</v-icon>
           </v-btn>

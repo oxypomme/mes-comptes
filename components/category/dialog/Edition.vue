@@ -83,6 +83,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
+import type { PropType } from 'vue'
 import type { Category, InputCategory } from '~/ts/types'
 import type { VForm } from '~/ts/components'
 import { ECategoryType } from '~/ts/ECategoryType'
@@ -90,12 +91,13 @@ import { ECategoryType } from '~/ts/ECategoryType'
 export default Vue.extend({
   props: {
     /**
-     * If val is `undefined`, a new operation is requested
+     * If val is `false`, a new category is requested
      * If val is `null`, we don't want to show the component
      */
-    // eslint-disable-next-line vue/require-prop-types
     value: {
-      required: true,
+      type: [Object, Boolean] as PropType<Category | false | null>,
+      required: false,
+      default: null,
     },
   },
   data: () => ({
@@ -195,7 +197,7 @@ export default Vue.extend({
      * Reset edited operation
      */
     value(val) {
-      this.category = val ?? { ...this.initCategory }
+      this.category = val || { ...this.initCategory }
       this.validate()
     },
   },

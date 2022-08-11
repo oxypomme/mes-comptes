@@ -66,18 +66,20 @@
 <script lang="ts">
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
+import type { PropType } from 'vue'
 import type { InputAccount } from '~/ts/types'
 import type { VForm } from '~/ts/components'
 
 export default Vue.extend({
   props: {
     /**
-     * If val is `undefined`, a new operation is requested
+     * If val is `false`, a new account is requested
      * If val is `null`, we don't want to show the component
      */
-    // eslint-disable-next-line vue/require-prop-types
     value: {
-      required: true,
+      type: [Object, Boolean] as PropType<InputAccount | false | null>,
+      required: false,
+      default: null,
     },
   },
   data: () => ({
@@ -119,7 +121,7 @@ export default Vue.extend({
      * Reset edited operation
      */
     value(val) {
-      this.account = val ?? { ...this.initAccount }
+      this.account = val || { ...this.initAccount }
       this.validate()
     },
   },

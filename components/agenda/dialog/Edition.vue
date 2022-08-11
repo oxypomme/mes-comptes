@@ -86,6 +86,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
+import type { PropType } from 'vue'
 import type { AgendaRow, Settings } from '~/ts/types'
 import type { VForm } from '~/ts/components'
 import dayjs from '~/ts/dayjs'
@@ -103,12 +104,13 @@ export type EditedValue = {
 export default Vue.extend({
   props: {
     /**
-     * If val is `undefined`, a new operation is requested
+     * If val is `false`, a new row is requested
      * If val is `null`, we don't want to show the component
      */
-    // eslint-disable-next-line vue/require-prop-types
     value: {
-      required: true,
+      type: [Object, Boolean] as PropType<AgendaRow | false | null>,
+      required: false,
+      default: null,
     },
   },
   data: () => ({
@@ -184,9 +186,16 @@ export default Vue.extend({
      */
     dateValue: {
       get(): string {
-        return typeof this.editedValue.value === 'object'
-          ? dayjs(this.editedValue.value.toDate()).format('YYYY-MM-DD')
-          : ''
+        if (typeof this.editedValue.value === 'object') {
+          return dayjs(this.editedValue.value.toDate()).format('YYYY-MM-DD')
+        }
+        const settings = this.$store.getters.getSettings as Settings
+        if (settings) {
+          return dayjs(settings.resetDate.toDate())
+            .subtract(1, 'month')
+            .format('YYYY-MM-DD')
+        }
+        return ''
       },
       set(value: string) {
         if (this.editedValue.field === 'date') {
@@ -200,6 +209,7 @@ export default Vue.extend({
     minDate(): string {
       const settings = this.$store.getters.getSettings as Settings
       return dayjs(settings?.resetDate.toDate() ?? undefined)
+        .subtract(1, 'month')
         .startOf('month')
         .format('YYYY-MM-DD')
     },
@@ -215,7 +225,7 @@ export default Vue.extend({
      * Reset edited operation
      */
     value(val) {
-      this.editedValue = val ?? { ...this.initValue }
+      this.editedValue = val || { ...this.initValue }
       this.validate()
     },
   },

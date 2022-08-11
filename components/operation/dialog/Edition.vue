@@ -129,6 +129,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import type { PropType } from 'vue'
 import { mapGetters } from 'vuex'
 import dayjs from '~/ts/dayjs'
 import { ECategoryType } from '~/ts/ECategoryType'
@@ -143,12 +144,13 @@ import type { VForm, VMenu } from '~/ts/components'
 export default Vue.extend({
   props: {
     /**
-     * If val is `undefined`, a new operation is requested
+     * If val is `false`, a new operation is requested
      * If val is `null`, we don't want to show the component
      */
-    // eslint-disable-next-line vue/require-prop-types
     value: {
-      required: true,
+      type: [Object, Boolean] as PropType<InputOperation | false | null>,
+      required: false,
+      default: null,
     },
   },
   data: () => ({
@@ -239,7 +241,7 @@ export default Vue.extend({
      * Reset edited operation
      */
     value(val) {
-      this.operation = val ?? { ...this.initOperation }
+      this.operation = val || { ...this.initOperation }
       this.validate()
     },
   },
@@ -268,7 +270,7 @@ export default Vue.extend({
           null
         // Setting value
         const currentMonth = this.$store.getters.getCurrentMonth.value as number
-        this.operation.amount = agendaRow.values[currentMonth].toString()
+        this.operation.amount = agendaRow.values[currentMonth - 1].toString()
         // Prepare for updating agenda row
         this.agendaRowIndex = rowIndex
       }
