@@ -196,7 +196,7 @@
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
 import type { EditedValue } from './dialog/Edition.vue'
-import { toLS } from '~/ts/format'
+import { escapeHTML, toLS } from '~/ts/format'
 import type { AgendaRow } from '~/ts/types'
 import dayjs from '~/ts/dayjs'
 import type firebase from 'firebase'
@@ -287,10 +287,29 @@ export default Vue.extend({
      * @param id The id of the row
      */
     async deleteRow(id: string) {
-      try {
-        await this.$store.dispatch('agenda/deleteEntry', id)
-      } catch (e) {
-        this.$toast.global.error((e as Error).message)
+      const res = await this.$dialog.confirm({
+        text: `Voulez-vous supprimer la ligne "${escapeHTML(
+          this.items.find(({ id: rid }) => id === rid)?.name
+        )}" ?`,
+        title: 'Attention',
+        actions: {
+          false: {
+            text: 'Annuler',
+            color: 'error',
+          },
+          true: {
+            text: 'Confirmer',
+            color: 'success',
+          },
+        },
+      })
+
+      if (res) {
+        try {
+          await this.$store.dispatch('agenda/deleteEntry', id)
+        } catch (e) {
+          this.$toast.global.error((e as Error).message)
+        }
       }
     },
     /**
