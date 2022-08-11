@@ -197,7 +197,7 @@ export default Vue.extend({
      * Reset edited operation
      */
     value(val) {
-      this.category = val ?? { ...this.initCategory }
+      this.category = val || { ...this.initCategory }
       this.validate()
     },
   },

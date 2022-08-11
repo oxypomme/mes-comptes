@@ -121,7 +121,7 @@ export default Vue.extend({
      * Reset edited operation
      */
     value(val) {
-      this.account = val ?? { ...this.initAccount }
+      this.account = val || { ...this.initAccount }
       this.validate()
     },
   },

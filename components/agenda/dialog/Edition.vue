@@ -225,7 +225,7 @@ export default Vue.extend({
      * Reset edited operation
      */
     value(val) {
-      this.editedValue = val ?? { ...this.initValue }
+      this.editedValue = val || { ...this.initValue }
       this.validate()
     },
   },
