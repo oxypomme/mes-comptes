@@ -91,11 +91,11 @@ import { ECategoryType } from '~/ts/ECategoryType'
 export default Vue.extend({
   props: {
     /**
-     * If val is `undefined`, a new operation is requested
+     * If val is `false`, a new category is requested
      * If val is `null`, we don't want to show the component
      */
     value: {
-      type: Object as PropType<Category | undefined | null>,
+      type: [Object, Boolean] as PropType<Category | false | null>,
       required: false,
       default: null,
     },

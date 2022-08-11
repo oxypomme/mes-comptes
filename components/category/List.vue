@@ -21,7 +21,7 @@
             class="last-item"
             icon
             color="success"
-            @click="category = undefined"
+            @click="category = false"
           >
             <v-icon>mdi-plus</v-icon>
           </v-btn>

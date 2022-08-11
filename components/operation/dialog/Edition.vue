@@ -144,11 +144,11 @@ import type { VForm, VMenu } from '~/ts/components'
 export default Vue.extend({
   props: {
     /**
-     * If val is `undefined`, a new operation is requested
+     * If val is `false`, a new operation is requested
      * If val is `null`, we don't want to show the component
      */
     value: {
-      type: Object as PropType<InputOperation | undefined | null>,
+      type: [Object, Boolean] as PropType<InputOperation | false | null>,
       required: false,
       default: null,
     },

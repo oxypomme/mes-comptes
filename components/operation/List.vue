@@ -32,7 +32,7 @@
             <v-btn icon @click="historyDialog = true">
               <v-icon>mdi-history</v-icon>
             </v-btn>
-            <v-btn icon color="success" @click="operation = undefined">
+            <v-btn icon color="success" @click="operation = false">
               <v-icon>mdi-plus</v-icon>
             </v-btn>
           </v-toolbar>
@@ -92,7 +92,7 @@ export default Vue.extend({
       { text: 'Catégorie', value: 'category', sortable: false },
       { text: 'Actions', value: 'actions', sortable: false },
     ],
-    operation: null as InputOperation | null,
+    operation: null as InputOperation | false | null,
     historyDialog: false,
   }),
   computed: {

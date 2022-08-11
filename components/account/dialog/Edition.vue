@@ -73,11 +73,11 @@ import type { VForm } from '~/ts/components'
 export default Vue.extend({
   props: {
     /**
-     * If val is `undefined`, a new operation is requested
+     * If val is `false`, a new account is requested
      * If val is `null`, we don't want to show the component
      */
     value: {
-      type: Object as PropType<InputAccount | undefined | null>,
+      type: [Object, Boolean] as PropType<InputAccount | false | null>,
       required: false,
       default: null,
     },
