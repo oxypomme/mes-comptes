@@ -186,9 +186,16 @@ export default Vue.extend({
      */
     dateValue: {
       get(): string {
-        return typeof this.editedValue.value === 'object'
-          ? dayjs(this.editedValue.value.toDate()).format('YYYY-MM-DD')
-          : ''
+        if (typeof this.editedValue.value === 'object') {
+          return dayjs(this.editedValue.value.toDate()).format('YYYY-MM-DD')
+        }
+        const settings = this.$store.getters.getSettings as Settings
+        if (settings) {
+          return dayjs(settings.resetDate.toDate())
+            .subtract(1, 'month')
+            .format('YYYY-MM-DD')
+        }
+        return ''
       },
       set(value: string) {
         if (this.editedValue.field === 'date') {
@@ -202,6 +209,7 @@ export default Vue.extend({
     minDate(): string {
       const settings = this.$store.getters.getSettings as Settings
       return dayjs(settings?.resetDate.toDate() ?? undefined)
+        .subtract(1, 'month')
         .startOf('month')
         .format('YYYY-MM-DD')
     },
