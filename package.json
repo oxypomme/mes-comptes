@@ -12,7 +12,7 @@
     "build": "nuxt build",
     "start": "nuxt start",
     "generate": "nuxt generate",
-    "emulators": "firebase emulators:start --only storage,firestore,auth,ui --import ./firebase/emulator_data --export-on-exit ./firebase/emulator_data",
+    "emulators": "firebase emulators:start --import ./firebase/emulator_data --export-on-exit ./firebase/emulator_data",
     "lint:js": "eslint --ext \".ts,.vue\" .",
     "lint": "yarn lint:js"
   },
