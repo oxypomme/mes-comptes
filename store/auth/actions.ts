@@ -51,6 +51,7 @@ const actions: ActionTree<AuthState, RootState> = {
 
     const ref = this.$fire.firestore.collection('users').doc(user.uid)
     await ref.set({
+      devices: [],
       resetDate: date.toFire(),
       createdAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
     })
@@ -111,7 +112,7 @@ const actions: ActionTree<AuthState, RootState> = {
    * @param creditentials The creditentials
    */
   async loginUser(
-    { getters },
+    { getters, dispatch },
     { email, password }: { email: string; password: string }
   ) {
     await this.$fire.auth.signInWithEmailAndPassword(email, password)
@@ -119,6 +120,7 @@ const actions: ActionTree<AuthState, RootState> = {
     while (!getters.getUser) {
       await new Promise((resolve) => setTimeout(resolve, 100))
     }
+    dispatch('setupFCM')
   },
   /**
    * Sign out authed user
@@ -127,6 +129,39 @@ const actions: ActionTree<AuthState, RootState> = {
    */
   signOut() {
     return this.$fire.auth.signOut()
+  },
+  async setupFCM({ dispatch }) {
+    const perm = await Notification.requestPermission()
+
+    if (perm === 'granted') {
+      const fcmToken = await this.$fire.messaging.getToken()
+      dispatch('addDeviceToUser', { deviceId: fcmToken })
+
+      this.$fire.messaging.onMessage(({ notification }) => {
+        this.app.$toast.global.info(notification.body)
+      })
+    }
+  },
+  async addDeviceToUser({ getters }, { deviceId }: { deviceId: string }) {
+    if (!this.$fire.auth.currentUser) {
+      throw new Error('Une erreur est survenue, essayez de vous reconnecter')
+    }
+    const uid = (getters.getUser as User | null)?.uid
+    if (!uid) {
+      throw new Error('Vous devez être connecté pour effectuer cette action')
+    }
+
+    const ref = this.$fire.firestore
+      .collection('users')
+      .doc(uid)
+      .collection('devices')
+      .doc(deviceId)
+    await ref.set(
+      {
+        lastUsed: this.$fireModule.firestore.FieldValue.serverTimestamp(),
+      },
+      { mergeFields: ['lastUsed'] }
+    )
   },
 }
 

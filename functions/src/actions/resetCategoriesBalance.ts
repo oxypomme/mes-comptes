@@ -1,5 +1,6 @@
 import dayjs from 'dayjs'
 import { firestore } from 'firebase-admin'
+import { fcm } from '../firebase'
 
 /**
  * Reset user's categories' balances if needed
@@ -28,7 +29,20 @@ export default async (
         })
       }
     }
-    return batch.commit()
+    await batch.commit()
+
+    const devices = await ref.collection('devices').listDocuments()
+    if (devices && devices.length > 0) {
+      const tokens = devices.map((d) => d.id)
+
+      await fcm().sendMulticast({
+        tokens,
+        notification: {
+          title: '\uD83D\uDCC5 Nouveau jour, nouveau mois...',
+          body: 'Vos budgets ont été remis à zéro. Profitez en pour vous faire plaisir !',
+        },
+      })
+    }
   }
   return null
 }

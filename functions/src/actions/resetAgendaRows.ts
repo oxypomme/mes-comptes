@@ -19,8 +19,6 @@ export default async (
         ...(await ref.collection('agenda').listDocuments())
       )
       for (const doc of await docs) {
-        console.log('getting', doc.data()?.name)
-
         const aDate = doc.data()?.date as firestore.Timestamp | null
         let nd = dayjs(d)
         if (aDate) {

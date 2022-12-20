@@ -1,6 +1,7 @@
 import dayjs from 'dayjs'
 import type { firestore } from 'firebase-admin'
 import { store } from '../firebase'
+import purgeOldDevices from './purgeOldDevices'
 import resetAgendaRows from './resetAgendaRows'
 import resetCategoriesBalance from './resetCategoriesBalance'
 
@@ -19,6 +20,7 @@ export default async () => {
 
       await resetAgendaRows(ref, today, resetDate)
       await resetCategoriesBalance(ref, today, resetDate)
+      await purgeOldDevices(ref, today)
     })
   )
 }
