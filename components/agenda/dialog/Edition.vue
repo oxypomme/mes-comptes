@@ -108,7 +108,7 @@ export default Vue.extend({
      * If val is `null`, we don't want to show the component
      */
     value: {
-      type: Object as PropType<AgendaRow | undefined | null>,
+      type: Object as PropType<EditedValue | undefined | null>,
       required: false,
       default: null,
     },

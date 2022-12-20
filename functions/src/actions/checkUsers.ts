@@ -1,6 +1,7 @@
 import dayjs from 'dayjs'
 import type { firestore } from 'firebase-admin'
 import { store } from '../firebase'
+import autoAgendaRows from './autoAgendaRows'
 import purgeOldDevices from './purgeOldDevices'
 import resetAgendaRows from './resetAgendaRows'
 import resetCategoriesBalance from './resetCategoriesBalance'
@@ -18,9 +19,12 @@ export default async () => {
         ((await ref.get()).get('resetDate') as firestore.Timestamp).toDate()
       )
 
-      await resetAgendaRows(ref, today, resetDate)
-      await resetCategoriesBalance(ref, today, resetDate)
-      await purgeOldDevices(ref, today)
+      return Promise.all([
+        resetAgendaRows(ref, today, resetDate),
+        resetCategoriesBalance(ref, today, resetDate),
+        purgeOldDevices(ref, today),
+        autoAgendaRows(ref, today, resetDate),
+      ])
     })
   )
 }

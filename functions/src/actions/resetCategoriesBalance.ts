@@ -43,6 +43,7 @@ export default async (
         },
       })
     }
+    return true
   }
-  return null
+  return false
 }

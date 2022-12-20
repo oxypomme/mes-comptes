@@ -14,7 +14,7 @@ export default async (
   rD: dayjs.Dayjs
 ) => {
   if (d.isAfter(rD)) {
-    return await ref.firestore.runTransaction(async (transaction) => {
+    return ref.firestore.runTransaction(async (transaction) => {
       const docs = transaction.getAll(
         ...(await ref.collection('agenda').listDocuments())
       )
@@ -31,7 +31,8 @@ export default async (
           updatedAt: firestore.FieldValue.serverTimestamp(),
         })
       }
+      return true
     })
   }
-  return
+  return false
 }

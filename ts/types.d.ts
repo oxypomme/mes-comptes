@@ -20,10 +20,17 @@ type InputAccount = Omit<Account, 'balance' | 'operationCount'> & {
 interface AgendaRow extends FirestoreData {
   name: string
   status: boolean
-  category: string
+  account: firebase.firestore.DocumentReference | null
+  category: firebase.firestore.DocumentReference | string
   modifier: ValueModifier
   values: number[] // 1 element for each month (12 elements in total); float
   date: firebase.firestore.Timestamp
+}
+
+type InputAgendaRow = Omit<AgendaRow, 'date' | 'category' | 'account'> & {
+  date: dayjs.Dayjs
+  category: string
+  account: string | null
 }
 
 interface AgendaComputed {

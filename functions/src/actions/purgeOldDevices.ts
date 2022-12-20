@@ -1,8 +1,11 @@
 import dayjs from 'dayjs'
-import { firestore } from 'firebase-admin'
+import type { firestore } from 'firebase-admin'
 
 /**
  * Purge unused devices
+ *
+ * @param ref The user reference
+ * @param d The current date
  */
 export default async (
   ref: firestore.DocumentReference<firestore.DocumentData>,
@@ -10,13 +13,13 @@ export default async (
 ) => {
   const limit = d.subtract(1, 'month')
   return ref.firestore.runTransaction(async (transaction) => {
-    const docs = transaction.getAll(
+    const devices = transaction.getAll(
       ...(await ref.collection('devices').listDocuments())
     )
-    for (const doc of await docs) {
-      const dDate = doc.data()?.lastUsed as firestore.Timestamp | null
-      if (dDate && dayjs(dDate.toDate()).isBefore(limit)) {
-        transaction.delete(doc.ref)
+    for (const device of await devices) {
+      const dDate = device.data()?.lastUsed as firestore.Timestamp | null
+      if (dDate && dayjs(dDate.toDate()).isBefore(limit, 'date')) {
+        transaction.delete(device.ref)
       }
     }
   })
