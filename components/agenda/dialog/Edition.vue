@@ -13,21 +13,8 @@
         <v-card-text>
           <v-container>
             <v-row>
-              <v-date-picker
-                v-if="editedValue.field === 'date'"
-                v-model="dateValue"
-                :min="minDate"
-                :max="maxDate"
-                color="primary"
-                locale="fr-FR"
-                :first-day-of-week="1"
-                :events="rowDates"
-                event-color="primary"
-                show-current
-                show-adjacent-months
-              ></v-date-picker>
               <v-text-field
-                v-else-if="editedValue.field !== 'modifier'"
+                v-if="editedValue.field !== 'modifier'"
                 v-model="editedValue.value"
                 :rules="editedRules"
                 :label="editedValue.label"
@@ -87,17 +74,15 @@
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
 import type { PropType } from 'vue'
-import type { AgendaRow, Settings } from '~/ts/types'
+import type { AgendaRow } from '~/ts/types'
 import type { VForm } from '~/ts/components'
-import dayjs from '~/ts/dayjs'
-import type firebase from 'firebase'
 import { currencies, Currency } from '~/ts/currency'
 
 export type EditedValue = {
   id: string | undefined
   name: string
   field: string | number
-  value: string | number | firebase.firestore.Timestamp
+  value: string | number
   currency?: Currency
   applyToAll: boolean
   label: string
@@ -145,14 +130,6 @@ export default Vue.extend({
       )
     },
     /**
-     * Current row dates
-     */
-    rowDates(): string[] {
-      return (this.$store.getters['agenda/getAgenda'] as AgendaRow[])
-        .filter(({ date, id }) => date && id !== this.editedValue.id)
-        .map(({ date }) => date && dayjs(date.toDate()).format('YYYY-MM-DD'))
-    },
-    /**
      * Dialog toggle
      */
     show: {
@@ -187,36 +164,6 @@ export default Vue.extend({
             'Le montant doit être supérieur ou égal à 0',
         ]
       }
-    },
-    /**
-     * The value for DatePicker
-     */
-    dateValue: {
-      get(): string {
-        return typeof this.editedValue.value === 'object'
-          ? dayjs(this.editedValue.value.toDate()).format('YYYY-MM-DD')
-          : ''
-      },
-      set(value: string) {
-        if (this.editedValue.field === 'date') {
-          this.editedValue.value = dayjs(value, 'YYYY-MM-DD').toFire()
-        }
-      },
-    },
-    /**
-     * Minimal date for Date picker
-     */
-    minDate(): string {
-      const settings = this.$store.getters.getSettings as Settings
-      return dayjs(settings?.resetDate.toDate() ?? undefined)
-        .startOf('month')
-        .format('YYYY-MM-DD')
-    },
-    /**
-     * Maxmimal date for Date picker
-     */
-    maxDate(): string {
-      return dayjs(this.minDate).endOf('month').format('YYYY-MM-DD')
     },
   },
   watch: {

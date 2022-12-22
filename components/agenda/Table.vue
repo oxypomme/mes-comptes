@@ -137,10 +137,7 @@
               </div>
             </td>
             <td>
-              <span
-                class="hoverable"
-                @click="openEdit(item, 'date', item.date)"
-              >
+              <span style="cursor: default">
                 {{ item.date ? formatDate(item.date) : '-' }}
               </span>
             </td>
@@ -312,10 +309,10 @@ export default Vue.extend({
      */
     openEdit(
       { id, name, currency }: AgendaRow,
-      field: string,
+      field: keyof AgendaRow | number,
       value: EditedValue['value']
     ) {
-      if (typeof value === 'number') {
+      if (typeof value === 'number' && field !== 'modifier') {
         value = value.toFixed(2)
       }
 
@@ -325,9 +322,6 @@ export default Vue.extend({
         switch (field) {
           case 'name':
             label = 'Nom'
-            break
-          case 'category':
-            label = 'Catégorie'
             break
           default:
             label = 'Valeur'

@@ -13,45 +13,90 @@
         <v-card-text>
           <v-container>
             <v-row>
-              <v-select
-                v-model="editedValue.currency"
-                :items="currencies"
-                :rules="rules.currency"
-                label="Devise"
-                item-value="0"
-                item-text="1"
-              ></v-select>
+              <v-col>
+                <v-select
+                  v-model="editedValue.currency"
+                  :items="currencies"
+                  :rules="rules.currency"
+                  label="Devise"
+                  item-value="0"
+                  item-text="1"
+                ></v-select>
+              </v-col>
+              <v-col>
+                <v-menu
+                  ref="menu"
+                  v-model="menu"
+                  :close-on-content-click="false"
+                  transition="scale-transition"
+                  min-width="auto"
+                >
+                  <template #activator="{ on, attrs }">
+                    <v-text-field
+                      v-model="formatedDate"
+                      label="Date de prélèvement"
+                      prepend-icon="mdi-calendar"
+                      readonly
+                      v-bind="attrs"
+                      v-on="on"
+                    ></v-text-field>
+                  </template>
+                  <v-date-picker
+                    v-model="dateValue"
+                    :min="minDate"
+                    :max="maxDate"
+                    color="primary"
+                    locale="fr-FR"
+                    :first-day-of-week="1"
+                    :events="rowDates"
+                    event-color="primary"
+                    show-current
+                    show-adjacent-months
+                    @change="saveDate"
+                  ></v-date-picker>
+                </v-menu>
+              </v-col>
             </v-row>
             <v-row>
-              <v-select
-                v-model="editedValue.account"
-                :items="accounts"
-                :rules="rules.account"
-                required
-                label="Compte"
-                item-value="id"
-                item-text="name"
-                @change="onAccountChange"
-              ></v-select>
+              <v-col>
+                <v-select
+                  v-model="editedValue.account"
+                  :items="accounts"
+                  :rules="rules.account"
+                  persistent-hint
+                  required
+                  label="Compte"
+                  hint="Compte dans lequel sera créé automatiquement l'opération"
+                  item-value="id"
+                  item-text="name"
+                  @change="onAccountChange"
+                ></v-select>
+              </v-col>
             </v-row>
             <v-row>
-              <v-icon
-                class="mr-2"
-                :color="categ.type === 2 ? 'green' : 'red'"
-                style="min-width: 24px"
-              >
-                {{ categ.icon }}
-              </v-icon>
-              <v-select
-                v-model="editedValue.category"
-                :items="categories"
-                :disabled="!editedValue.account"
-                :rules="rules.category"
-                required
-                label="Categorie"
-                item-value="id"
-                item-text="name"
-              ></v-select>
+              <v-col>
+                <div class="d-flex">
+                  <v-icon
+                    class="mr-2"
+                    :color="categ.type === 2 ? 'green' : 'red'"
+                    style="min-width: 24px"
+                  >
+                    {{ categ.icon }}
+                  </v-icon>
+                  <v-select
+                    v-model="editedValue.category"
+                    :items="categories"
+                    :disabled="!editedValue.account"
+                    :rules="rules.category"
+                    persistent-hint
+                    required
+                    label="Catégorie"
+                    hint="Catégorie dans laquelle sera créé automatiquement l'opération"
+                    item-value="id"
+                    item-text="name"
+                  ></v-select>
+                </div>
+              </v-col>
             </v-row>
           </v-container>
         </v-card-text>
@@ -81,7 +126,13 @@
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
 import type { PropType } from 'vue'
-import type { Account, AgendaRow, Category, InputAgendaRow } from '~/ts/types'
+import type {
+  Account,
+  AgendaRow,
+  Category,
+  InputAgendaRow,
+  Settings,
+} from '~/ts/types'
 import type { VForm } from '~/ts/components'
 import dayjs from '~/ts/dayjs'
 import { ECategoryType } from '~/ts/ECategoryType'
@@ -101,12 +152,14 @@ export default Vue.extend({
   },
   data: () => ({
     valid: false,
+    menu: false,
     initValue: {
       id: undefined,
       status: true,
       name: '',
       category: '',
       account: '',
+      currency: 'EUR',
       modifier: 1,
       values: [],
       date: dayjs(),
@@ -153,6 +206,43 @@ export default Vue.extend({
         ({ id }) => id === this.editedValue.category
       )
       return category || {}
+    },
+    /**
+     * Current row dates
+     */
+    rowDates(): string[] {
+      return (this.$store.getters['agenda/getAgenda'] as AgendaRow[])
+        .filter(({ date, id }) => date && id !== this.editedValue.id)
+        .map(({ date }) => date && dayjs(date.toDate()).format('YYYY-MM-DD'))
+    },
+    /**
+     * The value for DatePicker
+     */
+    dateValue: {
+      get(): string {
+        return this.editedValue.date?.format('YYYY-MM-DD')
+      },
+      set(value: string) {
+        this.editedValue.date = dayjs(value, 'YYYY-MM-DD')
+      },
+    },
+    formatedDate(): string {
+      return this.editedValue.date?.format('DD/MM/YYYY')
+    },
+    /**
+     * Minimal date for Date picker
+     */
+    minDate(): string {
+      const settings = this.$store.getters.getSettings as Settings
+      return dayjs(settings?.resetDate.toDate() ?? undefined)
+        .startOf('month')
+        .format('YYYY-MM-DD')
+    },
+    /**
+     * Maxmimal date for Date picker
+     */
+    maxDate(): string {
+      return dayjs(this.minDate).endOf('month').format('YYYY-MM-DD')
     },
   },
   watch: {
@@ -220,6 +310,9 @@ export default Vue.extend({
       }
 
       this.$emit('input', null)
+    },
+    saveDate(date: string) {
+      ;(this.$refs.menu as Element & { save: (data: any) => any }).save(date)
     },
   },
 })
