@@ -237,3 +237,8 @@ export const convert = (
   }
   throw request
 }
+
+export const checkAPIstatus = async () => {
+  const response = await fetch(API_URL)
+  return response.status === 200
+}

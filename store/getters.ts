@@ -1,5 +1,6 @@
 import type { GetterTree } from 'vuex'
 import type { RootState } from './state'
+import { getCurrentMonth } from '~/functions/src/utils/period'
 import dayjs from '~/ts/dayjs'
 
 /**
@@ -91,39 +92,10 @@ const getters: GetterTree<RootState, RootState> = {
         end: dayjs(state.settings.activePeriod?.end.toDate()),
       }
     }
-
-    // Used to calc nuber of month within period
-    const extendedPeriod = {
-      start: period.start.startOf('month'),
-      end: period.end.endOf('month'),
-    }
-
-    // Get longer month within period
-    const max = {
-      month: dayjs(),
-      days: 0,
-    }
-    for (
-      let i = 0;
-      i <= extendedPeriod.end.diff(extendedPeriod.start, 'months');
-      i++
-    ) {
-      const curr = period.start.add(i, 'month')
-      const limitedCurr = {
-        start: dayjs.max(curr.startOf('month'), period.start),
-        end: dayjs.min(curr.endOf('month'), period.end),
-      }
-
-      const days = limitedCurr.end.diff(limitedCurr.start, 'days') + 1
-      if (days > max.days) {
-        max.month = curr
-        max.days = days
-      }
-    }
-
+    const curr = getCurrentMonth(period)
     return {
-      label: max.month.format('MMMM'),
-      value: max.month.month() + 1,
+      ...curr,
+      value: curr.value + 1,
     }
   },
 }

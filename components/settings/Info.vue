@@ -21,6 +21,13 @@
               } jours)`
             }}
           </div>
+          <v-divider class="my-2"></v-divider>
+          <div>
+            <b>API <i>devises</i> :</b>
+            <v-chip :color="currencyStatus.color" x-small>
+              {{ currencyStatus.value }}
+            </v-chip>
+          </div>
         </v-col>
       </v-row>
     </v-card-text>
@@ -29,10 +36,20 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import { checkAPIstatus } from '~/ts/currency'
+import { calcNextPeriod, Period } from '~/functions/src/utils/period'
 import dayjs from '~/ts/dayjs'
-import type { Settings, SettingsState } from '~/ts/types'
+import type { SettingsState } from '~/ts/types'
 
 export default Vue.extend({
+  data() {
+    return {
+      currencyStatus: {
+        value: '...',
+        color: 'orange',
+      },
+    }
+  },
   computed: {
     nextUserCheck(): dayjs.Dayjs {
       // ! Keep in sync with firecloud !
@@ -45,29 +62,33 @@ export default Vue.extend({
 
       return check.tz(dayjs.tz.guess())
     },
-    period(): Settings['activePeriod'] {
+    period(): Period {
       const settings: SettingsState = this.$store.getters.getSettings
       return {
         start: dayjs(settings.activePeriod.start.toDate()),
         end: dayjs(settings.activePeriod.end.toDate()),
       }
     },
-    nextPeriod(): Settings['activePeriod'] & { duration: number } {
-      // ! Keep in sync with firecloud !
-      const newStart = this.period.end.add(1, 'day')
-      let duration = this.period.end.diff(this.period.start, 'days')
-      if (
-        this.period.start.month() !== this.period.end.month() &&
-        duration === 29
-      ) {
-        duration += 1
-      }
-      return {
-        start: newStart,
-        end: newStart.add(duration, 'days'),
-        duration,
-      }
+    nextPeriod(): Period & { duration: number } {
+      return calcNextPeriod(this.period)
     },
+  },
+  mounted() {
+    checkAPIstatus()
+      .then(
+        (res) =>
+          (this.currencyStatus = {
+            value: res ? 'OK' : 'KO',
+            color: res ? 'green' : 'red',
+          })
+      )
+      .catch(
+        () =>
+          (this.currencyStatus = {
+            value: 'KO',
+            color: 'red',
+          })
+      )
   },
 })
 </script>

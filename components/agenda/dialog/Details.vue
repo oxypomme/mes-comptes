@@ -135,11 +135,10 @@ import { currencies } from '~/ts/currency'
 export default Vue.extend({
   props: {
     /**
-     * If val is `undefined`, a new operation is requested
      * If val is `null`, we don't want to show the component
      */
     value: {
-      type: Object as PropType<AgendaRow | undefined | null>,
+      type: Object as PropType<AgendaRow | null>,
       required: false,
       default: null,
     },

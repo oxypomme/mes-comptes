@@ -91,11 +91,10 @@ export type EditedValue = {
 export default Vue.extend({
   props: {
     /**
-     * If val is `false`, a new row is requested
      * If val is `null`, we don't want to show the component
      */
     value: {
-      type: [Object, Boolean] as PropType<EditedValue | false | null>,
+      type: Object as PropType<EditedValue | null>,
       required: false,
       default: null,
     },
