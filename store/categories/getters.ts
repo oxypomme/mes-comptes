@@ -64,6 +64,7 @@ const getter: GetterTree<CategoryState, RootState> = {
           // Tooltip for detailed usage of a Category
           tooltip: `${toLS(Math.abs(ba))} / ${toLS(Math.abs(b))} (${toLS(
             ratio,
+            undefined,
             {
               style: 'percent',
             }

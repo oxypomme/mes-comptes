@@ -1,5 +1,6 @@
 import type dayjs from 'dayjs'
 import type { ECategoryType } from './ECategoryType'
+import type { Currency } from './currency'
 import type firebase from 'firebase'
 
 interface FirestoreData {
@@ -24,6 +25,7 @@ interface AgendaRow extends FirestoreData {
   category: firebase.firestore.DocumentReference | string
   modifier: ValueModifier
   values: number[] // 1 element for each month (12 elements in total); float
+  currency?: Currency // EUR by defaul
   date: firebase.firestore.Timestamp
 }
 

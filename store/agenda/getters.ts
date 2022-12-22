@@ -3,11 +3,20 @@ import dayjs from 'dayjs'
 import type { RootState } from '../state'
 import type { AgendaState } from './state'
 import type { AgendaRow } from '~/ts/types'
+import { convert } from '~/ts/currency'
 
 const agendaMonthReducer =
   (month: number) =>
-  (sum: number, { values }: AgendaRow) =>
-    sum + values[month - 1]
+  (sum: number, { values, currency }: AgendaRow) => {
+    let val = values[month - 1]
+    if (val && currency && currency !== 'EUR') {
+      try {
+        val = convert(val, currency, 'EUR')
+      } catch (error) {}
+    }
+
+    return sum + val
+  }
 
 /**
  * Getters for user's agenda

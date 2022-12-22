@@ -31,7 +31,7 @@
                 v-model="editedValue.value"
                 :rules="editedRules"
                 :label="editedValue.label"
-                :prefix="typeof editedValue.field === 'string' ? '' : '€'"
+                :prefix="inputPrefix"
                 :type="
                   typeof editedValue.field === 'number' ? 'number' : 'text'
                 "
@@ -91,12 +91,14 @@ import type { AgendaRow, Settings } from '~/ts/types'
 import type { VForm } from '~/ts/components'
 import dayjs from '~/ts/dayjs'
 import type firebase from 'firebase'
+import { currencies, Currency } from '~/ts/currency'
 
 export type EditedValue = {
   id: string | undefined
   name: string
   field: string | number
   value: string | number | firebase.firestore.Timestamp
+  currency?: Currency
   applyToAll: boolean
   label: string
 }
@@ -121,6 +123,7 @@ export default Vue.extend({
       field: 0,
       value: '0.00',
       applyToAll: false,
+      currency: 'EUR',
       label: '',
     } as EditedValue,
     editedValue: {} as EditedValue,
@@ -129,6 +132,10 @@ export default Vue.extend({
     ...mapGetters({
       loading: 'agenda/getLoadingState',
     }),
+    inputPrefix(): string {
+      if (typeof this.editedValue.field === 'string') return ''
+      return currencies[this.editedValue.currency || 'EUR'] ?? '€'
+    },
     /**
      * Current row names
      */

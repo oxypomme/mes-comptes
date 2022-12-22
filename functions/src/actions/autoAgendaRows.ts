@@ -1,6 +1,7 @@
 import dayjs from 'dayjs'
 import { firestore } from 'firebase-admin'
 import { fcm } from '../firebase'
+import { convert } from '../utils/currency'
 
 /**
  * Add operation that must run today
@@ -40,8 +41,15 @@ export default async (
       ) {
         const opeRef = data.account.collection('operations').doc()
 
+        let opeValue = data.values[current.value]
+        if (data.currency && data.currency !== 'EUR') {
+          try {
+            opeValue = await convert(opeValue, data.currency, 'EUR')
+          } catch (error) {}
+        }
+
         const ope = {
-          amount: data.modifier * data.values[current.value],
+          amount: data.modifier * opeValue,
           name: `${data.name} - ${current.label}`,
         }
 

@@ -157,7 +157,7 @@ const actions: ActionTree<AgendaState, RootState> = {
    */
   async updateDetail(
     { commit, rootGetters },
-    { id, account, category }: InputAgendaRow
+    { id, account, category, currency }: InputAgendaRow
   ) {
     commit('SET_LOADING', true)
     try {
@@ -178,6 +178,7 @@ const actions: ActionTree<AgendaState, RootState> = {
       await rowRef.update({
         account: accRef,
         category: catRef,
+        currency,
         updatedAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
       } as Partial<AgendaRow> & { updatedAt: firebase.firestore.FieldValue })
       commit('SET_LOADING', false)

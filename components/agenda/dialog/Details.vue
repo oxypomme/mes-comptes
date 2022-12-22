@@ -14,6 +14,16 @@
           <v-container>
             <v-row>
               <v-select
+                v-model="editedValue.currency"
+                :items="currencies"
+                :rules="rules.currency"
+                label="Devise"
+                item-value="0"
+                item-text="1"
+              ></v-select>
+            </v-row>
+            <v-row>
+              <v-select
                 v-model="editedValue.account"
                 :items="accounts"
                 :rules="rules.account"
@@ -75,6 +85,7 @@ import type { Account, AgendaRow, Category, InputAgendaRow } from '~/ts/types'
 import type { VForm } from '~/ts/components'
 import dayjs from '~/ts/dayjs'
 import { ECategoryType } from '~/ts/ECategoryType'
+import { currencies } from '~/ts/currency'
 
 export default Vue.extend({
   props: {
@@ -104,7 +115,14 @@ export default Vue.extend({
     rules: {
       account: [(v) => !!v || 'Un compte est requis'],
       category: [(v) => !!v || 'Une catégoie est requise'],
+      currency: [
+        (v) =>
+          !v ||
+          Object.keys(currencies).includes(v) ||
+          "La devise n'est pas reconnue",
+      ],
     } as Record<string, ((v: string) => true | string)[]>,
+    currencies: Object.entries(currencies),
   }),
   computed: {
     ...mapGetters({
@@ -143,6 +161,11 @@ export default Vue.extend({
      */
     value(val) {
       this.editedValue = val ?? { ...this.initValue }
+
+      if (!this.editedValue.currency) {
+        this.editedValue.currency = 'EUR'
+      }
+
       if (this.editedValue.account) {
         this.onAccountChange()
       }

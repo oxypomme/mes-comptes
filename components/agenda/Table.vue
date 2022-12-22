@@ -174,7 +174,7 @@
                 class="hoverable"
                 @click="openEdit(item, monthIndex, value)"
               >
-                {{ value > 0 ? toLS(value) : '-' }}
+                {{ value > 0 ? toLS(value, item.currency || 'EUR') : '-' }}
               </span>
             </td>
           </tr>
@@ -194,6 +194,7 @@ import dayjs from '~/ts/dayjs'
 import type firebase from 'firebase'
 
 type SortType = 'name' | 'type' | 'date'
+type OmitKeys = 'values' | 'id' | 'status' | 'category' | 'account' | 'currency'
 
 export default Vue.extend({
   data: () => ({
@@ -222,10 +223,7 @@ export default Vue.extend({
      * @returns The function
      */
     sorter(): (a: AgendaRow, b: AgendaRow) => number {
-      let priority: (keyof Omit<
-        AgendaRow,
-        'values' | 'id' | 'status' | 'category' | 'account'
-      >)[] = []
+      let priority: (keyof Omit<AgendaRow, OmitKeys>)[] = []
       switch (this.sortType) {
         case 'name':
           priority = ['name', 'modifier', 'date']
@@ -313,7 +311,7 @@ export default Vue.extend({
      * @param value The current value of the row
      */
     openEdit(
-      { id, name }: AgendaRow,
+      { id, name, currency }: AgendaRow,
       field: string,
       value: EditedValue['value']
     ) {
@@ -340,7 +338,15 @@ export default Vue.extend({
         label = this.month(field + 1).label
       }
 
-      this.editedValue = { id, name, field, value, applyToAll: false, label }
+      this.editedValue = {
+        id,
+        name,
+        field,
+        value,
+        applyToAll: false,
+        label,
+        currency,
+      }
     },
     /**
      * Prepare detail dialog to open
