@@ -33,6 +33,21 @@ const getters: GetterTree<RootState, RootState> = {
     return resetDate.diff(resetDate.subtract(1, 'month'), 'week')
   },
   /**
+   * Number of weeks in current month by the count of reset day
+   */
+  getResetWeekCount: (state) => {
+    let count = 0
+    if (state.settings.resetDate) {
+      const base = dayjs(state.settings.resetDate.toDate())
+      let date = base.clone()
+      while (base.isSame(date, 'month')) {
+        count++
+        date = date.add(1, 'week')
+      }
+    }
+    return count
+  },
+  /**
    * Get months since account creations
    *
    * @param state The state

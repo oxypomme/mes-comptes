@@ -30,3 +30,21 @@ export const escapeHTML = (value?: string) => {
   }
   return value
 }
+
+export const parseBudget = (
+  exp: string,
+  nbResetDayInMonth: number,
+  nbWeekInMonth: number
+): number => {
+  try {
+    // eslint-disable-next-line no-new-func
+    const v = new Function(
+      'nbResetDayInMonth',
+      'nbWeekInMonth',
+      `"use strict"; return ${exp}`
+    )(nbResetDayInMonth, nbWeekInMonth) as number
+    return v
+  } catch (error) {
+    return NaN
+  }
+}
