@@ -77,7 +77,6 @@ import type { PropType } from 'vue'
 import type { AgendaRow } from '~/ts/types'
 import type { VForm } from '~/ts/components'
 import { currencies, Currency } from '~/ts/currency'
-import dayjs from '~/ts/dayjs'
 
 export type EditedValue = {
   id: string | undefined
@@ -165,44 +164,6 @@ export default Vue.extend({
             'Le montant doit être supérieur ou égal à 0',
         ]
       }
-    },
-    /**
-     * The value for DatePicker
-     */
-    dateValue: {
-      get(): string {
-        if (typeof this.editedValue.value === 'object') {
-          return dayjs(this.editedValue.value.toDate()).format('YYYY-MM-DD')
-        }
-        const settings = this.$store.getters.getSettings as Settings
-        if (settings) {
-          return dayjs(settings.resetDate.toDate())
-            .subtract(1, 'month')
-            .format('YYYY-MM-DD')
-        }
-        return ''
-      },
-      set(value: string) {
-        if (this.editedValue.field === 'date') {
-          this.editedValue.value = dayjs(value, 'YYYY-MM-DD').toFire()
-        }
-      },
-    },
-    /**
-     * Minimal date for Date picker
-     */
-    minDate(): string {
-      const settings = this.$store.getters.getSettings as Settings
-      return dayjs(settings?.resetDate.toDate() ?? undefined)
-        .subtract(1, 'month')
-        .startOf('month')
-        .format('YYYY-MM-DD')
-    },
-    /**
-     * Maxmimal date for Date picker
-     */
-    maxDate(): string {
-      return dayjs(this.minDate).endOf('month').format('YYYY-MM-DD')
     },
   },
   watch: {

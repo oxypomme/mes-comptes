@@ -1,19 +1,17 @@
 {
   "name": "functions",
+  "private": true,
+  "main": "lib/index.js",
   "scripts": {
-    "lint": "eslint --ext .ts .",
     "build": "tsc",
-    "serve": "yarn build && firebase emulators:start",
-    "shell": "yarn build && firebase functions:shell",
-    "start": "yarn shell",
     "predeploy": "yarn build",
     "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log"
+    "lint": "eslint --ext .ts .",
+    "logs": "firebase functions:log",
+    "serve": "yarn build && firebase emulators:start",
+    "shell": "yarn build && firebase functions:shell",
+    "start": "yarn shell"
   },
-  "engines": {
-    "node": "14"
-  },
-  "main": "lib/index.js",
   "dependencies": {
     "dayjs": "^1.11.6",
     "firebase-admin": "^10.0.2",
@@ -29,5 +27,7 @@
     "firebase-functions-test": "^0.2.0",
     "typescript": "^3.8.0"
   },
-  "private": true
+  "engines": {
+    "node": "14"
+  }
 }

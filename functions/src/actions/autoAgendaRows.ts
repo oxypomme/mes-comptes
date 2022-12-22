@@ -2,27 +2,24 @@ import dayjs from 'dayjs'
 import { firestore } from 'firebase-admin'
 import { fcm } from '../firebase'
 import { convert } from '../utils/currency'
+import { getCurrentMonth, Period } from '../utils/period'
 
 /**
  * Add operation that must run today
  *
  * @param ref The user reference
  * @param d The current date
- * @param rD The reset date of user before any action running
+ * @param p The activePeriod of user before any action running
  */
 export default async (
   ref: firestore.DocumentReference<firestore.DocumentData>,
   d: dayjs.Dayjs,
-  rD: dayjs.Dayjs
+  p: Period
 ) => {
   const devices = await ref.collection('devices').listDocuments()
   const tokens = devices?.map((d) => d.id)
 
-  const date = dayjs(rD).subtract(1, 'month')
-  const current = {
-    label: date.format('MMMM'),
-    value: date.month(),
-  }
+  const current = getCurrentMonth(p)
 
   return ref.firestore.runTransaction(async (transaction) => {
     const rows = transaction.getAll(

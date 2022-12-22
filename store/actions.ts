@@ -15,7 +15,7 @@ const actions: ActionTree<RootState, RootState> = {
    * @param settings The new settings
    * @returns
    */
-  updateSettings({ rootGetters }, { resetDate, lightTheme }: Settings) {
+  updateSettings({ rootGetters }, { activePeriod, lightTheme }: Settings) {
     const uid = (rootGetters['auth/getUser'] as User | null)?.uid
     if (!uid) {
       throw new Error('Vous devez être connecté pour effectuer cette action')
@@ -24,7 +24,10 @@ const actions: ActionTree<RootState, RootState> = {
     const ref = this.$fire.firestore.collection('users').doc(uid)
     return ref.set(
       {
-        resetDate: resetDate.toFire(),
+        activePeriod: {
+          start: activePeriod.start.toFire(),
+          end: activePeriod.end.toFire(),
+        },
         lightTheme: lightTheme ?? false,
       },
       { merge: true }

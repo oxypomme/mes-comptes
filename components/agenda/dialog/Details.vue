@@ -43,8 +43,8 @@
                   </template>
                   <v-date-picker
                     v-model="dateValue"
-                    :min="minDate"
-                    :max="maxDate"
+                    :min="limitDates[0].format('YYYY-MM-DD')"
+                    :max="limitDates[1].format('YYYY-MM-DD')"
                     color="primary"
                     locale="fr-FR"
                     :first-day-of-week="1"
@@ -126,13 +126,7 @@
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
 import type { PropType } from 'vue'
-import type {
-  Account,
-  AgendaRow,
-  Category,
-  InputAgendaRow,
-  Settings,
-} from '~/ts/types'
+import type { Account, AgendaRow, Category, InputAgendaRow } from '~/ts/types'
 import type { VForm } from '~/ts/components'
 import dayjs from '~/ts/dayjs'
 import { ECategoryType } from '~/ts/ECategoryType'
@@ -176,6 +170,7 @@ export default Vue.extend({
       ],
     } as Record<string, ((v: string) => true | string)[]>,
     currencies: Object.entries(currencies),
+    limitDates: [dayjs(), dayjs().add(1, 'month').endOf('month')],
   }),
   computed: {
     ...mapGetters({
@@ -228,21 +223,6 @@ export default Vue.extend({
     },
     formatedDate(): string {
       return this.editedValue.date?.format('DD/MM/YYYY')
-    },
-    /**
-     * Minimal date for Date picker
-     */
-    minDate(): string {
-      const settings = this.$store.getters.getSettings as Settings
-      return dayjs(settings?.resetDate.toDate() ?? undefined)
-        .startOf('month')
-        .format('YYYY-MM-DD')
-    },
-    /**
-     * Maxmimal date for Date picker
-     */
-    maxDate(): string {
-      return dayjs(this.minDate).endOf('month').format('YYYY-MM-DD')
     },
   },
   watch: {

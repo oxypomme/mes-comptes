@@ -21,34 +21,33 @@ const getters: GetterTree<RootState, RootState> = {
    */
   getTitle: (state) => state.title,
   /**
-   * Number of weeks in current month
+   * Number of weeks in current period
    */
   getWeekCount: (state) => {
-    let resetDate = dayjs()
-    if (state.settings.resetDate) {
-      resetDate = dayjs(state.settings.resetDate.toDate())
-    } else {
-      resetDate = resetDate.add(1, 'month')
+    const today = dayjs()
+    // Parse period
+    let period = {
+      start: today.startOf('month'),
+      end: today.endOf('month'),
     }
-    return resetDate.diff(resetDate.subtract(1, 'month'), 'week')
-  },
-  /**
-   * Number of weeks in current month by the count of reset day
-   */
-  getResetWeekCount: (state) => {
-    let count = 0
-    if (state.settings.resetDate) {
-      const base = dayjs(state.settings.resetDate.toDate())
-      let date = base.clone()
-      while (base.isSame(date, 'month')) {
-        count++
-        date = date.add(1, 'week')
+    if (state.settings.activePeriod) {
+      period = {
+        start: dayjs(state.settings.activePeriod?.start.toDate()),
+        end: dayjs(state.settings.activePeriod?.end.toDate()),
       }
     }
-    return count
+    return period.end.diff(period.start, 'week')
   },
   /**
-   * Get months since account creations
+   * Number of weeks in current period by the count of reset day
+   *
+   * @deprecated
+   */
+  getResetWeekCount: (_state) => {
+    return 0
+  },
+  /**
+   * Get months since account creation
    *
    * @param state The state
    * @returns The months
@@ -74,17 +73,57 @@ const getters: GetterTree<RootState, RootState> = {
     ]
   },
   /**
-   * Return the current month based on resetDate
+   * Return the current month based on activePeriod
    *
    * @param state The state
    * @returns The month label and value (month id, 0-11)
    */
   getCurrentMonth: (state) => {
-    const resetDate = state.settings.resetDate?.toDate()
-    const date = resetDate ? dayjs(resetDate).subtract(1, 'month') : dayjs()
+    const today = dayjs()
+    // Parse period
+    let period = {
+      start: today.startOf('month'),
+      end: today.endOf('month'),
+    }
+    if (state.settings.activePeriod) {
+      period = {
+        start: dayjs(state.settings.activePeriod?.start.toDate()),
+        end: dayjs(state.settings.activePeriod?.end.toDate()),
+      }
+    }
+
+    // Used to calc nuber of month within period
+    const extendedPeriod = {
+      start: period.start.startOf('month'),
+      end: period.end.endOf('month'),
+    }
+
+    // Get longer month within period
+    const max = {
+      month: dayjs(),
+      days: 0,
+    }
+    for (
+      let i = 0;
+      i <= extendedPeriod.end.diff(extendedPeriod.start, 'months');
+      i++
+    ) {
+      const curr = period.start.add(i, 'month')
+      const limitedCurr = {
+        start: dayjs.max(curr.startOf('month'), period.start),
+        end: dayjs.min(curr.endOf('month'), period.end),
+      }
+
+      const days = limitedCurr.end.diff(limitedCurr.start, 'days') + 1
+      if (days > max.days) {
+        max.month = curr
+        max.days = days
+      }
+    }
+
     return {
-      label: date.format('MMMM'),
-      value: date.month() + 1,
+      label: max.month.format('MMMM'),
+      value: max.month.month() + 1,
     }
   },
 }

@@ -1,25 +1,29 @@
 import dayjs from 'dayjs'
 import { firestore } from 'firebase-admin'
 import { fcm } from '../firebase'
+import { calcNextPeriod, Period } from '../utils/period'
 
 /**
  * Reset user's categories' balances if needed
  *
  * @param ref The user reference
  * @param d The current date
- * @param rD The reset date of user before any action running
+ * @param p The activePeriod of user before any action running
  */
 export default async (
   ref: firestore.DocumentReference<firestore.DocumentData>,
   d: dayjs.Dayjs,
-  rD: dayjs.Dayjs
+  p: Period
 ) => {
-  if (d.isAfter(rD)) {
-    const nd = dayjs(d).add(1, 'month')
+  if (d.isAfter(p.end.add(1, 'day'))) {
+    const newPeriod = calcNextPeriod(p)
 
     const batch = ref.firestore.batch()
     batch.update(ref, {
-      resetDate: firestore.Timestamp.fromDate(nd.toDate()),
+      activePeriod: {
+        start: firestore.Timestamp.fromDate(newPeriod.start.toDate()),
+        end: firestore.Timestamp.fromDate(newPeriod.end.toDate()),
+      },
     })
     for (const aref of await ref.collection('accounts').listDocuments()) {
       for (const cref of await aref.collection('categories').listDocuments()) {

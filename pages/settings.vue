@@ -7,6 +7,9 @@
             <v-card>
               <SettingsForm />
             </v-card>
+            <v-card style="margin-top: 1.5rem">
+              <SettingsInfo />
+            </v-card>
           </v-col>
           <v-col>
             <v-card>
@@ -21,6 +24,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
+
 export default Vue.extend({
   middleware: ['auth'],
   head: {

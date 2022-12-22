@@ -52,7 +52,10 @@ const actions: ActionTree<AuthState, RootState> = {
     const ref = this.$fire.firestore.collection('users').doc(user.uid)
     await ref.set({
       devices: [],
-      resetDate: date.toFire(),
+      activePeriod: {
+        start: date.toFire(),
+        end: date.endOf('month').toFire(),
+      },
       createdAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
     })
     return dispatch(

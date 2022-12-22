@@ -1,20 +1,22 @@
 import dayjs from 'dayjs'
 import { firestore } from 'firebase-admin'
+import { calcNextPeriod, Period } from '../utils/period'
 
 /**
  * Reset user's agenda's rows if needed
  *
  * @param ref The user reference
  * @param d The current date
- * @param rD The reset date of user before any action running
+ * @param p The activePeriod of user before any action running
  */
 export default async (
   ref: firestore.DocumentReference<firestore.DocumentData>,
   d: dayjs.Dayjs,
-  rD: dayjs.Dayjs
+  p: Period
 ) => {
-  if (d.isAfter(rD)) {
-    return ref.firestore.runTransaction(async (transaction) => {
+  if (d.isAfter(p.end.add(1, 'day'))) {
+    const { duration } = calcNextPeriod(p)
+    return await ref.firestore.runTransaction(async (transaction) => {
       const docs = transaction.getAll(
         ...(await ref.collection('agenda').listDocuments())
       )
@@ -22,12 +24,12 @@ export default async (
         const aDate = doc.data()?.date as firestore.Timestamp | null
         let nd = dayjs(d)
         if (aDate) {
-          // Update date with next month
-          nd = dayjs(aDate.toDate())
+          // Update date
+          nd = dayjs(aDate.toDate()).add(duration, 'days')
         }
         transaction.update(doc.ref, {
           status: false,
-          date: firestore.Timestamp.fromDate(nd.add(1, 'month').toDate()),
+          date: firestore.Timestamp.fromDate(nd.toDate()),
           updatedAt: firestore.FieldValue.serverTimestamp(),
         })
       }

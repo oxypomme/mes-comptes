@@ -88,10 +88,16 @@ interface InputUser {
 }
 
 interface SettingsState {
-  resetDate: firebase.firestore.Timestamp
+  activePeriod: {
+    start: firebase.firestore.Timestamp
+    end: firebase.firestore.Timestamp
+  }
   createdAt: firebase.firestore.Timestamp
   lightTheme: boolean
 }
-type Settings = Omit<SettingsState, 'resetDate'> & {
-  resetDate: dayjs.Dayjs
+type Settings = Omit<SettingsState, 'activePeriod'> & {
+  activePeriod: {
+    start: dayjs.Dayjs
+    end: dayjs.Dayjs
+  }
 }
