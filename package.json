@@ -10,7 +10,7 @@
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt",
-    "emulators": "firebase emulators:start --only storage,firestore,auth,ui --import ./firebase/emulator_data --export-on-exit ./firebase/emulator_data",
+    "emulators": "firebase emulators:start --import ./firebase/emulator_data --export-on-exit ./firebase/emulator_data",
     "generate": "nuxt generate",
     "lint": "eslint --fix --ext \".ts,.vue\" .",
     "prepare": "husky install",

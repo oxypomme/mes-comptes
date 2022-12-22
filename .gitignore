@@ -90,7 +90,9 @@ sw.*
 *.swp
 
 # Firebase
+firebase-export-*
 firebase/emulator_data
+static/firebase-messaging-sw.js
 
 # Capacitor
 android/

@@ -20,7 +20,7 @@ const getter: GetterTree<CategoryState, RootState> = {
    */
   getCategories: (state, _getters, _rootState, rootGetters) => {
     const agenda = rootGetters['agenda/getCurrent'] as AgendaComputed
-
+    const weekcount = rootGetters.getWeekCount
     const calcBudget = (exp: string) =>
       parseBudget(exp, rootGetters.getResetWeekCount, rootGetters.getWeekCount)
 
@@ -71,6 +71,7 @@ const getter: GetterTree<CategoryState, RootState> = {
           // Tooltip for detailed usage of a Category
           tooltip: `${toLS(Math.abs(ba))} / ${toLS(Math.abs(fb))} (${toLS(
             ratio,
+            undefined,
             {
               style: 'percent',
             }

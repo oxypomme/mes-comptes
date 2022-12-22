@@ -7,16 +7,18 @@
  */
 export const toLS = (
   x: number,
-  options: Intl.NumberFormatOptions = {}
+  currency = 'EUR',
+  options: Omit<Intl.NumberFormatOptions, 'currency'> = {}
 ): string =>
   x.toLocaleString(undefined, {
     maximumFractionDigits: 2,
     minimumFractionDigits: 2,
     style: 'currency',
-    currency: 'EUR',
+    currency,
     ...options,
   })
 
+// TODO: use lib insteadd of custom one
 const tagsToReplace: Record<string, string> = {
   '&': '&amp;',
   '<': '&lt;',

@@ -1,4 +1,5 @@
 // @ts-ignore
+import { readFileSync } from 'node:fs'
 import colors from 'vuetify/es5/util/colors'
 import fireconfig from './firebase.json'
 
@@ -100,7 +101,7 @@ export default {
     onFirebaseHosting: process.env.NODE_ENV === 'production',
     services: {
       auth: {
-        persistence: 'session',
+        persistence: 'local',
         initialize: {
           onAuthStateChangedAction: 'auth/onAuth',
         },
@@ -113,6 +114,12 @@ export default {
         },
         emulatorPort: process.env.NODE_ENV === 'production' ? undefined : 8080,
         emulatorHost: 'localhost',
+      },
+      messaging: {
+        createServiceWorker: true,
+        // fcmPublicVapidKey:
+        //   'AAAAwlEvU34:APA91bHGsy8hV8322Np9XMyk06vwbzlSjjpG3brnF4b_SzG1FhAo1TwSO0-W9WDItVRJFD_2KNsbDo--4HtCnw12f2JOuTDOI1m-kzfBChNbLyApK83u4SvkPkhO40V01Lh6DFvvIbDE',
+        inject: readFileSync('./firebase-messaging-sw-custom.js'),
       },
       performance: process.env.NODE_ENV === 'production',
       analytics: process.env.NODE_ENV === 'production',

@@ -3,9 +3,9 @@
   "scripts": {
     "lint": "eslint --ext .ts .",
     "build": "tsc",
-    "serve": "npm run build && firebase emulators:start",
-    "shell": "npm run build && firebase functions:shell",
-    "start": "npm run shell",
+    "serve": "yarn build && firebase emulators:start",
+    "shell": "yarn build && firebase functions:shell",
+    "start": "yarn shell",
     "predeploy": "yarn build",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log"
@@ -15,6 +15,7 @@
   },
   "main": "lib/index.js",
   "dependencies": {
+    "dayjs": "^1.11.6",
     "firebase-admin": "^10.0.2",
     "firebase-functions": "^3.19.0"
   },

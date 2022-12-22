@@ -260,14 +260,19 @@ export default Vue.extend({
         } as AgendaRow
         // Setting modifier
         this.operation.modifier = agendaRow.modifier
-        // Setting category
-        const categType =
-          agendaRow.modifier > 0
-            ? ECategoryType.PLANNED_CREDIT
-            : ECategoryType.PLANNED_DEBIT
-        this.operation.category =
-          this.selectCategories.find(({ type }) => type === categType)?.id ??
-          null
+        if (typeof agendaRow.category === 'string') {
+          // Guessing category
+          const categType =
+            agendaRow.modifier > 0
+              ? ECategoryType.PLANNED_CREDIT
+              : ECategoryType.PLANNED_DEBIT
+          this.operation.category =
+            this.selectCategories.find(({ type }) => type === categType)?.id ??
+            null
+        } else {
+          // Setting category
+          this.operation.category = agendaRow.category.id
+        }
         // Setting value
         const currentMonth = this.$store.getters.getCurrentMonth.value as number
         this.operation.amount = agendaRow.values[currentMonth - 1].toString()

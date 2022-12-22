@@ -1,6 +1,7 @@
 <template>
   <div>
     <AgendaDialogEdition v-model="editedValue" />
+    <AgendaDialogDetails v-model="detailedValue" />
     <v-simple-table :dense="$vuetify.breakpoint.smAndDown">
       <template #top>
         <div>
@@ -62,20 +63,6 @@
                 </span>
               </v-hover>
             </th>
-            <th>
-              <v-hover v-slot="{ hover }" class="hoverable">
-                <span @click="changeSort('category')">
-                  Categorie
-                  <v-icon
-                    v-if="hover || sortType === 'category'"
-                    small
-                    color="grey"
-                  >
-                    mdi-{{ reverseSort ? 'arrow-up' : 'arrow-down' }}
-                  </v-icon>
-                </span>
-              </v-hover>
-            </th>
             <th class="text-center">
               <v-hover v-slot="{ hover }" class="hoverable">
                 <span @click="changeSort('type')">
@@ -103,7 +90,7 @@
             </th>
           </tr>
           <tr v-if="Object.values(items).length > 0">
-            <th colspan="5"></th>
+            <th colspan="4"></th>
             <th
               v-for="monthIndex in 12"
               :key="'value' + monthIndex"
@@ -138,29 +125,28 @@
                 <v-btn icon color="error" @click="deleteRow(item.id)">
                   <v-icon>mdi-delete</v-icon>
                 </v-btn>
+                <v-btn icon color="blue" @click="openDetail(item)">
+                  <v-icon>mdi-information</v-icon>
+                </v-btn>
                 <v-simple-checkbox
                   :value="item.status"
                   :ripple="false"
+                  style="margin-left: 0.5rem"
                   @input="updateStatus(item.id, $event)"
                 ></v-simple-checkbox>
               </div>
             </td>
             <td>
-              <span class="hoverable" @click="open(item, 'date', item.date)">
+              <span style="cursor: default">
                 {{ item.date ? formatDate(item.date) : '-' }}
-              </span>
-            </td>
-            <td>
-              <span class="hoverable" @click="open(item, 'name', item.name)">
-                {{ item.name || '-' }}
               </span>
             </td>
             <td>
               <span
                 class="hoverable"
-                @click="open(item, 'category', item.category)"
+                @click="openEdit(item, 'name', item.name)"
               >
-                {{ item.category || '-' }}
+                {{ item.name || '-' }}
               </span>
             </td>
             <td class="text-center">
@@ -168,7 +154,7 @@
                 :small="$vuetify.breakpoint.smAndDown"
                 :color="item.modifier > 0 ? 'green' : 'red'"
                 class="hoverable"
-                @click="open(item, 'modifier', item.modifier)"
+                @click="openEdit(item, 'modifier', item.modifier)"
               >
                 {{ item.modifier > 0 ? 'Crédit (+)' : 'Débit (-)' }}
               </v-chip>
@@ -181,8 +167,11 @@
                 currentMonth.value === monthIndex + 1 && 'activeMonth',
               ]"
             >
-              <span class="hoverable" @click="open(item, monthIndex, value)">
-                {{ value > 0 ? toLS(value) : '-' }}
+              <span
+                class="hoverable"
+                @click="openEdit(item, monthIndex, value)"
+              >
+                {{ value > 0 ? toLS(value, item.currency || 'EUR') : '-' }}
               </span>
             </td>
           </tr>
@@ -196,16 +185,18 @@
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
 import type { EditedValue } from './dialog/Edition.vue'
-import { toLS } from '~/ts/format'
-import type { AgendaRow } from '~/ts/types'
+import { escapeHTML, toLS } from '~/ts/format'
+import type { AgendaRow, InputAgendaRow } from '~/ts/types'
 import dayjs from '~/ts/dayjs'
 import type firebase from 'firebase'
 
-type SortType = 'name' | 'category' | 'type' | 'date'
+type SortType = 'name' | 'type' | 'date'
+type OmitKeys = 'values' | 'id' | 'status' | 'category' | 'account' | 'currency'
 
 export default Vue.extend({
   data: () => ({
     editedValue: null as EditedValue | null,
+    detailedValue: null as InputAgendaRow | null,
     sortType: 'type' as SortType,
     reverseSort: false,
   }),
@@ -229,20 +220,17 @@ export default Vue.extend({
      * @returns The function
      */
     sorter(): (a: AgendaRow, b: AgendaRow) => number {
-      let priority: (keyof Omit<AgendaRow, 'values' | 'id' | 'status'>)[] = []
+      let priority: (keyof Omit<AgendaRow, OmitKeys>)[] = []
       switch (this.sortType) {
         case 'name':
-          priority = ['name', 'category', 'modifier', 'date']
-          break
-        case 'category':
-          priority = ['category', 'name', 'modifier', 'date']
+          priority = ['name', 'modifier', 'date']
           break
         case 'date':
-          priority = ['date', 'name', 'category', 'modifier']
+          priority = ['date', 'name', 'modifier']
           break
         case 'type':
         default:
-          priority = ['modifier', 'category', 'name', 'date']
+          priority = ['modifier', 'name', 'date']
           break
       }
       return (a, b) => {
@@ -287,21 +275,44 @@ export default Vue.extend({
      * @param id The id of the row
      */
     async deleteRow(id: string) {
-      try {
-        await this.$store.dispatch('agenda/deleteEntry', id)
-      } catch (e) {
-        this.$toast.global.error((e as Error).message)
+      const res = await this.$dialog.confirm({
+        text: `Voulez-vous supprimer la ligne "${escapeHTML(
+          this.items.find(({ id: rid }) => id === rid)?.name
+        )}" ?`,
+        title: 'Attention',
+        actions: {
+          false: {
+            text: 'Annuler',
+            color: 'error',
+          },
+          true: {
+            text: 'Confirmer',
+            color: 'success',
+          },
+        },
+      })
+
+      if (res) {
+        try {
+          await this.$store.dispatch('agenda/deleteEntry', id)
+        } catch (e) {
+          this.$toast.global.error((e as Error).message)
+        }
       }
     },
     /**
-     * Prepare dialog to open
+     * Prepare edit dialog to open
      *
      * @param row The row
      * @param field The field of the row
      * @param value The current value of the row
      */
-    open({ id, name }: AgendaRow, field: string, value: EditedValue['value']) {
-      if (typeof value === 'number') {
+    openEdit(
+      { id, name, currency }: AgendaRow,
+      field: keyof AgendaRow | number,
+      value: EditedValue['value']
+    ) {
+      if (typeof value === 'number' && field !== 'modifier') {
         value = value.toFixed(2)
       }
 
@@ -312,9 +323,6 @@ export default Vue.extend({
           case 'name':
             label = 'Nom'
             break
-          case 'category':
-            label = 'Catégorie'
-            break
           default:
             label = 'Valeur'
             break
@@ -324,7 +332,34 @@ export default Vue.extend({
         label = this.month(field + 1).label
       }
 
-      this.editedValue = { id, name, field, value, applyToAll: false, label }
+      this.editedValue = {
+        id,
+        name,
+        field,
+        value,
+        applyToAll: false,
+        label,
+        currency,
+      }
+    },
+    /**
+     * Prepare detail dialog to open
+     */
+    openDetail(row: AgendaRow) {
+      let category = row.category
+      if (typeof category !== 'string') {
+        category = category.id
+      }
+
+      const account = row.account?.id
+
+      this.detailedValue = {
+        ...row,
+        id: row.id,
+        category,
+        date: dayjs(row.date.toDate()),
+        account: account ?? null,
+      }
     },
     /**
      * Edit sort type
