@@ -15,6 +15,9 @@
             <v-card>
               <SettingsAuth />
             </v-card>
+            <v-card style="margin-top: 1.5rem">
+              <SettingsDevices />
+            </v-card>
           </v-col>
         </v-row>
       </v-col>

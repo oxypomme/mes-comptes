@@ -22,10 +22,12 @@
             }}
           </div>
           <v-divider class="my-2"></v-divider>
-          <div>
-            <b>API <i>devises</i> :</b>
-            <v-chip :color="currencyStatus.color" x-small>
-              {{ currencyStatus.value }}
+          <div v-for="{ name, link, status } in apis" :key="name">
+            <b>
+              API <a :href="link">{{ name }}</a> :
+            </b>
+            <v-chip :color="status.color" x-small>
+              {{ status.value }}
             </v-chip>
           </div>
         </v-col>
@@ -36,18 +38,35 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { checkAPIstatus } from '~/ts/currency'
+import { checkAPIstatus as checkCurrencyAPIStatus } from '~/ts/currency'
 import { calcNextPeriod, Period } from '~/functions/src/utils/period'
 import dayjs from '~/ts/dayjs'
 import type { SettingsState } from '~/ts/types'
 
+type API = {
+  name: string
+  link: string
+  handler: () => Promise<boolean>
+  status: {
+    value: string
+    color: string
+  }
+}
+
 export default Vue.extend({
   data() {
     return {
-      currencyStatus: {
-        value: '...',
-        color: 'orange',
-      },
+      apis: [
+        {
+          name: 'exchangerate',
+          link: 'https://exchangerate.host',
+          handler: checkCurrencyAPIStatus,
+          status: {
+            value: '...',
+            color: 'orange',
+          },
+        },
+      ] as API[],
     }
   },
   computed: {
@@ -74,21 +93,23 @@ export default Vue.extend({
     },
   },
   mounted() {
-    checkAPIstatus()
-      .then(
-        (res) =>
-          (this.currencyStatus = {
-            value: res ? 'OK' : 'KO',
-            color: res ? 'green' : 'red',
-          })
-      )
-      .catch(
-        () =>
-          (this.currencyStatus = {
-            value: 'KO',
-            color: 'red',
-          })
-      )
+    this.apis.map(this.pingHandler)
+  },
+  methods: {
+    async pingHandler(api: API) {
+      try {
+        const res = await api.handler()
+        api.status = {
+          value: res ? 'OK' : 'KO',
+          color: res ? 'green' : 'red',
+        }
+      } catch (error) {
+        api.status = {
+          value: 'KO',
+          color: 'red',
+        }
+      }
+    },
   },
 })
 </script>

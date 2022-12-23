@@ -87,6 +87,12 @@ interface InputUser {
   balance: string
 }
 
+interface Device {
+  id: string
+  lastUsed: firebase.firestore.Timestamp
+  type?: 'mobile' | 'desktop'
+}
+
 interface SettingsState {
   activePeriod: {
     start: firebase.firestore.Timestamp

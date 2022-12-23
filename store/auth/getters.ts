@@ -13,6 +13,13 @@ const getters: GetterTree<AuthState, RootState> = {
    * @returns The user
    */
   getUser: (state) => state.user,
+  /**
+   * Get the linked devices
+   *
+   * @param state The state
+   * @returns The devices
+   */
+  getDevices: (state) => state.devices,
 }
 
 export default getters

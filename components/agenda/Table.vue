@@ -119,7 +119,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="item in [...items].sort(sorter)" :key="item.name">
+          <tr v-for="item in [...items].sort(sorter)" :key="item.id">
             <td>
               <div class="d-flex align-center">
                 <v-btn icon color="error" @click="deleteRow(item.id)">

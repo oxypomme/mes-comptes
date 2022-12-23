@@ -30,7 +30,7 @@
       <v-divider />
       <v-list :dense="$vuetify.breakpoint.smAndDown">
         <v-list-item-group>
-          <v-list-item v-for="(categ, i) in categories" :key="i">
+          <v-list-item v-for="(categ, i) in categories" :key="categ.id">
             <v-icon
               small
               class="mr-2"
