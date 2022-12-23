@@ -40,12 +40,24 @@ const getters: GetterTree<RootState, RootState> = {
     return period.end.diff(period.start, 'week')
   },
   /**
-   * Number of weeks in current period by the count of reset day
-   *
-   * @deprecated
+   * Get number of time there's a specific day in period
    */
-  getResetWeekCount: (_state) => {
-    return 0
+  getDayCount: (state) => (day: number) => {
+    const jsDay = day >= 7 ? 0 : day
+    let count = 0
+    if (state.settings.activePeriod) {
+      const start = dayjs(state.settings.activePeriod.start.toDate())
+      const end = dayjs(state.settings.activePeriod.end.toDate())
+
+      let date = start.day(jsDay)
+      while (date.isSameOrBefore(end)) {
+        if (date.isSameOrAfter(start)) {
+          count++
+        }
+        date = date.add(1, 'week')
+      }
+    }
+    return count
   },
   /**
    * Get months since account creation

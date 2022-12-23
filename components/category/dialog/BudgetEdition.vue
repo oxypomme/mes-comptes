@@ -15,17 +15,29 @@
             <v-row>
               Variables possibles :
               <ul>
-                <li class="mb-3" @click="addVar('nbResetDayInMonth')">
-                  <code>nbResetDayInMonth</code> : Nombre de fois que le "jour
-                  de reset" est présent dans le mois <br />
-                  (Actuel: <code>{{ nbResetDayInMonth }}</code
-                  >)
+                <li class="mb-3">
+                  <code>nbDayInPeriod(1-7)</code> : Nombre de fois que le jour
+                  choisi est présent dans le mois
+                  <ul class="grid">
+                    <li
+                      v-for="i in 7"
+                      :key="i"
+                      style="text-transform: capitalize"
+                      @click="addVar(`nbDayInPeriod(${i})`)"
+                    >
+                      {{ i }} - {{ dayName(i) }}:
+                      <code>{{ nbDayInPeriod(i) }}</code>
+                    </li>
+                  </ul>
                 </li>
-                <li class="mb-3" @click="addVar('nbWeekInMonth')">
-                  <code>nbWeekInMonth</code> : Le nombre de semaine dans le mois
-                  <br />
-                  (Actuel: <code>{{ nbWeekInMonth }}</code
-                  >)
+                <li class="mb-3" @click="addVar('nbWeekInPeriod')">
+                  <code>nbWeekInPeriod</code> : Le nombre de semaine dans la
+                  période
+                  <ul>
+                    <li>
+                      Actuel: <code>{{ nbWeekInPeriod }}</code>
+                    </li>
+                  </ul>
                 </li>
               </ul>
             </v-row>
@@ -69,6 +81,7 @@
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
 import type { VForm } from '~/ts/components'
+import dayjs from '~/ts/dayjs'
 import { parseBudget, toLS } from '~/ts/format'
 
 export default Vue.extend({
@@ -89,18 +102,14 @@ export default Vue.extend({
   }),
   computed: {
     ...mapGetters({
-      nbResetDayInMonth: 'getResetWeekCount',
-      nbWeekInMonth: 'getWeekCount',
+      nbDayInPeriod: 'getDayCount',
+      nbWeekInPeriod: 'getWeekCount',
     }),
     /**
      * Parsed budget
      */
     parsedBudget(): number {
-      return parseBudget(
-        this.budget,
-        this.nbResetDayInMonth,
-        this.nbWeekInMonth
-      )
+      return parseBudget(this.budget, this.nbDayInPeriod, this.nbWeekInPeriod)
     },
     /**
      * Field rules
@@ -138,6 +147,16 @@ export default Vue.extend({
   methods: {
     toLS,
     /**
+     * Get day name
+     *
+     * @param i The day index (1-7)
+     */
+    dayName(i: number): string {
+      return dayjs()
+        .day(i >= 7 ? 0 : i)
+        .format('dddd')
+    },
+    /**
      * Helper to add variable
      */
     addVar(varname: string) {
@@ -168,4 +187,10 @@ export default Vue.extend({
 })
 </script>
 
-<style scoped></style>
+<style scoped>
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-auto-rows: auto;
+}
+</style>

@@ -35,16 +35,16 @@ export const escapeHTML = (value?: string) => {
 
 export const parseBudget = (
   exp: string,
-  nbResetDayInMonth: number,
-  nbWeekInMonth: number
+  nbDayInPeriod: () => number,
+  nbWeekInPeriod: number
 ): number => {
   try {
     // eslint-disable-next-line no-new-func
     const v = new Function(
-      'nbResetDayInMonth',
-      'nbWeekInMonth',
+      'nbDayInPeriod',
+      'nbWeekInPeriod',
       `"use strict"; return ${exp}`
-    )(nbResetDayInMonth, nbWeekInMonth) as number
+    )(nbDayInPeriod, nbWeekInPeriod) as number
     return v
   } catch (error) {
     return NaN

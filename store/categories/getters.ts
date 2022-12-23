@@ -20,9 +20,9 @@ const getter: GetterTree<CategoryState, RootState> = {
    */
   getCategories: (state, _getters, _rootState, rootGetters) => {
     const agenda = rootGetters['agenda/getCurrent'] as AgendaComputed
-    const weekcount = rootGetters.getWeekCount
+
     const calcBudget = (exp: string) =>
-      parseBudget(exp, rootGetters.getResetWeekCount, rootGetters.getWeekCount)
+      parseBudget(exp, rootGetters.getDayCount, rootGetters.getWeekCount)
 
     const categories: ComputedCategory[] = []
     for (const { id, name, budget, balance, type, icon } of state.data) {

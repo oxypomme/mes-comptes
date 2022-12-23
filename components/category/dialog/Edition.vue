@@ -131,8 +131,8 @@ export default Vue.extend({
     ...mapGetters({
       loading: 'categories/getLoadingState',
       categories: 'categories/getCategories',
-      nbResetDayInMonth: 'getResetWeekCount',
-      nbWeekInMonth: 'getWeekCount',
+      nbDayInPeriod: 'getDayCount',
+      nbWeekInPeriod: 'getWeekCount',
     }),
     /**
      * Parsed budget
@@ -140,8 +140,8 @@ export default Vue.extend({
     parsedBudget(): number {
       return parseBudget(
         this.category.budget,
-        this.nbResetDayInMonth,
-        this.nbWeekInMonth
+        this.nbDayInPeriod,
+        this.nbWeekInPeriod
       )
     },
     /**
