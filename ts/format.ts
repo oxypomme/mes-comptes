@@ -1,3 +1,5 @@
+import sanitzeHtml from 'sanitize-html'
+
 /**
  * Shorthand for `x.toLocaleString`
  *
@@ -18,16 +20,12 @@ export const toLS = (
     ...options,
   })
 
-// TODO: use lib insteadd of custom one
-const tagsToReplace: Record<string, string> = {
-  '&': '&amp;',
-  '<': '&lt;',
-  '>': '&gt;',
-}
 export const escapeHTML = (value?: string) => {
   if (value) {
-    return value.replace(/[&<>]/g, (tag) => {
-      return tagsToReplace[tag] || tag
+    return sanitzeHtml(value, {
+      allowedTags: [],
+      allowedAttributes: {},
+      disallowedTagsMode: 'recursiveEscape',
     })
   }
   return value
