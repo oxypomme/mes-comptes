@@ -24,7 +24,7 @@ jobs:
   deploy:
     name: Deploy Cloud Functions
     needs: check
-    if: needs.check.outputs.count > 0
+    if: steps.check_files.outputs.diff
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
