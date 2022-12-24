@@ -32,10 +32,12 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: 14.20
-      - uses: pocket-apps/action-setup-firebase@v2
+          node-version: lts/fermium
+      - name: Setup Firebase CLI
+        uses: w9jds/setup-firebase@main
         with:
-          firebase-token: ${{ secrets.FIREBASE_AUTH_TOKEN }}
+          tools-version: 10.5.0
+          firebase_token: ${{ secrets.FIREBASE_AUTH_TOKEN }}
       - name: Upload
         run: |
           npm install -g yarn
