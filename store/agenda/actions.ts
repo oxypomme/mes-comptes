@@ -43,7 +43,7 @@ const actions: ActionTree<AgendaState, RootState> = {
         category && accRef?.collection('categories').doc(category.id)
 
       const row = await aRef.add({
-        name: 'Nom',
+        name: '#Nom',
         account: accRef,
         category: catRef ?? '',
         modifier: -1,
