@@ -50,33 +50,35 @@ export default async (
           name: `${data.name} - ${current.label}`,
         }
 
-        transaction
-          .create(opeRef, {
-            ...ope,
-            date: rDate,
-            category: data.category,
-            createdAt: firestore.FieldValue.serverTimestamp(),
-          })
-          .update(row.ref, {
-            status: true,
-            updatedAt: firestore.FieldValue.serverTimestamp(),
-          })
+        if (ope.amount) {
+          transaction
+            .create(opeRef, {
+              ...ope,
+              date: rDate,
+              category: data.category,
+              createdAt: firestore.FieldValue.serverTimestamp(),
+            })
+            .update(row.ref, {
+              status: true,
+              updatedAt: firestore.FieldValue.serverTimestamp(),
+            })
 
-        if (tokens && tokens.length > 0) {
-          await fcm().sendMulticast({
-            tokens,
-            notification: {
-              title: '\uD83D\uDCC5 Une nouvelle opération vous attend !',
-              body: `L'opération "${
-                data.name
-              }" avec une valeur de ${ope.amount.toLocaleString(undefined, {
-                maximumFractionDigits: 2,
-                minimumFractionDigits: 2,
-                style: 'currency',
-                currency: 'EUR',
-              })} a été automatiquement ajoutée.`,
-            },
-          })
+          if (tokens && tokens.length > 0) {
+            await fcm().sendMulticast({
+              tokens,
+              notification: {
+                title: '\uD83D\uDCC5 Une nouvelle opération vous attend !',
+                body: `L'opération "${
+                  data.name
+                }" avec une valeur de ${ope.amount.toLocaleString(undefined, {
+                  maximumFractionDigits: 2,
+                  minimumFractionDigits: 2,
+                  style: 'currency',
+                  currency: 'EUR',
+                })} a été automatiquement ajoutée.`,
+              },
+            })
+          }
         }
       }
     }
