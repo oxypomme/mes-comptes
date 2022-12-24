@@ -33,6 +33,9 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 14.20
+      - uses: pocket-apps/action-setup-firebase@v2
+        with:
+          firebase-token: ${{ secrets.FIREBASE_AUTH_TOKEN }}
       - name: Upload
         run: |
           npm install -g yarn
