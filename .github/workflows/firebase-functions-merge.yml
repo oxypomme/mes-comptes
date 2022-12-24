@@ -17,6 +17,8 @@ jobs:
         uses: technote-space/get-diff-action@v6
         with:
           PATTERNS: |
+            .github/workflows/firebase-functions-merge.yml
+            functions/*
             functions/**/*
 
   deploy:
