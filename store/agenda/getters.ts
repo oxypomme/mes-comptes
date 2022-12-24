@@ -3,11 +3,20 @@ import dayjs from 'dayjs'
 import type { RootState } from '../state'
 import type { AgendaState } from './state'
 import type { AgendaRow } from '~/ts/types'
+import { convert } from '~/ts/currency'
 
 const agendaMonthReducer =
   (month: number) =>
-  (sum: number, { values }: AgendaRow) =>
-    sum + values[month - 1]
+  (sum: number, { values, currency }: AgendaRow) => {
+    let val = values[month - 1]
+    if (val && currency && currency !== 'EUR') {
+      try {
+        val = convert(val, currency, 'EUR')
+      } catch (error) {}
+    }
+
+    return sum + val
+  }
 
 /**
  * Getters for user's agenda
@@ -28,14 +37,12 @@ const getters: GetterTree<AgendaState, RootState> = {
    * @returns A function to get the budget
    */
   getMonth:
-    (_, getters) =>
+    (_, getters, _r, rootGetters) =>
     (
       month: number // in range 1-12
     ) => {
       const rows: AgendaRow[] = getters.getAgenda
-      let resetDate = dayjs(
-        getters.getSettings?.resetDate.toDate() ?? undefined
-      )
+      let current = dayjs().set('month', rootGetters.getCurrentMonth.value - 1)
 
       const debit = rows
         .filter(({ modifier }) => modifier === -1)
@@ -44,15 +51,15 @@ const getters: GetterTree<AgendaState, RootState> = {
         .filter(({ modifier }) => modifier === 1)
         .reduce(agendaMonthReducer(month), 0)
 
-      if (month < resetDate.month()) {
-        resetDate = resetDate.add(1, 'year')
+      if (month - 1 < current.month()) {
+        current = current.add(1, 'year')
       }
 
       return {
         debit,
         credit,
         total: credit - debit,
-        label: resetDate.set('month', month - 1).format('MMMM YYYY'),
+        label: current.set('month', month - 1).format('MMMM YYYY'),
       }
     },
   /**

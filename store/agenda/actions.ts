@@ -3,7 +3,14 @@ import type { ActionTree, Store } from 'vuex'
 import type { RootState } from '../state'
 import type { AgendaState } from './state'
 import type firebase from 'firebase'
-import type { AgendaRow, User } from '~/ts/types'
+import type {
+  Account,
+  AgendaRow,
+  Category,
+  InputAgendaRow,
+  User,
+} from '~/ts/types'
+import { ECategoryType } from '~/ts/ECategoryType'
 
 /**
  * Actions for user's agenda
@@ -23,13 +30,22 @@ const actions: ActionTree<AgendaState, RootState> = {
         throw new Error('Vous devez être connecté pour effectuer cette action')
       }
 
-      const ref = this.$fire.firestore
-        .collection('users')
-        .doc(uid)
-        .collection('agenda')
-      const row = await ref.add({
-        name: 'Nom',
-        category: 'Catégorie',
+      const currentAccount = rootGetters['account/getCurrent'] as Account | null
+      const category = (
+        rootGetters['categories/getCategories'] as Category[]
+      ).find(({ type }) => type === ECategoryType.PLANNED_DEBIT)
+
+      const uRef = this.$fire.firestore.collection('users').doc(uid)
+      const aRef = uRef.collection('agenda')
+      const accRef =
+        currentAccount && uRef.collection('accounts').doc(currentAccount.id)
+      const catRef =
+        category && accRef?.collection('categories').doc(category.id)
+
+      const row = await aRef.add({
+        name: '#Nom',
+        account: accRef,
+        category: catRef ?? '',
         modifier: -1,
         values: Array(12).fill(0),
         date: this.$fireModule.firestore.FieldValue.serverTimestamp(),
@@ -137,6 +153,42 @@ const actions: ActionTree<AgendaState, RootState> = {
     }
   },
   /**
+   * Update detail of agenda row
+   */
+  async updateDetail(
+    { commit, rootGetters },
+    { id, account, category, currency, date }: InputAgendaRow
+  ) {
+    commit('SET_LOADING', true)
+    try {
+      if (!account) {
+        throw new Error('Vous devez renseigner un compte')
+      }
+
+      const uid = (rootGetters['auth/getUser'] as User | null)?.uid
+      if (!uid) {
+        throw new Error('Vous devez être connecté pour effectuer cette action')
+      }
+
+      const uRef = this.$fire.firestore.collection('users').doc(uid)
+      const rowRef = uRef.collection('agenda').doc(id)
+      const accRef = uRef.collection('accounts').doc(account)
+      const catRef = accRef.collection('categories').doc(category)
+
+      await rowRef.update({
+        account: accRef,
+        category: catRef,
+        currency,
+        date: date.toFire(),
+        updatedAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
+      } as Partial<AgendaRow> & { updatedAt: firebase.firestore.FieldValue })
+      commit('SET_LOADING', false)
+    } catch (error) {
+      commit('SET_LOADING', false)
+      throw error
+    }
+  },
+  /**
    * Bind user's agenda to the state
    */
   bindAgenda: firestoreAction(async function (
@@ -149,7 +201,14 @@ const actions: ActionTree<AgendaState, RootState> = {
       .collection('users')
       .doc(uid)
       .collection('agenda')
-    const bind = await bindFirestoreRef('data', ref, { wait: true })
+    const bind = await bindFirestoreRef('data', ref, {
+      serialize: (doc) => {
+        const data = doc.data()
+        Object.defineProperty(data, 'id', { value: doc.id })
+        return data
+      },
+      wait: true,
+    })
     commit('SET_LOADING', false)
     return bind
   }),

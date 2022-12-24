@@ -24,7 +24,7 @@
       <v-divider />
       <v-list :dense="$vuetify.breakpoint.smAndDown">
         <v-list-item-group v-model="selectedItem" mandatory>
-          <v-list-item v-for="(acc, i) in accounts" :key="i">
+          <v-list-item v-for="(acc, i) in accounts" :key="acc.id">
             <v-list-item-content>
               <v-list-item-title v-text="acc.name"></v-list-item-title>
             </v-list-item-content>

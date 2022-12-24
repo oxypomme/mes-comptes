@@ -16,8 +16,8 @@
           >
             <template #activator="{ on, attrs }">
               <v-text-field
-                v-model="formatedDate"
-                label="Changement de mois le"
+                v-model="formattedPeriod"
+                label="Periode actuelle"
                 hint="Utilisé pour remettre à zéro les catégories"
                 persistent-hint
                 prepend-icon="mdi-calendar"
@@ -27,13 +27,14 @@
               ></v-text-field>
             </template>
             <v-date-picker
-              v-model="resetDate"
-              :min="minDate"
-              :max="maxDate"
+              v-model="period"
+              :min="limitsDates[0].format('YYYY-MM-DD')"
+              :max="limitsDates[1].format('YYYY-MM-DD')"
+              show-adjacent-months
+              range
               color="primary"
               locale="fr-FR"
               :first-day-of-week="1"
-              @change="saveResetDate"
             ></v-date-picker>
           </v-menu>
         </v-row>
@@ -71,40 +72,35 @@ export default Vue.extend({
     valid: false,
     menu: false,
     loading: false,
-    rawDate: dayjs(),
+    rawPeriod: [dayjs().startOf('month'), dayjs().endOf('month')],
+    limitsDates: [
+      dayjs().subtract(1, 'month').startOf('month'),
+      dayjs().add(1, 'month').endOf('month'),
+    ],
   }),
   computed: {
     settings(): SettingsState {
       return this.$store.getters.getSettings
     },
-    resetDate: {
-      get(): string {
-        return dayjs(this.rawDate).format('YYYY-M-D')
+    period: {
+      get(): string[] {
+        return this.rawPeriod.map((e) => e.format('YYYY-MM-DD'))
       },
-      set(newValue: string) {
-        this.rawDate = dayjs(newValue, 'YYYY-M-D')
+      set(newValue: string[]) {
+        this.rawPeriod = newValue.map((e) => dayjs(e, 'YYYY-MM-DD'))
       },
     },
-    formatedDate(): string {
-      return this.rawDate.format('DD/MM/YYYY')
-    },
-    /**
-     * Minimal date for Date picker
-     */
-    minDate(): string {
-      return dayjs(this.settings?.resetDate.toDate() ?? undefined)
-        .startOf('month')
-        .format('YYYY-MM-DD')
-    },
-    /**
-     * Maxmimal date for Date picker
-     */
-    maxDate(): string {
-      return dayjs(this.minDate).endOf('month').format('YYYY-MM-DD')
+    formattedPeriod(): string {
+      return `Du ${this.rawPeriod[0]?.format('DD/MM/YYYY') ?? '...'} au ${
+        this.rawPeriod[1]?.format('DD/MM/YYYY') ?? '...'
+      }`
     },
   },
   mounted() {
-    this.rawDate = dayjs(this.settings.resetDate.toDate())
+    this.rawPeriod = [
+      dayjs(this.settings.activePeriod.start.toDate()),
+      dayjs(this.settings.activePeriod.end.toDate()),
+    ]
   },
   methods: {
     /**
@@ -117,7 +113,10 @@ export default Vue.extend({
         try {
           await this.$store.dispatch('updateSettings', {
             ...this.settings,
-            resetDate: this.rawDate,
+            activePeriod: {
+              start: this.rawPeriod[0],
+              end: this.rawPeriod[1],
+            },
           })
           this.$toast.global.success('Paramètres mis à jour')
         } catch (e) {
@@ -125,9 +124,6 @@ export default Vue.extend({
         }
         this.loading = false
       }
-    },
-    saveResetDate(date: string) {
-      ;(this.$refs.menu as Element & { save: (data: any) => any }).save(date)
     },
     toggleTheme(e: Event) {
       this.$vuetify.theme.dark = !this.settings.lightTheme

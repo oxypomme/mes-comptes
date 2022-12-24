@@ -1,4 +1,4 @@
-import type { User } from '~/ts/types'
+import type { User, Device } from '~/ts/types'
 
 /**
  * State for user
@@ -10,6 +10,10 @@ const state = () => ({
    * Current authed user
    */
   user: null as User | null,
+  /**
+   * Current linked devices
+   */
+  devices: [] as Device[],
 })
 
 export default state

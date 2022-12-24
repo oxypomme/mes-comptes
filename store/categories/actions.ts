@@ -43,7 +43,7 @@ const actions: ActionTree<CategoryState, RootState> = {
         .collection('categories')
       const cat = await ref.add({
         name,
-        budget: parseFloat(budget),
+        budget,
         balance: type === ECategoryType.PLANNED_CREDIT ? -ba : ba,
         type,
         icon,
@@ -90,7 +90,7 @@ const actions: ActionTree<CategoryState, RootState> = {
         .doc(id)
       await ref.update({
         name,
-        budget: parseFloat(budget),
+        budget,
         balance: type === ECategoryType.PLANNED_CREDIT ? -ba : ba,
         type,
         icon,

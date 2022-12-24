@@ -1,20 +1,29 @@
 {
   "name": "mes-comptes",
-  "author": {
-    "email": "oxytom8@gmail.com",
-    "name": "oxypomme",
-    "url": "https://oxypomme.github.io"
-  },
   "version": "1.0.0",
   "private": true,
+  "author": {
+    "name": "oxypomme",
+    "email": "oxytom8@gmail.com",
+    "url": "https://oxypomme.github.io"
+  },
   "scripts": {
-    "dev": "nuxt",
     "build": "nuxt build",
-    "start": "nuxt start",
+    "dev": "nuxt",
+    "emulators": "firebase emulators:start --import ./firebase/emulator_data --export-on-exit ./firebase/emulator_data",
     "generate": "nuxt generate",
-    "emulators": "firebase emulators:start --only storage,firestore,auth,ui --import ./firebase/emulator_data --export-on-exit ./firebase/emulator_data",
-    "lint:js": "eslint --ext \".ts,.vue\" .",
-    "lint": "yarn lint:js"
+    "lint": "eslint --fix --ext \".ts,.vue\" .",
+    "prepare": "husky install",
+    "start": "nuxt start"
+  },
+  "lint-staged": {
+    "*.{vue,ts}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "package.json": [
+      "sort-package-json"
+    ]
   },
   "dependencies": {
     "@nuxtjs/firebase": "^7.6.1",
@@ -23,6 +32,7 @@
     "dayjs": "^1.11.0",
     "firebase": "^8.1.1",
     "nuxt": "^2.15.8",
+    "sanitize-html": "2.7.3",
     "vuetify": "^2.6.4",
     "vuetify-dialog": "^2.0.17",
     "vuexfire": "^3.2.5",
@@ -30,6 +40,8 @@
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.17.0",
+    "@commitlint/cli": "^17.3.0",
+    "@commitlint/config-conventional": "^17.3.0",
     "@nuxt/types": "^2.15.8",
     "@nuxt/typescript-build": "^2.1.0",
     "@nuxtjs/eslint-config-typescript": "^9.0.0",
@@ -37,11 +49,15 @@
     "@nuxtjs/stylelint-module": "^4.1.0",
     "@nuxtjs/vuetify": "^1.12.3",
     "@types/lodash": "^4.14.180",
+    "@types/sanitize-html": "^2.6.2",
     "@types/zxcvbn": "^4.4.1",
     "eslint": "^8.11.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-nuxt": "^3.2.0",
     "eslint-plugin-vue": "^8.5.0",
-    "prettier": "^2.6.0"
+    "husky": "^8.0.2",
+    "lint-staged": "^13.1.0",
+    "prettier": "^2.6.0",
+    "sort-package-json": "^2.1.0"
   }
 }

@@ -26,6 +26,7 @@ const mutations: MutationTree<AuthState> = {
    */
   RESET_STATE: (state) => {
     state.user = null
+    state.devices = []
   },
 }
 

@@ -30,7 +30,7 @@
       <v-divider />
       <v-list :dense="$vuetify.breakpoint.smAndDown">
         <v-list-item-group>
-          <v-list-item v-for="(categ, i) in categories" :key="i">
+          <v-list-item v-for="(categ, i) in categories" :key="categ.id">
             <v-icon
               small
               class="mr-2"
@@ -98,7 +98,6 @@ export default Vue.extend({
       loading: 'categories/getLoadingState',
       categories: 'categories/getCategories',
       roulement: 'categories/getRoulement',
-      weeksCount: 'getWeekCount',
     }),
   },
   methods: {
@@ -144,7 +143,6 @@ export default Vue.extend({
       this.category = {
         ...categ,
         balance: categ.balance.toFixed(2),
-        budget: (categ.budget / this.weeksCount).toFixed(2),
         id: categ.id,
       }
       // TODO: check if id usefull

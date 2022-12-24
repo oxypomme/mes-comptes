@@ -1,5 +1,6 @@
 import type { GetterTree } from 'vuex'
 import type { RootState } from './state'
+import { getCurrentMonth } from '~/functions/src/utils/period'
 import dayjs from '~/ts/dayjs'
 
 /**
@@ -21,19 +22,45 @@ const getters: GetterTree<RootState, RootState> = {
    */
   getTitle: (state) => state.title,
   /**
-   * Number of weeks in current month
+   * Number of weeks in current period
    */
   getWeekCount: (state) => {
-    let resetDate = dayjs()
-    if (state.settings.resetDate) {
-      resetDate = dayjs(state.settings.resetDate.toDate())
-    } else {
-      resetDate = resetDate.add(1, 'month')
+    const today = dayjs()
+    // Parse period
+    let period = {
+      start: today.startOf('month'),
+      end: today.endOf('month'),
     }
-    return resetDate.diff(resetDate.subtract(1, 'month'), 'week')
+    if (state.settings.activePeriod) {
+      period = {
+        start: dayjs(state.settings.activePeriod?.start.toDate()),
+        end: dayjs(state.settings.activePeriod?.end.toDate()),
+      }
+    }
+    return period.end.diff(period.start, 'week')
   },
   /**
-   * Get months since account creations
+   * Get number of time there's a specific day in period
+   */
+  getDayCount: (state) => (day: number) => {
+    const jsDay = day >= 7 ? 0 : day
+    let count = 0
+    if (state.settings.activePeriod) {
+      const start = dayjs(state.settings.activePeriod.start.toDate())
+      const end = dayjs(state.settings.activePeriod.end.toDate())
+
+      let date = start.day(jsDay)
+      while (date.isSameOrBefore(end)) {
+        if (date.isSameOrAfter(start)) {
+          count++
+        }
+        date = date.add(1, 'week')
+      }
+    }
+    return count
+  },
+  /**
+   * Get months since account creation
    *
    * @param state The state
    * @returns The months
@@ -59,17 +86,28 @@ const getters: GetterTree<RootState, RootState> = {
     ]
   },
   /**
-   * Return the current month based on resetDate
+   * Return the current month based on activePeriod
    *
    * @param state The state
    * @returns The month label and value (month id, 0-11)
    */
   getCurrentMonth: (state) => {
-    const resetDate = state.settings.resetDate?.toDate()
-    const date = resetDate ? dayjs(resetDate).subtract(1, 'month') : dayjs()
+    const today = dayjs()
+    // Parse period
+    let period = {
+      start: today.startOf('month'),
+      end: today.endOf('month'),
+    }
+    if (state.settings.activePeriod) {
+      period = {
+        start: dayjs(state.settings.activePeriod?.start.toDate()),
+        end: dayjs(state.settings.activePeriod?.end.toDate()),
+      }
+    }
+    const curr = getCurrentMonth(period)
     return {
-      label: date.format('MMMM'),
-      value: date.month() + 1,
+      ...curr,
+      value: curr.value + 1,
     }
   },
 }

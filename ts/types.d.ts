@@ -1,5 +1,6 @@
 import type dayjs from 'dayjs'
 import type { ECategoryType } from './ECategoryType'
+import type { Currency } from './currency'
 import type firebase from 'firebase'
 
 interface FirestoreData {
@@ -20,10 +21,18 @@ type InputAccount = Omit<Account, 'balance' | 'operationCount'> & {
 interface AgendaRow extends FirestoreData {
   name: string
   status: boolean
-  category: string
+  account: firebase.firestore.DocumentReference | null
+  category: firebase.firestore.DocumentReference | string
   modifier: ValueModifier
   values: number[] // 1 element for each month (12 elements in total); float
+  currency?: Currency // EUR by defaul
   date: firebase.firestore.Timestamp
+}
+
+type InputAgendaRow = Omit<AgendaRow, 'date' | 'category' | 'account'> & {
+  date: dayjs.Dayjs
+  category: string
+  account: string | null
 }
 
 interface AgendaComputed {
@@ -36,7 +45,7 @@ interface Category extends FirestoreData {
   name: string
   icon?: string
   balance: number // float
-  budget: number // float
+  budget: string // float or expression
   type: ECategoryType
   computed: {
     tooltip: string
@@ -78,11 +87,23 @@ interface InputUser {
   balance: string
 }
 
+interface Device {
+  id: string
+  lastUsed: firebase.firestore.Timestamp
+  type?: 'mobile' | 'desktop'
+}
+
 interface SettingsState {
-  resetDate: firebase.firestore.Timestamp
+  activePeriod: {
+    start: firebase.firestore.Timestamp
+    end: firebase.firestore.Timestamp
+  }
   createdAt: firebase.firestore.Timestamp
   lightTheme: boolean
 }
-type Settings = Omit<SettingsState, 'resetDate'> & {
-  resetDate: dayjs.Dayjs
+type Settings = Omit<SettingsState, 'activePeriod'> & {
+  activePeriod: {
+    start: dayjs.Dayjs
+    end: dayjs.Dayjs
+  }
 }

@@ -164,7 +164,7 @@ export default Vue.extend({
         const offset = API_LIMIT * (this.page - 1)
         const { data, total } = await (
           await fetch(
-            'https://oxypomme.fr/mdi/icons/?' +
+            'https://mdi.oxypomme.fr/icons/?' +
               new URLSearchParams({
                 limit: API_LIMIT.toString(),
                 search: this.search,

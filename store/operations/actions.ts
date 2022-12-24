@@ -46,13 +46,13 @@ const actions: ActionTree<OperationState, RootState> = {
         cref = ref.collection('categories').doc(category)
 
       // Setting date at 00:00 to avoid weird sort
-      date.startOf('day')
+      const d = date.startOf('day')
 
       const ope = await ref.collection('operations').add({
         name,
         amount: amnt,
         category: cref,
-        date: date && date.toFire(),
+        date: d.toFire(),
         createdAt: this.$fireModule.firestore.FieldValue.serverTimestamp(),
       } as Operation & { createdAt: firebase.firestore.FieldValue })
 
