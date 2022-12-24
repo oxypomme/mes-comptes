@@ -7,7 +7,7 @@ jobs:
   check:
     name: Check if files
     outputs:
-      run_job: ${{ steps.check_files.outputs.run_job }}
+      diff: ${{ steps.check_files.outputs.diff }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -24,7 +24,7 @@ jobs:
   deploy:
     name: Deploy Cloud Functions
     needs: check
-    if: steps.check_files.outputs.diff
+    if: needs.check.outputs.diff
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
