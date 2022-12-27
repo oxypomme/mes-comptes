@@ -114,8 +114,14 @@ export default Vue.extend({
           await this.$store.dispatch('updateSettings', {
             ...this.settings,
             activePeriod: {
-              start: this.rawPeriod[0],
-              end: this.rawPeriod[1],
+              start: this.rawPeriod[0]
+                .set('hour', 0)
+                .set('minute', 0)
+                .set('second', 0),
+              end: this.rawPeriod[1]
+                .set('hour', 0)
+                .set('minute', 0)
+                .set('second', 0),
             },
           })
           this.$toast.global.success('Paramètres mis à jour')
