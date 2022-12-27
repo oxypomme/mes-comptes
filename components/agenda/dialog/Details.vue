@@ -283,7 +283,13 @@ export default Vue.extend({
       e.preventDefault()
 
       try {
-        await this.$store.dispatch('agenda/updateDetail', this.editedValue)
+        await this.$store.dispatch('agenda/updateDetail', {
+          ...this.editedValue,
+          date: this.editedValue.date
+            .set('hour', 0)
+            .set('minute', 0)
+            .set('second', 0),
+        })
       } catch (e) {
         this.$toast.global.error((e as Error).message)
       }

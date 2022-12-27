@@ -8,8 +8,8 @@
         <v-col>
           <div>
             <b>Prochain reset :</b>
-            Le {{ nextPeriod.start.format('DD/MM/YYYY') }} à
-            {{ nextUserCheck.format('HH:MM') }}
+            Le
+            {{ nextReset.format('DD/MM/YYYY à HH:MM') }}
           </div>
           <div>
             <b>Prochaine période :</b>
@@ -38,6 +38,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import schedules from '~/functions/src/utils/schedules'
 import { checkAPIstatus as checkCurrencyAPIStatus } from '~/ts/currency'
 import { calcNextPeriod, Period } from '~/functions/src/utils/period'
 import dayjs from '~/ts/dayjs'
@@ -70,14 +71,15 @@ export default Vue.extend({
     }
   },
   computed: {
-    nextUserCheck(): dayjs.Dayjs {
-      // ! Keep in sync with firecloud !
-      const now = dayjs()
-      const check = now
-        .tz('America/Los_Angeles')
-        .set('hours', 23)
-        .set('minutes', 0)
-        .set('second', 0)
+    nextReset(): dayjs.Dayjs {
+      const settings: SettingsState = this.$store.getters.getSettings
+      const resetDate = dayjs(settings.activePeriod.end.toDate())
+
+      const check = dayjs.tz(
+        `${resetDate.format('DD/MM/YYYY')} ${schedules.daily}`,
+        'DD/MM/YYYY HH:mm',
+        'America/Los_Angeles'
+      )
 
       return check.tz(dayjs.tz.guess())
     },

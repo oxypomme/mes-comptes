@@ -19,7 +19,7 @@ export default async (
   const devices = await ref.collection('devices').listDocuments()
   const tokens = devices?.map((d) => d.id)
 
-  const current = getCurrentMonth(p)
+  const current = getCurrentMonth(p, true)
 
   return ref.firestore.runTransaction(async (transaction) => {
     const rows = transaction.getAll(
@@ -27,11 +27,11 @@ export default async (
     )
     for (const row of await rows) {
       const data = row.data()
-      const rDate = data?.date as firestore.Timestamp | null
+      const rowDate = data?.date as firestore.Timestamp | null
 
       if (
-        rDate &&
-        dayjs(rDate.toDate()).isBefore(d, 'date') &&
+        rowDate &&
+        dayjs.utc(rowDate.toDate()).isBefore(d) &&
         data?.account &&
         data.category &&
         !data.status
@@ -51,14 +51,18 @@ export default async (
         }
 
         if (ope.amount) {
+          // Adding 1 month because agenda is in month and not in period
+          const newRowDate = dayjs.utc(rowDate.toDate()).add(1, 'month')
+
           transaction
             .create(opeRef, {
               ...ope,
-              date: rDate,
+              date: rowDate,
               category: data.category,
               createdAt: firestore.FieldValue.serverTimestamp(),
             })
             .update(row.ref, {
+              date: firestore.Timestamp.fromDate(newRowDate.toDate()),
               status: true,
               updatedAt: firestore.FieldValue.serverTimestamp(),
             })
