@@ -11,11 +11,11 @@ export type FirePeriod = {
   end: firestore.Timestamp
 }
 
-export const getCurrentMonth = (activePeriod?: Period) => {
+export const getCurrentMonth = (activePeriod?: Period, utc = false) => {
   // Parse period
   let period = activePeriod
   if (!period) {
-    const today = dayjs()
+    const today = utc ? dayjs().utc() : dayjs()
     period = {
       start: today.startOf('month'),
       end: today.endOf('month'),
@@ -30,7 +30,7 @@ export const getCurrentMonth = (activePeriod?: Period) => {
 
   // Get longer month within period
   const max = {
-    month: dayjs(),
+    month: utc ? dayjs().utc() : dayjs(),
     days: 0,
   }
   for (

@@ -10,15 +10,15 @@ import resetCategoriesBalance from './resetCategoriesBalance'
  * Check every user if an action is needed
  */
 export default async () => {
-  const now = dayjs()
+  const now = dayjs.utc()
   const users = await store().collection('users').listDocuments()
 
   return Promise.all(
     users.map(async (ref) => {
       const activePeriod: FirePeriod = (await ref.get()).get('activePeriod')
       const period = {
-        start: dayjs(activePeriod.start.toDate()).set('hour', 0),
-        end: dayjs(activePeriod.end.toDate()).set('hour', 0),
+        start: dayjs.utc(activePeriod.start.toDate()),
+        end: dayjs.utc(activePeriod.end.toDate()),
       }
 
       return Promise.all([

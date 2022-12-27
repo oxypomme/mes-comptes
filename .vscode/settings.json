@@ -6,5 +6,6 @@
     "cloud-fnc",
     "categories",
     "auth"
-  ]
+  ],
+  "git.branchProtection": ["main"]
 }

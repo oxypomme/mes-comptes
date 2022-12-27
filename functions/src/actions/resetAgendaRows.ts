@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import { firestore } from 'firebase-admin'
-import { calcNextPeriod, Period } from '../utils/period'
+import { Period } from '../utils/period'
 
 /**
  * Reset user's agenda's rows if needed
@@ -15,21 +15,13 @@ export default async (
   p: Period
 ) => {
   if (d.isAfter(p.end.add(1, 'day'))) {
-    const { duration } = calcNextPeriod(p)
     return await ref.firestore.runTransaction(async (transaction) => {
       const docs = transaction.getAll(
         ...(await ref.collection('agenda').listDocuments())
       )
       for (const doc of await docs) {
-        const aDate = doc.data()?.date as firestore.Timestamp | null
-        let nd = dayjs(d)
-        if (aDate) {
-          // Update date
-          nd = dayjs(aDate.toDate()).add(duration, 'days')
-        }
         transaction.update(doc.ref, {
           status: false,
-          date: firestore.Timestamp.fromDate(nd.toDate()),
           updatedAt: firestore.FieldValue.serverTimestamp(),
         })
       }
