@@ -25,5 +25,8 @@
       "vuetify-dialog/types"
     ]
   },
-  "exclude": ["node_modules", ".nuxt", "dist", "functions"]
+  "exclude": ["node_modules", ".nuxt", "dist", "functions"],
+  "vueCompilerOptions": {
+    "target": 2.7
+  }
 }

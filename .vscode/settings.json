@@ -5,7 +5,8 @@
     "operations",
     "cloud-fnc",
     "categories",
-    "auth"
+    "auth",
+    "deps"
   ],
   "git.branchProtection": ["main"]
 }
