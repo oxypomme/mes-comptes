@@ -16,15 +16,18 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
       - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: lts/fermium
+          node-version-file: '.nvmrc'
+
       - name: Setup Firebase CLI
         uses: w9jds/setup-firebase@main
         with:
           tools-version: 10.5.0
           firebase_token: ${{ secrets.FIREBASE_AUTH_TOKEN }}
+
       - name: Upload
         run: |
           npm install -g yarn
