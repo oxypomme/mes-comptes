@@ -2,6 +2,8 @@ import dayjs from 'dayjs'
 import { firestore } from 'firebase-admin'
 import { fcm } from '../firebase'
 import { calcNextPeriod, Period } from '../utils/period'
+import { logger } from 'firebase-functions/v1'
+import { buildMonthReset } from '../notifications'
 
 /**
  * Reset user's categories' balances if needed
@@ -15,7 +17,12 @@ export default async (
   d: dayjs.Dayjs,
   p: Period
 ) => {
-  if (d.isAfter(p.end.add(1, 'day'))) {
+  if (!d.isAfter(p.end.add(1, 'day'))) {
+    return false
+  }
+  logger.info('Resetting categories...', { user: ref.id })
+
+  try {
     const newPeriod = calcNextPeriod(p)
 
     const batch = ref.firestore.batch()
@@ -34,20 +41,34 @@ export default async (
       }
     }
     await batch.commit()
+  } catch (error) {
+    logger.error('Error occurred when resetting categories', {
+      message: error instanceof Error ? error.message : error,
+      user: ref.id,
+    })
+    return false
+  }
 
+  try {
     const devices = await ref.collection('devices').listDocuments()
     if (devices && devices.length > 0) {
       const tokens = devices.map((d) => d.id)
 
       await fcm().sendMulticast({
         tokens,
-        notification: {
-          title: '\uD83D\uDCC5 Nouveau jour, nouveau mois...',
-          body: 'Vos budgets ont été remis à zéro. Profitez en pour vous faire plaisir !',
-        },
+        notification: buildMonthReset(),
+      })
+      logger.info('Multiple MonthResetNotification sent', {
+        devices: tokens,
+        user: ref.id,
       })
     }
-    return true
+  } catch (error) {
+    logger.warn('Error occurred when sending MonthResetNotification', {
+      message: error instanceof Error ? error.message : error,
+      user: ref.id,
+    })
   }
-  return false
+
+  return true
 }

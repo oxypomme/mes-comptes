@@ -1,5 +1,6 @@
 import dayjs from 'dayjs'
 import type { firestore } from 'firebase-admin'
+import { logger } from 'firebase-functions/v1'
 
 /**
  * Purge unused devices
@@ -19,6 +20,7 @@ export default async (
     for (const device of await devices) {
       const dDate = device.data()?.lastUsed as firestore.Timestamp | null
       if (dDate && dayjs.utc(dDate.toDate()).isBefore(limit, 'date')) {
+        logger.info('Deleting unused device', { device, user: ref.id })
         transaction.delete(device.ref)
       }
     }

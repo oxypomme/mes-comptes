@@ -3,6 +3,8 @@ import { firestore } from 'firebase-admin'
 import { fcm } from '../firebase'
 import { convert } from '../utils/currency'
 import { getCurrentMonth, Period } from '../utils/period'
+import { logger } from 'firebase-functions/v1'
+import { buildNewOperation } from '../notifications'
 
 /**
  * Add operation that must run today
@@ -25,34 +27,49 @@ export default async (
     const rows = transaction.getAll(
       ...(await ref.collection('agenda').listDocuments())
     )
-    for (const row of await rows) {
-      const data = row.data()
-      const rowDate = data?.date as firestore.Timestamp | null
+    try {
+      for (const row of await rows) {
+        try {
+          const data = row.data()
+          const rowDate = data?.date as firestore.Timestamp | null
 
-      if (
-        rowDate &&
-        dayjs.utc(rowDate.toDate()).isBefore(d) &&
-        data?.account &&
-        data.category &&
-        !data.status
-      ) {
-        const opeRef = data.account.collection('operations').doc()
+          if (!rowDate || !data?.account || !data.category || data.status) {
+            continue
+          }
 
-        let opeValue = data.values[current.value]
-        if (data.currency && data.currency !== 'EUR') {
-          try {
-            opeValue = await convert(opeValue, data.currency, 'EUR')
-          } catch (error) {}
-        }
-
-        const ope = {
-          amount: data.modifier * opeValue,
-          name: `${data.name} - ${current.label}`,
-        }
-
-        if (ope.amount) {
           // Adding 1 month because agenda is in month and not in period
           const newRowDate = dayjs.utc(rowDate.toDate()).add(1, 'month')
+          transaction.update(row.ref, {
+            date: newRowDate,
+            updatedAt: firestore.FieldValue.serverTimestamp(),
+          })
+
+          if (!dayjs.utc(rowDate.toDate()).isBefore(d)) {
+            continue
+          }
+
+          const opeRef = data.account.collection('operations').doc()
+
+          let opeValue = data.values[current.value]
+          if (data.currency && data.currency !== 'EUR') {
+            try {
+              opeValue = await convert(opeValue, data.currency, 'EUR')
+            } catch (error) {
+              logger.warn('Error occurred when converting currency', {
+                message: error instanceof Error ? error.message : error,
+                user: ref.id,
+              })
+            }
+          }
+
+          const ope = {
+            amount: data.modifier * opeValue,
+            name: `${data.name} - ${current.label}`,
+          }
+
+          if (!ope.amount) {
+            continue
+          }
 
           transaction
             .create(opeRef, {
@@ -62,29 +79,42 @@ export default async (
               createdAt: firestore.FieldValue.serverTimestamp(),
             })
             .update(row.ref, {
-              date: firestore.Timestamp.fromDate(newRowDate.toDate()),
               status: true,
               updatedAt: firestore.FieldValue.serverTimestamp(),
             })
+          logger.info('Operation created from row', { row: data, user: ref.id })
 
-          if (tokens && tokens.length > 0) {
-            await fcm().sendMulticast({
-              tokens,
-              notification: {
-                title: '\uD83D\uDCC5 Une nouvelle opération vous attend !',
-                body: `L'opération "${
-                  data.name
-                }" avec une valeur de ${ope.amount.toLocaleString(undefined, {
-                  maximumFractionDigits: 2,
-                  minimumFractionDigits: 2,
-                  style: 'currency',
-                  currency: 'EUR',
-                })} a été automatiquement ajoutée.`,
-              },
-            })
+          try {
+            if (tokens && tokens.length > 0) {
+              await fcm().sendMulticast({
+                tokens,
+                notification: buildNewOperation(data.name, ope.amount),
+              })
+              logger.info('Multiple NewOperationNotification sent', {
+                devices: tokens,
+                user: ref.id,
+              })
+            }
+          } catch (error) {
+            logger.warn(
+              'Error occurred when sending NewOperationNotification',
+              {
+                message: error instanceof Error ? error.message : error,
+                user: ref.id,
+              }
+            )
           }
+        } catch (error) {
+          logger.error('Error occurred when adding auto row', {
+            message: error instanceof Error ? error.message : error,
+            row: row.ref.id,
+            user: ref.id,
+          })
+          throw error
         }
       }
+    } catch (error) {
+      return false
     }
     return true
   })
