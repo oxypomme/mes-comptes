@@ -1,43 +1,33 @@
 name: Deploy to Firebase Functions on merge
-'on':
+on:
   push:
     branches:
       - main
-jobs:
-  check:
-    name: Check if files
-    outputs:
-      diff: ${{ steps.check_files.outputs.diff }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Check modified files
-        id: check_files
-        uses: technote-space/get-diff-action@v6
-        with:
-          PATTERNS: |
-            .github/workflows/firebase-functions-merge.yml
-            functions/*
-            functions/**/*
+    paths:
+      - .github/workflows/firebase-functions-merge.yml
+      - functions/*
+      - functions/**/*
 
+jobs:
   deploy:
     name: Deploy Cloud Functions
-    needs: check
     if: needs.check.outputs.diff
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
       - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: lts/fermium
+          node-version-file: '.nvmrc'
+
       - name: Setup Firebase CLI
         uses: w9jds/setup-firebase@main
         with:
           tools-version: 10.5.0
           firebase_token: ${{ secrets.FIREBASE_AUTH_TOKEN }}
+
       - name: Upload
         run: |
           npm install -g yarn
